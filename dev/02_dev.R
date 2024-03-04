@@ -16,12 +16,21 @@
 ## Dependencies ----
 ## Amend DESCRIPTION with dependencies read from package code parsing
 ## install.packages('attachment') # if needed.
-attachment::att_amend_desc()
+usethis::use_package("bslib")
+usethis::use_package("dplyr")
+usethis::use_package("leaflet")
+usethis::use_package("reactable")
+usethis::use_package("shiny")
+usethis::use_package("shinya11y")
+usethis::use_package("shinyWidgets")
 
 ## Add modules ----
 ## Create a module infrastructure in R/
-golem::add_module(name = "name_of_module1", with_test = TRUE) # Name of the module
-golem::add_module(name = "name_of_module2", with_test = TRUE) # Name of the module
+golem::add_module(name = "sidebar", with_test = TRUE)
+golem::add_module(name = "map", with_test = TRUE)
+golem::add_module(name = "report_card", with_test = TRUE)
+golem::add_module(name = "graphs", with_test = TRUE)
+golem::add_module(name = "download", with_test = TRUE)
 
 ## Add helper functions ----
 ## Creates fct_* and utils_*

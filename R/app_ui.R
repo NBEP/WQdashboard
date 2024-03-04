@@ -9,8 +9,28 @@ app_ui <- function(request) {
     # Leave this function for adding external resources
     golem_add_external_resources(),
     # Your application UI logic
-    fluidPage(
-      h1("WQdashboard")
+    shinya11y::use_tota11y(),
+    bslib::page_navbar(
+      theme = bslib::bs_theme(version = 5),
+      title = h1("Title"),
+      id = "tabset",
+      sidebar = mod_sidebar_ui("sidebar_1"),
+      bslib::nav_panel("Map",
+        value="map",
+        class = "bslib-page-dashboard",
+        "Map"),
+      bslib::nav_panel("Report Card",
+        value="report_card",
+        class = "bslib-page-dashboard",
+        "Report Card"),
+      bslib::nav_panel("Graphs",
+        value="graphs",
+        class = "bslib-page-dashboard",
+        "Graphs"),
+      bslib::nav_panel("Download Data",
+        value="download",
+        class = "bslib-page-dashboard",
+        "Download")
     )
   )
 }

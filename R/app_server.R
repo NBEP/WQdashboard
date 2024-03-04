@@ -5,5 +5,8 @@
 #' @import shiny
 #' @noRd
 app_server <- function(input, output, session) {
-  # Your application server logic
+
+  # Add module servers ----
+  mod_sidebar_server("sidebar_1",
+    selected_tab = reactive({ input$tabset }))
 }
