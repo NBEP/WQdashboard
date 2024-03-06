@@ -3,3 +3,7 @@
 .Rdata
 .httr-oauth
 .DS_Store
+data-raw/sites.csv
+data-raw/monitoring_locations.csv
+data-raw/test_masswater.csv
+data-raw/test_wqx.csv

@@ -1,0 +1,9 @@
+File,Old_Column,New_Column
+sites,Monitoring Location ID,Site_ID
+sites,Monitoring Location Name,Site_Name
+sites,Monitoring Location Latitude (DD.DDDD),Latitude
+sites,Monitoring Location Longitude (-DDD.DDDD),Longitude
+sites,State Code,State
+sites,Monitoring Location Latitude,Latitude
+sites,Monitoring Location Longitude,Longitude
+sites,Location Group,Group
