@@ -12,14 +12,15 @@ library(dplyr)
 source('R/fct_QAQC_sites.R')
 source('R/utils_QAQC.R')
 
-# Define vars
+# Import data
 df_sites <- read.csv(paste0("data-raw/", sites), check.names=FALSE)
 df_cols <- read.csv("data-raw/column_substitutions.csv") %>%
   filter(File == "sites")
 
-# Process data
+# Check data
 df_sites <- QAQC_sites(df_sites, df_cols$Old_Column, df_cols$New_Column)
 
+# Save data
 msg <- "Uploading data..."
 usethis::use_data(df_sites, overwrite = TRUE)
 message(msg, "OK")

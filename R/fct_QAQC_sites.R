@@ -9,8 +9,7 @@
 #'   * Checks for duplicate Site_ID, Latitude/Longitude
 #'   * Checks that Latitude, Longitude are numeric
 #'   * If present, checks that entries in State column are correctly spelled
-#'   * Adds State_Abbr, State_Name, and Town_Code columns if State, Town columns
-#'     included
+#'   * Adds Town_Code column if Town column included
 #'
 #' @param df Input dataframe.
 #' @param old_fields List of old column names to replace.
@@ -20,23 +19,19 @@
 QAQC_sites <- function(df, old_fields = "", new_fields = ""){
   # Define variables ----------------------------------------------------------
   field_need <- c("Site_ID", "Site_Name", "Latitude", "Longitude")
-  field_optional <- c("Town", "State", "Watershed_Name", "Group")
+  field_optional <- c("Town", "State", "Watershed", "Group")
   field_all <- c(field_need, field_optional)
 
   # QAQC columns --------------------------------------------------------------
-  message("Running checks on site data...\n")
-  check_column_duplicate(df)
+  message("Checking site data...\n")
   df <- check_column_name(df, old_fields, new_fields)
   check_column_missing(df, field_need)
   # Drop extra columns
   field_keep <- intersect(field_all, colnames(df))
-  msg <- "\tChecking for extra columns..."
   chk <- length(df) - length(field_keep)
   if (chk > 0) {
-    df <- select(df, all_of(field_keep))  # Drop extra columns
-    message(msg, toString(chk), " columns removed")
-  } else {
-    message(msg, "OK")
+    df <- dplyr::select(df, all_of(field_keep))  # Drop extra columns
+    message("\t", toString(chk), " columns removed")
   }
   # QAQC column values ---------------------------------------------------------
   for (field in field_need) {
@@ -54,31 +49,32 @@ QAQC_sites <- function(df, old_fields = "", new_fields = ""){
   check_val_numeric(df, field = "Longitude")
   # Update data format---------------------------------------------------------
   if ("State" %in% colnames(df)) {
-    msg <- "\tChecking for valid entries in State..."
     chk <- df$State %in% c(state.name, state.abb)
     if (any(!chk)) {
       rws <- which(!chk)
-      stop(msg, "\n\tInvalid State in row ",
+      stop("Invalid entry for State in rows ",
            paste(rws, collapse = ", "), call. = FALSE)
     }
-    message(msg, "OK")
-    msg <- "\tChecking State abbreviations..."
     chk <- df$State %in% state.name
     if (any(chk)) {
       df <- df %>%
-        mutate(State = case_when(
+        dplyr::mutate(State = dplyr::case_when(
           State %in% state.name ~ state.abb[match(State, state.name)],
           TRUE ~ State))
-      message(msg, sum(chk, na.rm = TRUE), " values converted to abbreviation")
+      message("\t", sum(chk, na.rm = TRUE), " state names converted to
+              abbreviation")
+    }
+  }
+  df <- check_val_count(df, "State")
+  df <- check_val_count(df, "Town")
+  df <- check_val_count(df, "Watershed")
+  if ("Town" %in% colnames(df)) {
+    if ("State" %in% colnames(df)) {
+      df <- dplyr::mutate(df, Town_Code = paste0(Town, ", ", State))
     } else {
-      message(msg, "OK")
+      df <- dplyr:: mutate(df, Town_Code = Town)
     }
-    if ("Town" %in% colnames(df)) {
-      msg <- "\tAdding column Town_Code..."
-      df <- df %>%
-        mutate(Town_Code = paste0(Town, ", ", State))
-      message(msg, "OK")
-    }
+    message("\tAdded column Town_Code")
   }
   return(df)
 }

@@ -1,25 +1,3 @@
-#' Duplicate column names
-#'
-#' @description Checks for duplicate column names
-#'
-#' @param df Input dataframe.
-#'
-#' @noRd
-check_column_duplicate <- function(df){
-  msg <- "\tChecking for duplicate column names..."
-
-  field <- colnames(df)
-  chk <- duplicated(field)
-
-  if (any(chk)){
-    tochk <- field[!chk] %>% unique()
-    stop(msg, "\n\tThe following column names were used more than once: ",
-         paste(tochk, collapse = ", "))
-  }
-  message(msg, "OK")
-}
-
-
 #' Rename columns
 #'
 #' @description Renames columns in dataframe
@@ -36,18 +14,14 @@ check_column_name <- function(df, old_field, new_field){
     stop("old_field and new_field must be the same length")
   }
 
-  msg <- "\tChecking column names..."
-
   # Rename columns
   names(new_field) <- old_field
   field_subs <- new_field[intersect(colnames(df), names(new_field))]
 
   if (length(field_subs) > 0){
     df <- df %>%
-      rename_with(~ field_subs, names(field_subs))
-    message(msg, toString(length(field_subs)), " columns renamed")
-  } else {
-    message(msg, "OK")
+      dplyr::rename_with(~ field_subs, names(field_subs))
+    message("\t", toString(length(field_subs)), " columns renamed")
   }
 
   return(df)
@@ -64,14 +38,12 @@ check_column_name <- function(df, old_field, new_field){
 check_column_missing <- function(df, field) {
   # Modified code from MassWateR::checkMWRsites
 
-  msg <- "\tChecking all required columns are present..."
   chk <- field %in% colnames(df)
   if(any(!chk)){
     tochk <- field[!chk]
-    stop(msg, "\n\tThe following columns are missing: ",
+    stop("\tThe following columns are missing: ",
          paste(tochk, collapse = ", "), call. = FALSE)
   }
-  message(paste(msg, "OK"))
 }
 
 #' Check for missing values
@@ -86,19 +58,16 @@ check_column_missing <- function(df, field) {
 check_val_missing <- function(df, field, is_stop = TRUE) {
   # Modified code from MassWateR::checkMWRsites
 
-  msg <- paste0("\tChecking for missing entries in ", field, "...")
   chk <- df[field]
   chk <- (!is.na(chk) & chk != "")
   if(any(!chk)){
     rws <- which(!chk)
-    msg2 <- paste("\t", field, "missing in row", paste(rws, collapse = ", "))
+    msg <- paste("\t", field, " missing in rows ", paste(rws, collapse = ", "))
     if (is_stop == TRUE){
-      stop(msg, "\n", msg2, call. = FALSE)
+      stop(msg, call. = FALSE)
     } else {
-      warning(msg2, call. = FALSE)
+      warning(msg, call. = FALSE)
     }
-  } else {
-    message(paste(msg, "OK"))
   }
 }
 
@@ -113,30 +82,51 @@ check_val_missing <- function(df, field, is_stop = TRUE) {
 #'
 #' @noRd
 check_val_duplicate <- function(df, field, is_stop=TRUE) {
-  msg <- paste0("\tChecking for duplicate values in ",
-                paste(field, collapse = ", "), "...")
   dup1 <- df %>%
-    select(all_of(field)) %>%
+    dplyr::select(all_of(field)) %>%
     duplicated()
   if(any(dup1)){
     dup2 <- df %>%
-      select(all_of(field)) %>%
+      dplyr::select(all_of(field)) %>%
       duplicated(fromLast = TRUE)
     dup_rws <- c(which(dup1), which(dup2)) %>%
       unique() %>%
       sort()
-    msg2 <- paste0("\tDuplicate ", paste(field, collapse = ", "),
-                  " in row ", paste(dup_rws, collapse = ", "))
+    msg <- paste0("\tDuplicate ", paste(field, collapse = ", "),
+                  " in rows ", paste(dup_rws, collapse = ", "))
     if (is_stop == TRUE){
-      stop(msg, "\n", msg2, call. = FALSE)
+      stop(msg, call. = FALSE)
     } else {
-      warning(msg2, call. = FALSE)
+      warning(msg, call. = FALSE)
     }
-  } else {
-    message(paste(msg, "OK"))
   }
 }
 
+#' Drop column with less than 2 unique values
+#'
+#' @description Drops columns with less than 2 unique values.
+#'
+#' @param df Input dataframe.
+#' @param field Column name.
+#'
+#' @return Updated dataframe.
+#'
+#' @noRd
+check_val_count <- function(df, field) {
+
+  if (!field %in% colnames(df)) {
+    return(df)
+  }
+
+  chk <- unique(df[field])
+
+  if (nrow(chk) < 2) {
+    df <- dplyr::select(df, !all_of(field))
+    message("\tRemoved column ", field, ": Less than 2 unique values")
+  }
+
+  return(df)
+}
 
 #' Check value numeric
 #'
@@ -149,13 +139,11 @@ check_val_duplicate <- function(df, field, is_stop=TRUE) {
 check_val_numeric <- function(df, field) {
   # Modified code from MassWateR::checkMWRsites
 
-  msg <- paste("\tChecking for non-numeric values in", field, "...")
   typ <- df[field]
   chk <- !is.na(suppressWarnings(mapply(as.numeric, typ)))
   if(any(!chk)){
     rws <- which(!chk)
-    stop(msg, "\n\tNon-numeric entries for ", field, " found in rows: ",
+    stop("\tNon-numeric entries for ", field, " found in rows: ",
          paste(rws, collapse = ", "), call. = FALSE)
   }
-  message(paste(msg, "OK"))
 }

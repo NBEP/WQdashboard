@@ -23,6 +23,7 @@ usethis::use_package("reactable")
 usethis::use_package("shiny")
 usethis::use_package("shinya11y")
 usethis::use_package("shinyWidgets")
+usethis::use_package("stringr")
 
 ## Add modules ----
 ## Create a module infrastructure in R/
@@ -35,9 +36,10 @@ golem::add_module(name = "download", with_test = TRUE)
 ## Add helper functions ----
 ## Creates fct_* and utils_*
 # golem::add_fct("helpers", with_test = TRUE)
-# golem::add_utils("helpers", with_test = TRUE)
+golem::add_utils("helpers", with_test = TRUE)
 golem::add_utils("QAQC", with_test = TRUE)
 golem::add_fct("QAQC_sites", with_test = TRUE)
+golem::add_fct("select_dropdown", with_test = TRUE)
 
 ## External resources
 ## Creates .js and .css files at inst/app/www
