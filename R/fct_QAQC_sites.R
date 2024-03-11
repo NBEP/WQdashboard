@@ -12,11 +12,9 @@
 #'   * Adds Town_Code column if Town column included
 #'
 #' @param df Input dataframe.
-#' @param old_fields List of old column names to replace.
-#' @param new_fields List of new column names.
 #'
 #' @return The return value, if any, from executing the function.
-QAQC_sites <- function(df, old_fields = "", new_fields = ""){
+QAQC_sites <- function(df){
   # Define variables ----------------------------------------------------------
   field_need <- c("Site_ID", "Site_Name", "Latitude", "Longitude")
   field_optional <- c("Town", "State", "Watershed", "Group")
@@ -24,7 +22,7 @@ QAQC_sites <- function(df, old_fields = "", new_fields = ""){
 
   # QAQC columns --------------------------------------------------------------
   message("Checking site data...\n")
-  df <- check_column_name(df, old_fields, new_fields)
+  df <- update_column_format(df, "site")
   check_column_missing(df, field_need)
   # Drop extra columns
   field_keep <- intersect(field_all, colnames(df))

@@ -5,20 +5,18 @@
 #  up to date before running script.
 
 # Site data:
-sites <- "sites.csv"
+sites <- "test_ww.csv"
 
 # CODE ------------------------------------------------------------------------
-library(dplyr)
-source('R/fct_QAQC_sites.R')
-source('R/utils_QAQC.R')
+devtools::load_all()
 
 # Import data
-df_sites <- read.csv(paste0("data-raw/", sites), check.names=FALSE)
-df_cols <- read.csv("data-raw/column_substitutions.csv") %>%
-  filter(File == "sites")
+df_sites <- read.csv(paste0("data-raw/", sites), check.names=FALSE) %>%
+  dplyr::mutate_if(is.character, trimws) %>%
+  head()
 
 # Check data
-df_sites <- QAQC_sites(df_sites, df_cols$Old_Column, df_cols$New_Column)
+df_sites <- QAQC_sites(df_sites)
 
 # Save data
 msg <- "Uploading data..."

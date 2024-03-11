@@ -1,29 +1,79 @@
-#' Rename columns
+#' Detect data format
 #'
-#' @description Renames columns in dataframe
+#' @description Uses column names to detect data format. (eg WQX, WQdashboard,
+#'   Watershed Watch, etc)
 #'
 #' @param df Input dataframe.
-#' @param old_field List of column names to be replaced.
-#' @param new_field List of new column names.
+#' @param data_type String. Type of dataset to examine.
 #'
-#' @return Dataframe with updated column names.
+#' @returns Name of data format as string.
 #'
 #' @noRd
-check_column_name <- function(df, old_field, new_field){
-  if (length(old_field) != length(new_field)) {
-    stop("old_field and new_field must be the same length")
+detect_column_format <- function(df, data_type){
+  ok_type <- c("site", "result")
+  if (!data_type %in% ok_type){
+    stop("Invalid data type. Acceptable data types: ",
+         paste(ok_type, collapse = ", "))
+  }
+  if (data_type == "site") {
+    data_template <- colnames_sites
+  } else if (data_type == "result") {
+    data_template <- colnames_results
   }
 
-  # Rename columns
+  msg <- paste("\tDetecting", data_type, "format...")
+  # Iterate through formats
+  for (x in colnames(data_template)) {
+    df_format <- data_template %>%
+      dplyr::select(all_of(x)) %>%
+      dplyr::filter_at(x, dplyr::all_vars(!is.na(.) & . != ""))
+    # Check if df matches selected format
+    chk <- unlist(df_format) %in% colnames(df)
+    if(all(chk)){
+      message(msg, x)
+      return(x)
+    }
+  }
+  stop("Invalid ", data_type, " format. Acceptable formats include: ",
+       paste(colnames(data_template), collapse = ", "))
+}
+
+#' Update data format
+#'
+#' @description Updates data to WQdashboard format
+#'
+#' @param df Input dataframe.
+#' @param data_type String. Type of dataset to examine.
+#'
+#' @returns Updated dataframe.
+#'
+#' @noRd
+update_column_format <- function(df, data_type){
+
+  current_format <- detect_column_format(df, data_type)
+
+  if (current_format %in% c("WQdashboard", "WQdashboard_short")) {
+    return(df)
+  }
+
+  if (data_type == "site") {
+    data_template <- colnames_sites
+  } else if (data_type == "result") {
+    data_template <- colnames_results
+  }
+
+  df_format <- data_template %>%
+    dplyr::select("WQdashboard", all_of(current_format)) %>%
+    dplyr::filter_at(current_format, dplyr::all_vars(!is.na(.) & . != ""))
+
+  old_field <- unlist(df_format[current_format])
+  new_field <- unlist(df_format$WQdashboard)
   names(new_field) <- old_field
   field_subs <- new_field[intersect(colnames(df), names(new_field))]
 
-  if (length(field_subs) > 0){
-    df <- df %>%
-      dplyr::rename_with(~ field_subs, names(field_subs))
-    message("\t", toString(length(field_subs)), " columns renamed")
-  }
+  df <- dplyr::rename_with(df, ~ field_subs, names(field_subs))
 
+  message("\t", toString(length(field_subs)), " columns renamed")
   return(df)
 }
 

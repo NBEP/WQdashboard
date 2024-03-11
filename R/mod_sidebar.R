@@ -15,32 +15,7 @@ mod_sidebar_ui <- function(id){
       bslib::accordion_panel(
         title = h2("Location"),
         value = "location",
-        select_dropdown(ns("select_state"),
-          label = h3("Select States"),
-          choices = df_sites$State,
-          choice_names = state.name[match(df_sites$State, state.abb)]),
-        select_dropdown(ns("select_town"),
-          label = h3("Select Towns"),
-          choices = df_sites$Town_Code),
-        select_dropdown(ns("select_watershed"),
-          label = h3("Select Watersheds"),
-          choices = df_sites$Watershed),
-        conditionalPanel(
-          condition = paste0("output['", ns("selected_tab"), "'] != 'graphs'"),
-          select_dropdown(ns("select_site"),
-            label = h3("Select Sites"),
-            choices = df_sites$Site_ID,
-            choice_names = df_sites$Site_Name)
-          ),
-        conditionalPanel(
-          condition = paste0("output['", ns("selected_tab"), "'] == 'graphs'"),
-          select_dropdown(ns("select_site"),
-                          label = HTML(paste(h3("Select Sites"),
-                                              "Select up to three sites")),
-                          choices = df_sites$Site_ID,
-                          choice_names = df_sites$Site_Name,
-                          maxOptions = 3)
-        )
+        mod_select_location_ui("select_location")
       ),
       bslib::accordion_panel(
         title = h2("Indicators"),
@@ -106,6 +81,9 @@ mod_sidebar_server <- function(id, selected_tab){
     # Send vars to ui
     output$selected_tab <- renderText({ selected_tab() })
     outputOptions(output, "selected_tab", suspendWhenHidden = FALSE)
+
+    # Modules
+    mod_select_location_server("select_location")
 
   })
 }

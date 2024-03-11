@@ -1,0 +1,9 @@
+WQdashboard,WQdashboard_short,Watershed_Watch,WQX,MassWateR,Blackstone_River_Coalition
+Site_ID,Site_ID,WW_Station,Monitoring Location ID,Monitoring Location ID,BRC_CODE
+Site_Name,Site_Name,Site_DESCR,Monitoring Location Name,Monitoring Location Name,SITE_NAME
+Latitude,Latitude,LAT_DD,Monitoring Location Latitude (DD.DDDD),Monitoring Location Latitude,LATITUDE
+Longitude,Longitude,LON_DD,Monitoring Location Longitude (-DDD.DDDD),Monitoring Location Longitude,LONGITUDE
+Town,,Town,,,TOWN
+State,,State,State Code,,
+Watershed,,HUC_12_NAME,,,HUC_NAME
+Group,,DepthCode,,Location Group,CFR

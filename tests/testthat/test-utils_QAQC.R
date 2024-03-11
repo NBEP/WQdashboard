@@ -1,9 +1,35 @@
-test_that("check_column_name renames columns", {
-  df <- data.frame(Col1 = c("A", "B", "C"), Col2 = c(1, 2, 3))
-  df_new <- data.frame(Col1 = c("A", "B", "C"), Col3 = c(1, 2, 3))
+# Define vars ------------------------------------------------------------------
+df_wqdashboard <- data.frame(
+  Site_ID = c("001", "002"),
+  Site_Name = c("Site1", "Site2"),
+  Latitude = c(41.83, 42.28),
+  Longitude = c(-71.41, -71.77),
+  Town = c("Providence", "Worcester"),
+  State = c("Rhode Island", "MA"))
+df_wqx <- data.frame(
+  "Monitoring Location ID" = c("001", "002"),
+  "Monitoring Location Name" = c("Site1", "Site2"),
+  "Monitoring Location Latitude (DD.DDDD)" = c(41.83, 42.28),
+  "Monitoring Location Longitude (-DDD.DDDD)" = c(-71.41, -71.77),
+  "State Code" = c("RI", "MA"),
+  check.names = FALSE)
 
-  expect_error(check_column_name(df, c("Col1", "Col2"), "Col3"))
-  expect_equal(check_column_name(df, "Col2", "Col3"), df_new)
+# Run tests --------------------------------------------------------------------
+test_that("detect_column_format detects format", {
+  df_error <- dplyr::select(df_wqx, !"State Code")
+
+  expect_equal(detect_column_format(df_wqdashboard, "site"), "WQdashboard_short")
+  expect_equal(detect_column_format(df_wqx, "site"), "WQX")
+  expect_error(detect_column_format(df_error, "site"))
+  expect_error(detect_column_format(df_wqdashboard, "result"))
+  expect_error(detect_column_format(df_wqdashboard, "hello world"))
+})
+
+test_that("update_column_format renames columns", {
+  chk <- update_column_format(df_wqx, "site")
+  expect_equal(
+    colnames(chk),
+    c("Site_ID", "Site_Name", "Latitude", "Longitude", "State"))
 })
 
 test_that("check_column_missing produces error if any columns missing", {
