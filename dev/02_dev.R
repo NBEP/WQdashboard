@@ -38,6 +38,7 @@ golem::add_module(name = "download", with_test = TRUE)
 # golem::add_fct("helpers", with_test = TRUE)
 golem::add_utils("helpers", with_test = TRUE)
 golem::add_utils("QAQC", with_test = TRUE)
+golem::add_utils("select_location", with_test = TRUE)
 golem::add_fct("QAQC_sites", with_test = TRUE)
 golem::add_fct("select_dropdown", with_test = TRUE)
 

@@ -5,7 +5,7 @@
 #  up to date before running script.
 
 # Site data:
-sites <- "test_ww.csv"
+sites <- "sites.csv"
 
 # CODE ------------------------------------------------------------------------
 devtools::load_all()
@@ -13,7 +13,7 @@ devtools::load_all()
 # Import data
 df_sites <- read.csv(paste0("data-raw/", sites), check.names=FALSE) %>%
   dplyr::mutate_if(is.character, trimws) %>%
-  head()
+  head()  # DELETE LATER WHEN DONE TESTING
 
 # Check data
 df_sites <- QAQC_sites(df_sites)

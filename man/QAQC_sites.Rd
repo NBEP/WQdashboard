@@ -4,14 +4,10 @@
 \alias{QAQC_sites}
 \title{QAQC_sites}
 \usage{
-QAQC_sites(df, old_fields = "", new_fields = "")
+QAQC_sites(df)
 }
 \arguments{
 \item{df}{Input dataframe.}
-
-\item{old_fields}{List of old column names to replace.}
-
-\item{new_fields}{List of new column names.}
 }
 \value{
 The return value, if any, from executing the function.

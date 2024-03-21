@@ -10,7 +10,7 @@ select_dropdown(
   choices,
   choice_names = NULL,
   multiple = TRUE,
-  maxOptions = NULL
+  max_options = NULL
 )
 }
 \value{

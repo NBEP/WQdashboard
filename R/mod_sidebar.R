@@ -11,11 +11,11 @@ mod_sidebar_ui <- function(id){
   ns <- NS(id)
   tagList(
     bslib::accordion(
-      multiple = TRUE,
+      multiple = FALSE,
       bslib::accordion_panel(
         title = h2("Location"),
         value = "location",
-        mod_select_location_ui("select_location")
+        mod_select_location_ui(ns("select_location"))
       ),
       bslib::accordion_panel(
         title = h2("Indicators"),
@@ -83,7 +83,7 @@ mod_sidebar_server <- function(id, selected_tab){
     outputOptions(output, "selected_tab", suspendWhenHidden = FALSE)
 
     # Modules
-    mod_select_location_server("select_location")
+    mod_select_location_server("select_location", selected_tab)
 
   })
 }
