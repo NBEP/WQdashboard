@@ -13,20 +13,24 @@ df_wqx <- data.frame(
   "Monitoring Location Longitude (-DDD.DDDD)" = c(-71.41, -71.77),
   "State Code" = c("RI", "MA"),
   check.names = FALSE)
+df_par <- data.frame(
+  Site_ID = c("001", "002"),
+  Date = c("240325", "240401")
+)
 
 # Run tests --------------------------------------------------------------------
 test_that("detect_column_format detects format", {
   df_error <- dplyr::select(df_wqx, !"State Code")
 
-  expect_equal(detect_column_format(df_wqdashboard, "site"), "WQdashboard_short")
-  expect_equal(detect_column_format(df_wqx, "site"), "WQX")
-  expect_error(detect_column_format(df_error, "site"))
-  expect_error(detect_column_format(df_wqdashboard, "result"))
+  expect_equal(detect_column_format(df_wqdashboard, colnames_sites), "WQdashboard_short")
+  expect_equal(detect_column_format(df_wqx, colnames_sites), "WQX")
+  expect_error(detect_column_format(df_error, colnames_sites))
+  expect_error(detect_column_format(df_wqdashboard, colnames_results))
   expect_error(detect_column_format(df_wqdashboard, "hello world"))
 })
 
 test_that("update_column_format renames columns", {
-  chk <- update_column_format(df_wqx, "site")
+  chk <- update_column_format(df_wqx, colnames_sites)
   expect_equal(
     colnames(chk),
     c("Site_ID", "Site_Name", "Latitude", "Longitude", "State"))
@@ -85,4 +89,17 @@ test_that("check_val_numeric produces error if non-numeric value in column", {
 
   expect_no_error(check_val_numeric(df, "Col2"))
   expect_error(check_val_numeric(df, "Col1"))
+})
+
+test_that("format_date_col formats dates", {
+  chk <- format_date_col(df_par, "ymd")
+
+  expect_equal(chk$Date[1], as.Date("2024-03-25"))
+  expect_error(format_date_col(df_par, "foobar"))
+  expect_error(format_date_col(df_par, "mdy"))
+})
+
+test_that("rename_param renames parameters", {
+  expect_equal(rename_param("foobar"), "foobar")
+  expect_equal(rename_param("Air Temperature"), "Temperature, air")
 })

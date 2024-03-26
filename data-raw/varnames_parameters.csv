@@ -1,0 +1,48 @@
+"Algae, blue-green (phylum cyanophyta) density",Cyanobacteria (lab)
+Alkalinity,Alkalinity - 00410
+Ammonia,"Nitrogen, Ammonia Dissolved as N - 00608"
+Chloride,Chloride - 00940
+Chlorophyll a,Chl a
+Chlorophyll a (probe),Chl a (probe)
+"Chlorophyll a (probe) concentration, Cyanobacteria (bluegreen)",Cyanobacteria (probe)
+"Chlorophyll a, corrected for pheophytin","Chlorophyll a, water, fluorometric method, corrected for pheophytin - 32209"
+Depth,"Depth to bottom from water surface at sampling location, meters - 82903"
+Depth,Water Depth
+"Depth, Secchi disk depth",Secchi Depth
+"Depth, Secchi disk depth",Secchi Depth - 00069
+Dissolved oxygen (DO),Dissolved Oxygen
+Dissolved oxygen (DO),Dissolved Oxygen - 00300
+Dissolved oxygen (DO),DO
+Dissolved oxygen saturation,Dissolved Oxy Saturation
+Dissolved oxygen saturation,DO saturation
+Enterococcus,Enterococci - 31639
+Escherichia coli,E. coli
+Escherichia coli,E.coli
+Fecal Coliform,Fecal Coliform - 74055
+"Height, gage",Gage
+Nitrate + Nitrite,"Nitrate + Nitrite, Dissolved - 00631"
+Orthophosphate,Ortho P
+Orthophosphate,"Phosphorus, Dissolved - 00666"
+Param_WQX,Param_Other
+Particulate organic carbon,POC
+pH,pH - 00400
+Pheophytin a,Pheophytin
+"Phosphorus, Particulate Organic",POP
+Salinity,"Salinity, (ppt) - 00480"
+Specific conductance,Sp Conductance
+"Temperature, air",Air Temperature
+"Temperature, air",Air Temp
+"Temperature, water",Temperature - 00011
+"Temperature, water",Water Temp
+"Temperature, water",Water Temperature
+Total dissolved solids,TDS
+Total Kjeldahl nitrogen (Organic N & NH3),TKN
+Total Kjeldahl nitrogen (Organic N & NH3),Total Kjeldahl nitrogen
+"Total Nitrogen, mixed forms","Nitrogen, Total (unfiltered) - 00600"
+"Total Nitrogen, mixed forms",PON
+"Total Nitrogen, mixed forms",TDN
+"Total Nitrogen, mixed forms",TN
+"Total Phosphorus, mixed forms","Phosphorus, Total - 00665"
+"Total Phosphorus, mixed forms",TDP
+"Total Phosphorus, mixed forms",TP
+Total suspended solids,TSS

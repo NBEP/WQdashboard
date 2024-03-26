@@ -16,13 +16,14 @@
 #' @return The return value, if any, from executing the function.
 QAQC_sites <- function(df){
   # Define variables ----------------------------------------------------------
-  field_need <- c("Site_ID", "Site_Name", "Latitude", "Longitude")
-  field_optional <- c("Town", "State", "Watershed", "Group")
-  field_all <- c(field_need, field_optional)
+  field_all <- colnames_sites$WQdashboard
+  field_need <- colnames_sites$WQdashboard_short
+  field_need <- field_need[!field_need == ""]
+  field_optional <- dplyr::setdiff(field_all, field_need)
 
   # QAQC columns --------------------------------------------------------------
   message("Checking site data...\n")
-  df <- update_column_format(df, "site")
+  df <- update_column_format(df, colnames_sites)
   check_column_missing(df, field_need)
   # Drop extra columns
   field_keep <- intersect(field_all, colnames(df))

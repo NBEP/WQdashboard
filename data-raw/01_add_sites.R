@@ -5,15 +5,14 @@
 #  up to date before running script.
 
 # Site data:
-sites <- "sites.csv"
+sites <- "test_sites_brc.csv"
 
 # CODE ------------------------------------------------------------------------
 devtools::load_all()
 
 # Import data
 df_sites <- read.csv(paste0("data-raw/", sites), check.names=FALSE) %>%
-  dplyr::mutate_if(is.character, trimws) %>%
-  head()  # DELETE LATER WHEN DONE TESTING
+  dplyr::mutate_if(is.character, trimws)
 
 # Check data
 df_sites <- QAQC_sites(df_sites)

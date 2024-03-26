@@ -1,36 +1,11 @@
-WQX,WQX_short
-Project ID,
-Monitoring Location ID,Monitoring Location ID
-Activity ID (CHILD-subset),
-Activity ID User Supplied (PARENTs),
-Activity Type,Activity Type
-Activity Media Name,Activity Media Name
-Activity Start Date,Activity Start Date
-Activity Start Time,
-Activity Start Time Zone,
-Activity Depth/Height Measure,
-Activity Depth/Height Unit,
-Sample Collection Method ID,Sample Collection Method ID
-Sample Collection Method Context,Sample Collection Method Context
-Sample Collection Equipment Name,
-Sample Collection Equipment Comment,
-Characteristic Name,Characteristic Name
-Characteristic Name User Supplied,
-Method Speciation,
-Result Detection Condition,
-Result Value,Result Value
-Result Unit,Result Unit
-Result Measure Qualifier,
-Result Sample Fraction,
-Result Status ID,Result Status ID
-ResultTemperatureBasis,
-Statistical Base Code,
-ResultTimeBasis,
-Result Value Type,Result Value Type
-Result Analytical Method ID,
-Result Analytical Method Context,
-Analysis Start Date,
-Result Detection/Quantitation Limit Type,
-Result Detection/Quantitation Limit Measure,
-Result Detection/Quantitation Limit Unit,
-Result Comment,
+WQdashboard,WQdashboard_short,WQX,MassWateR,Watershed_Watch,Blackstone_River_Coalition
+Site_ID,Site_ID,Monitoring Location ID,Monitoring Location ID,Station_Name,SITE_BRC_CODE
+Activity_Type,,Activity Type,Activity Type,,
+Date,Date,Activity Start Date,Activity Start Date,Date_of_Sample,DATE_TIME
+Depth,,Activity Depth/Height Measure,Activity Depth/Height Measure,Depth,
+Depth_Unit,,Activity Depth/Height Unit,Activity Depth/Height Unit,,
+Parameter,Parameter,Characteristic Name,Characteristic Name,Parameter,PARAMETER
+Result,Result,Result Value,Result Value,Concentration,RESULT
+Result_Unit,Result_Unit,Result Unit,Result Unit,Unit,UNITS
+Activity_Type,,Activity Type,Activity Type,,
+Qualifier,,Result Measure Qualifier,Result Measure Qualifier,,
