@@ -19,6 +19,7 @@
 usethis::use_package("bslib")
 usethis::use_package("dplyr")
 usethis::use_package("leaflet")
+usethis::use_package("lubridate")
 usethis::use_package("reactable")
 usethis::use_package("shiny")
 usethis::use_package("shinya11y")
@@ -41,6 +42,7 @@ golem::add_utils("QAQC", with_test = TRUE)
 golem::add_utils("select_location", with_test = TRUE)
 golem::add_fct("QAQC_sites", with_test = TRUE)
 golem::add_fct("QAQC_results", with_test = TRUE)
+golem::add_fct("format_results", with_test = TRUE)
 golem::add_fct("select_dropdown", with_test = TRUE)
 
 ## External resources

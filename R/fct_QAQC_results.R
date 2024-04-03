@@ -5,11 +5,13 @@
 #'   * Checks column names, renames columns as needed
 #'   * Checks all mandatory columns are present
 #'   * Checks for missing values
+#'   * Ensures date column in properly formatted
+#'   * Renames parameters to match WQX standard
 #'
 #' @param df Input dataframe.
 #' @param date_format Date format as string.
 #'
-#' @return The return value, if any, from executing the function.
+#' @return Updated dataframe.
 QAQC_results <- function(df, date_format=NULL){
   # Define variables ----------------------------------------------------------
   field_all <- colnames_results$WQdashboard
@@ -19,36 +21,8 @@ QAQC_results <- function(df, date_format=NULL){
 
   # QAQC columns --------------------------------------------------------------
   message("Checking data...\n")
-  df <- update_column_format(df, colnames_results)
+  df <- update_column_names(df, colnames_results)
   check_column_missing(df, field_need)
-  # Drop extra columns
-  field_keep <- intersect(field_all, colnames(df))
-  chk <- length(df) - length(field_keep)
-  if (chk > 0) {
-    df <- dplyr::select(df, all_of(field_keep))
-    message("\t", toString(chk), " columns removed")
-  }
-
-  # Drop rows ------------------------------------------------------------------
-  if("Qualifier" %in% colnames(df)) {
-    chk <- df$Qualifier %in% qaqc_fail
-
-    if(any(chk)){
-      df <- dplyr::filter(df, !Qualifier %in% qaqc_fail)
-      message("\tDropped flagged data")
-    }
-    df <- dplyr::select(df, !Qualifier)
-  }
-  if("Activity_Type" %in% colnames(df)) {
-    chk <- stringr::str_detect(df$Activity_Type, "Quality Control")
-
-    if(any(chk)){
-      df <- dplyr::filter(df,
-        !stringr::str_detect(Activity_Type, "Quality Control"))
-      message("\tDropped replicate, blank data")
-    }
-    df <- dplyr::select(df, !Activity_Type)
-  }
 
   # QAQC column values ---------------------------------------------------------
   # Check missing data
@@ -56,32 +30,46 @@ QAQC_results <- function(df, date_format=NULL){
     check_val_missing(df, field = field)
   }
   field_check <- intersect(field_optional, colnames(df))
+  field_check <- field_check[field_check != "Qualifier"]
   for (field in field_check) {
     check_val_missing(df, field = field, is_stop = FALSE)
   }
-  # Check sites
-  site_sites <- df_sites$Site_ID
-  data_sites <- unique(df$Site_ID)
+  # Check if all sites valid
+  site_sites <- list_sites(df_sites)
+  data_sites <- list_sites(df)
+
   chk <- data_sites %in% site_sites
   if(any(!chk)){
     extra_sites <- data_sites[!chk]
     stop("Site not in df_sites: ",
          paste(data_sites[!chk], collapse = ", "), call. = FALSE)
   }
-  # Check date format
-  check_val_numeric(df, field = "Result")
-  df <- format_date_col(df, date_format) %>%
-    dplyr::mutate(Year = lubridate::year(Date)) %>%
-    dplyr::mutate(Month = strftime(Date, "%B"))
+  # Check column format
+  check_val_numeric(df, field = "Result", exceptions="BDL")
+  df <- format_date_col(df, date_format)
 
-  # Update parameter names
-  df <- dplyr::mutate(df,
-    Parameter = sapply(Parameter, function(x) rename_param(x)))
+  # Check parameters, units
+  df <- df %>%
+    dplyr::mutate(
+      Parameter = sapply(Parameter, function(x) rename_param(x))) %>%
+    dplyr::mutate(
+      Result_Unit = sapply(Result_Unit, function(x) rename_unit(x))
+    )
+  check_units(df)
 
-  # Check units
-  # Check 1: One unit type per parameter
+  if(all(c("Depth", "Depth_Unit") %in% colnames(df))) {
+    ok_units <- c("in", "ft", "cm", "m")
+    chk <- df$Depth_Unit %in% c(ok_units, NA)
+    chk <- skip_dq_rows(df, chk)
+    chk <- skip_qc_rows(df, chk)
+    if (any(!chk)) {
+      rws <- which(!chk)
+      stop("Invalid Depth_Unit. Acceptable values: ",
+           paste(ok_units, collapse = ", "), ". Check rows ",
+           paste(rws, collapse = ", "), call. = FALSE)
+    }
+  }
 
-  #Check 2: Acceptable unit type
-
+  message("\nQAQC complete")
   return(df)
 }

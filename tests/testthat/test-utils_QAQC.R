@@ -15,7 +15,9 @@ df_wqx <- data.frame(
   check.names = FALSE)
 df_par <- data.frame(
   Site_ID = c("001", "002"),
-  Date = c("240325", "240401")
+  Date = c("240325", "240401"),
+  Activity_Type = c("Quality Control Sample-Field Blank", "Field Msr/Obs"),
+  Qualifier = c(NA, "Q")
 )
 
 # Run tests --------------------------------------------------------------------
@@ -29,8 +31,8 @@ test_that("detect_column_format detects format", {
   expect_error(detect_column_format(df_wqdashboard, "hello world"))
 })
 
-test_that("update_column_format renames columns", {
-  chk <- update_column_format(df_wqx, colnames_sites)
+test_that("update_column_names renames columns", {
+  chk <- update_column_names(df_wqx, colnames_sites)
   expect_equal(
     colnames(chk),
     c("Site_ID", "Site_Name", "Latitude", "Longitude", "State"))
@@ -44,16 +46,31 @@ test_that("check_column_missing produces error if any columns missing", {
   expect_error(check_column_missing(df, c("Col1", "Col3")))
 })
 
-test_that("check_val_missing produces error or warning if NA or blank cell", {
-  df <- data.frame(Col1 = c("A", "B", "C"),
-                   Col2 = c("D", "E", ""),
-                   Col3 = c("G", NA, "I"))
+test_that("skip_dq_rows ignores rows where Qualifier listed in qaqc_fail", {
+  chk <- df_par$Site_ID == "001"
+  expect_false(all(chk))
+  chk <- skip_dq_rows(df_par, chk)
+  expect_true(all(chk))
+})
+
+test_that("skip_qc_rows ignores rows where Activity_Type is Quality Control", {
+  chk <- df_par$Site_ID == "002"
+  expect_false(all(chk))
+  chk <- skip_qc_rows(df_par, chk)
+  expect_true(all(chk))
+})
+
+test_that("check_val_missing produces error or warning if NA value in column", {
+  df <- data.frame(
+    Col1 = c("A", "B", "C"),
+    Col2 = c("D", NA, "F"),
+    Col3 = c(as.Date("2024/01/01"), as.Date("2024/01/02"),
+             as.Date("2024/01/03")))
 
   expect_error(check_val_missing(df, "Col2"))
-  expect_error(check_val_missing(df, "Col3"))
   expect_warning(check_val_missing(df, "Col2", is_stop = FALSE))
-  expect_warning(check_val_missing(df, "Col3", is_stop = FALSE))
   expect_no_error(check_val_missing(df, "Col1"))
+  expect_no_error(check_val_missing(df, "Col3"))
 })
 
 test_that("check_val_duplicate produces error or warning if duplicate values in
@@ -92,14 +109,39 @@ test_that("check_val_numeric produces error if non-numeric value in column", {
 })
 
 test_that("format_date_col formats dates", {
-  chk <- format_date_col(df_par, "ymd")
+  chk <- format_date_col(df_par,
+    date_format = "ymd",
+    ignore_dq = FALSE)
 
   expect_equal(chk$Date[1], as.Date("2024-03-25"))
-  expect_error(format_date_col(df_par, "foobar"))
-  expect_error(format_date_col(df_par, "mdy"))
+  expect_error(format_date_col(df_par, date_format = "foobar"))
+  expect_error(format_date_col(df_par, date_format = "mdy"))
 })
 
 test_that("rename_param renames parameters", {
   expect_equal(rename_param("foobar"), "foobar")
   expect_equal(rename_param("Air Temperature"), "Temperature, air")
+})
+
+test_that("rename_unit renames units", {
+  expect_equal(rename_unit("foobar"), "foobar")
+  expect_equal(rename_unit("blank"), "None")
+})
+
+test_that("check_units gives error message if more than one unit type
+          per parameter", {
+  df <- data.frame(
+    Parameter = c("Temperature, Air", "Temperature, Air", "Temperature, Water"),
+    Result_Unit = c("C", "F", "C"),
+    Qualifier = c(NA, "Q", NA)
+  )
+  expect_no_error(check_units(df))
+  expect_error(check_units(df, ignore_dq = FALSE))
+})
+
+test_that("list_sites lists unique sites", {
+  df_blank <- df_par
+  df_blank$Site_ID[1] <- NA
+  expect_equal(list_sites(df_wqdashboard), c("001", "002"))
+  expect_equal(list_sites(df_blank), "002")
 })

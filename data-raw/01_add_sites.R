@@ -5,13 +5,15 @@
 #  up to date before running script.
 
 # Site data:
-sites <- "test_sites_brc.csv"
+sites <- "test_sites_ww.csv"
 
 # CODE ------------------------------------------------------------------------
 devtools::load_all()
 
 # Import data
-df_sites <- read.csv(paste0("data-raw/", sites), check.names=FALSE) %>%
+df_sites <- read.csv(paste0("data-raw/", sites),
+    na.strings=c("","NA"),
+    check.names=FALSE) %>%
   dplyr::mutate_if(is.character, trimws)
 
 # Check data

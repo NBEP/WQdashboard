@@ -1,11 +1,10 @@
-WQdashboard,WQdashboard_short,WQX,MassWateR,Watershed_Watch,Blackstone_River_Coalition
-Site_ID,Site_ID,Monitoring Location ID,Monitoring Location ID,Station_Name,SITE_BRC_CODE
-Activity_Type,,Activity Type,Activity Type,,
-Date,Date,Activity Start Date,Activity Start Date,Date_of_Sample,DATE_TIME
-Depth,,Activity Depth/Height Measure,Activity Depth/Height Measure,Depth,
-Depth_Unit,,Activity Depth/Height Unit,Activity Depth/Height Unit,,
-Parameter,Parameter,Characteristic Name,Characteristic Name,Parameter,PARAMETER
-Result,Result,Result Value,Result Value,Concentration,RESULT
-Result_Unit,Result_Unit,Result Unit,Result Unit,Unit,UNITS
-Activity_Type,,Activity Type,Activity Type,,
-Qualifier,,Result Measure Qualifier,Result Measure Qualifier,,
+WQdashboard,WQdashboard_short,WQX,Watershed_Watch,Blackstone_River_Coalition
+Site_ID,Site_ID,Monitoring Location ID,Station_Name,SITE_BRC_CODE
+Activity_Type,,Activity Type,,
+Date,Date,Activity Start Date,Date_of_Sample,DATE_TIME
+Depth,,Activity Depth/Height Measure,Depth,
+Depth_Unit,,Activity Depth/Height Unit,,
+Parameter,Parameter,Characteristic Name,Parameter,PARAMETER
+Result,Result,Result Value,Concentration,RESULT
+Result_Unit,Result_Unit,Result Unit,Unit,UNITS
+Qualifier,,Result Measure Qualifier,,

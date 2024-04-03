@@ -1,3 +1,4 @@
+Param_WQX,Param_Other
 "Algae, blue-green (phylum cyanophyta) density",Cyanobacteria (lab)
 Alkalinity,Alkalinity - 00410
 Ammonia,"Nitrogen, Ammonia Dissolved as N - 00608"
@@ -23,7 +24,6 @@ Fecal Coliform,Fecal Coliform - 74055
 Nitrate + Nitrite,"Nitrate + Nitrite, Dissolved - 00631"
 Orthophosphate,Ortho P
 Orthophosphate,"Phosphorus, Dissolved - 00666"
-Param_WQX,Param_Other
 Particulate organic carbon,POC
 pH,pH - 00400
 Pheophytin a,Pheophytin

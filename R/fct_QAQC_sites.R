@@ -23,7 +23,7 @@ QAQC_sites <- function(df){
 
   # QAQC columns --------------------------------------------------------------
   message("Checking site data...\n")
-  df <- update_column_format(df, colnames_sites)
+  df <- update_column_names(df, colnames_sites)
   check_column_missing(df, field_need)
   # Drop extra columns
   field_keep <- intersect(field_all, colnames(df))

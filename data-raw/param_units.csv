@@ -1,0 +1,33 @@
+Parameter,Unit
+"Algae, blue-green (phylum cyanophyta) density",ug/L
+Alkalinity,mg/L
+Ammonia,mg/L
+Ammonium,mg/L
+Chloride,mg/L
+Chlorophyll a,ug/L
+Chlorophyll a (probe),ug/L
+"Chlorophyll a (probe) concentration, Cyanobacteria (bluegreen)",ug/L
+"Chlorophyll a, corrected for pheophytin",ug/L
+Conductivity,uS/cm
+Depth,m
+"Depth, bottom",m
+"Depth, Secchi disk depth",m
+Dissolved oxygen (DO),mg/L
+Dissolved oxygen saturation,%
+Enterococcus,MPN/100mL
+Escherichia coli,MPN/100mL
+Fecal Coliform,MPN/100mL
+"Height, gage",m
+Nitrate,ug/L
+Nitrate + Nitrite,ug/L
+Nitrite,ug/L
+Orthophosphate,mg/L
+"Phosphorus, Particulate Organic",mg/L
+Salinity,ppt
+Specific conductance,uS/cm
+"Temperature, air",deg F
+"Temperature, water",deg C
+Total Kjeldahl nitrogen (Organic N & NH3),ug/L
+"Total Nitrogen, mixed forms",ug/L
+"Total Phosphorus, mixed forms",mg/L
+Turbidity,NTU

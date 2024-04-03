@@ -17,10 +17,15 @@ colnames_results <- read.csv("data-raw/colnames_results.csv") %>%
   dplyr::relocate(WQdashboard_short, .after = last_col())
 usethis::use_data(colnames_results, overwrite = TRUE)
 
-varnames_parameters <- read.csv("data-raw/varnames_parameters.csv")
-param_names <- varnames_parameters$Param_WQX
-names(param_names) <- varnames_parameters$Param_Other
+df_param_names <- read.csv("data-raw/param_names.csv")
+param_names <- df_param_names$Param_WQX
+names(param_names) <- df_param_names$Param_Other
 usethis::use_data(param_names, overwrite = TRUE)
+
+df_unit_names <- read.csv("data-raw/unit_names.csv")
+unit_names <- df_unit_names$Unit_WQX
+names(unit_names) <- df_unit_names$Unit_Other
+usethis::use_data(unit_names, overwrite = TRUE)
 
 qaqc_fail <- c("$", "A", "AR", "BVER", "C", "CAN", "CBC", "CSR", "DE", "EER",
   "EFAI", "FDB", "FDC", "FDL", "FEQ", "FFB", "FFD", "FFS", "FFT", "FH", "FIS",
