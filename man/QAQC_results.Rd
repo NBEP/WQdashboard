@@ -12,7 +12,7 @@ QAQC_results(df, date_format = NULL)
 \item{date_format}{Date format as string.}
 }
 \value{
-The return value, if any, from executing the function.
+Updated dataframe.
 }
 \description{
 Run quick quality control check on water quality data. Runs the
@@ -20,4 +20,6 @@ Run quick quality control check on water quality data. Runs the
   * Checks column names, renames columns as needed
   * Checks all mandatory columns are present
   * Checks for missing values
+  * Ensures date column in properly formatted
+  * Renames parameters to match WQX standard
 }

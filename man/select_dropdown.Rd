@@ -2,20 +2,40 @@
 % Please edit documentation in R/fct_select_dropdown.R
 \name{select_dropdown}
 \alias{select_dropdown}
-\title{select_dropdown}
+\title{Create pickerInput dropdown}
 \usage{
 select_dropdown(
   id,
   label,
   choices,
   choice_names = NULL,
+  sort_choices = TRUE,
+  sort_decreasing = FALSE,
   multiple = TRUE,
   max_options = NULL
 )
+}
+\arguments{
+\item{id}{Widget id.}
+
+\item{label}{Widget heading/label.}
+
+\item{choices}{Dropdown choices.}
+
+\item{choice_names}{Display names for choice variables. Default NULL.}
+
+\item{sort_choices}{Boolean. Whether to sort the choices. Default TRUE.}
+
+\item{sort_decreasing}{Boolean. Whether to sort choices in decreasing order.
+Default FALSE.}
+
+\item{multiple}{Boolean. Whether to allow multiple selections. Default TRUE.}
+
+\item{max_options}{Maximum number of selections. Default NULL.}
 }
 \value{
 The return value, if any, from executing the function.
 }
 \description{
-A fct function
+Creates a `shinyWidgets::pickerInput` dropdown
 }

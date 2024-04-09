@@ -40,10 +40,13 @@ golem::add_module(name = "download", with_test = TRUE)
 golem::add_utils("helpers", with_test = TRUE)
 golem::add_utils("QAQC", with_test = TRUE)
 golem::add_utils("select_location", with_test = TRUE)
+golem::add_utils("select_date", with_test = TRUE)
+golem::add_utils("graphs", with_test = TRUE)
 golem::add_fct("QAQC_sites", with_test = TRUE)
 golem::add_fct("QAQC_results", with_test = TRUE)
 golem::add_fct("format_results", with_test = TRUE)
 golem::add_fct("select_dropdown", with_test = TRUE)
+golem::add_fct("scatter_plot", with_test = TRUE)
 
 ## External resources
 ## Creates .js and .css files at inst/app/www

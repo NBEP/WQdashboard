@@ -4,28 +4,70 @@
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
-#' @noRd 
+#' @noRd
 #'
-#' @importFrom shiny NS tagList 
+#' @importFrom shiny NS tagList
 mod_graphs_ui <- function(id){
   ns <- NS(id)
   tagList(
- 
+    bslib::card(
+      min_height = 250,
+      full_screen = FALSE,
+      h2("Graphs"),
+      reactable::reactableOutput(ns("test")),
+      h3("Long Term Trends"),
+      "bar graph?"
+      ),
   )
 }
-    
+
 #' graphs Server Functions
 #'
-#' @noRd 
-mod_graphs_server <- function(id){
+#' @noRd
+mod_graphs_server <- function(id, selected_var){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
- 
+
+    # Initial filter - date & month
+    df_filter <- reactive({
+      req(selected_var$date_range())
+      req(selected_var$month)
+
+      df <- df_data %>%
+        dplyr::filter(
+          Date >= selected_var$date_range()[1] &
+            Date <=selected_var$date_range()[2]) %>%
+        dplyr::filter(Month %in% selected_var$month()) %>%
+        dplyr::select(!Month)
+
+      return(df)
+    })
+
+    # Precision filters
+    df_basic <- reactive({
+      req(selected_var$sites_n())
+      req(selected_var$param_n())
+
+      df <- prep_plot_df(
+        df_filter(),
+        site_id = selected_var$sites_n(),
+        parameter = selected_var$param_n())
+
+      return(df)
+    })
+
+    # Test table...
+    output$test <- reactable::renderReactable({
+      reactable::reactable(
+        df_basic(),
+        highlight = TRUE)
+    })
+
   })
 }
-    
+
 ## To be copied in the UI
 # mod_graphs_ui("graphs_1")
-    
+
 ## To be copied in the server
 # mod_graphs_server("graphs_1")

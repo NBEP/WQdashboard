@@ -2,11 +2,8 @@ Unit,Unit_2,Conversion_Multiply,Conversion_Add
 in,m,0.0254,0
 ft,m,0.3048,0
 cm,m,0.01,0
-deg F,deg C,0.555555556,-17.77777778
-deg C,deg F,1.80,32
+deg C,deg F,1.8,32
 ug/L,mg/L,0.001,0
-mg/L,ug/L,1000,0
-cfu/100mL,MPN/100mL,1,0
 MPN/100mL,cfu/100mL,1,0
 mS/cm,uS/cm,1000,0
 S/m,uS/cm,10000,0

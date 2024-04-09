@@ -1,10 +1,21 @@
 # Update Data
 #
 # README: Run this script to add or update water quality data.
+#
+# Date abbreviations:
+#  b Abbreviated month name
+#  B Full month name
+#  d Day of the month
+#  H Hour
+#  m Month
+#  M Minute
+#  p AM/PM
+#  S Second
+#  Z Timezone
 
 # parameter data:
-wq_data <- "test_data_ww.csv"
-date_format = "Y/m/d H:M:S + z"
+wq_data <- "test_data_brc.csv"
+date_format = "m/d/Y H:M"
 
 # CODE ------------------------------------------------------------------------
 devtools::load_all()

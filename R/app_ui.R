@@ -26,7 +26,7 @@ app_ui <- function(request) {
       bslib::nav_panel("Graphs",
         value="graphs",
         class = "bslib-page-dashboard",
-        "Graphs"),
+        mod_graphs_ui("graphs_1")),
       bslib::nav_panel("Download Data",
         value="download",
         class = "bslib-page-dashboard",

@@ -17,8 +17,12 @@ df_par <- data.frame(
   Site_ID = c("001", "002"),
   Date = c("240325", "240401"),
   Activity_Type = c("Quality Control Sample-Field Blank", "Field Msr/Obs"),
-  Qualifier = c(NA, "Q")
-)
+  Qualifier = c(NA, "Q"))
+df_depth <- data.frame(
+  Site_ID = c("001", "002", "003"),
+  Parameter = c("Temperature, Air", "Temperature, Water", "Depth"),
+  Depth = c(1, 50, 10),
+  Depth_Unit = c("m", "cm", "foo"))
 
 # Run tests --------------------------------------------------------------------
 test_that("detect_column_format detects format", {
@@ -128,8 +132,13 @@ test_that("rename_unit renames units", {
   expect_equal(rename_unit("blank"), "None")
 })
 
-test_that("check_units gives error message if more than one unit type
-          per parameter", {
+test_that("convert_unit accurately converts units", {
+  expect_equal(convert_unit(32, "deg F", "deg C"), 0)
+  expect_equal(convert_unit(0, "deg C", "deg F"), 32)
+  expect_error(convert_unit(0,"foo", "bar"))
+})
+
+test_that("check_units flags multiple units per parameter", {
   df <- data.frame(
     Parameter = c("Temperature, Air", "Temperature, Air", "Temperature, Water"),
     Result_Unit = c("C", "F", "C"),
@@ -137,6 +146,12 @@ test_that("check_units gives error message if more than one unit type
   )
   expect_no_error(check_units(df))
   expect_error(check_units(df, ignore_dq = FALSE))
+})
+
+test_that("depth_to_m converts depth to meters", {
+  chk <- depth_to_m(df_depth)
+  expect_equal(chk$Depth, c(1,0.5,10))
+  expect_equal(chk$Depth_Unit, c("m", "m", "foo"))
 })
 
 test_that("list_sites lists unique sites", {

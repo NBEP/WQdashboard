@@ -27,6 +27,9 @@ unit_names <- df_unit_names$Unit_WQX
 names(unit_names) <- df_unit_names$Unit_Other
 usethis::use_data(unit_names, overwrite = TRUE)
 
+unit_conversion <- read.csv("data-raw/unit_conversion.csv")
+usethis::use_data(unit_conversion, overwrite = TRUE)
+
 qaqc_fail <- c("$", "A", "AR", "BVER", "C", "CAN", "CBC", "CSR", "DE", "EER",
   "EFAI", "FDB", "FDC", "FDL", "FEQ", "FFB", "FFD", "FFS", "FFT", "FH", "FIS",
   "FL", "FLC", "FLD", "FLS", "FMD", "FMS", "FPC", "FPP", "FPR", "FQC", "FRS",

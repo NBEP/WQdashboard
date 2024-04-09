@@ -70,10 +70,10 @@ mod_select_location_ui <- function(id){
         "sites_n",
         select_dropdown(
           ns("select_sites_n"),
-          label = HTML(paste(h3("Select Sites"), "Select up to two sites")),
+          label = h3("Select Site"),
           choices = df_sites$Site_ID,
           choice_names = df_sites$Site_Name,
-          max_options = 2))
+          multiple = FALSE))
     )
   )
 }

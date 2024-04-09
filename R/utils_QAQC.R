@@ -21,7 +21,7 @@ detect_column_format <- function(df, df_colnames){
   # Iterate through formats
   for (x in colnames(df_colnames)) {
     df_format <- df_colnames %>%
-      dplyr::select(all_of(x)) %>%
+      dplyr::select(dplyr::all_of(x)) %>%
       dplyr::filter_at(x, dplyr::all_vars(!is.na(.) & . != ""))
     # Check if df matches selected format
     chk <- unlist(df_format) %in% colnames(df)
@@ -54,7 +54,7 @@ update_column_names <- function(df, df_colnames){
   }
 
   df_format <- df_colnames %>%
-    dplyr::select("WQdashboard", all_of(current_format)) %>%
+    dplyr::select("WQdashboard", dplyr::all_of(current_format)) %>%
     dplyr::filter_at(current_format, dplyr::all_vars(!is.na(.) & . != ""))
 
   old_field <- unlist(df_format[current_format])
@@ -172,11 +172,11 @@ check_val_missing <- function(df, field, ignore_dq = TRUE, ignore_qc = TRUE,
 #' @noRd
 check_val_duplicate <- function(df, field, is_stop=TRUE) {
   dup1 <- df %>%
-    dplyr::select(all_of(field)) %>%
+    dplyr::select(dplyr::all_of(field)) %>%
     duplicated()
   if(any(dup1)){
     dup2 <- df %>%
-      dplyr::select(all_of(field)) %>%
+      dplyr::select(dplyr::all_of(field)) %>%
       duplicated(fromLast = TRUE)
     dup_rws <- c(which(dup1), which(dup2)) %>%
       unique() %>%
@@ -210,7 +210,7 @@ check_val_count <- function(df, field) {
   chk <- unique(df[field])
 
   if (nrow(chk) < 2) {
-    df <- dplyr::select(df, !all_of(field))
+    df <- dplyr::select(df, !dplyr::all_of(field))
     message("\tRemoved column ", field, ": Less than 2 unique values")
   }
 
@@ -335,6 +335,50 @@ rename_unit <- function(unit) {
   return(unit)
 }
 
+#' Convert units
+#'
+#' @description Uses values in `unit_conversion` to convert units.
+#'
+#' @param x Numeric. Value to convert.
+#' @param old_unit String. Current unit.
+#' @param new_unit String. New unit.
+#' @param is_stop If TRUE, provides error message for invalid results.
+#'    Default TRUE.
+#'
+#' @return Updated value.
+#'
+#' @noRd
+convert_unit <- function(x, old_unit, new_unit, is_stop = TRUE) {
+  # Check if null
+  if (is.na(old_unit) | is.na(new_unit)) {
+    return(x)
+  }
+  # Standardize names
+  old_unit <- rename_unit(old_unit)
+  new_unit <- rename_unit(new_unit)
+  # Check if identical
+  if (old_unit == new_unit) {
+    return(x)
+  }
+  # Run conversion
+  old_new <- data.frame(Unit=old_unit, Unit_2=new_unit)
+  old_new <- merge(unit_conversion, old_new)
+  new_old <- data.frame(Unit=new_unit, Unit_2=old_unit)
+  new_old <- merge(unit_conversion, new_old)
+  if(nrow(old_new) > 0){
+    a <- old_new$Conversion_Multiply[1]
+    b <- old_new$Conversion_Add[1]
+    x <- a*x + b
+  } else if (nrow(new_old) > 0 ){
+    a <- new_old$Conversion_Multiply[1]
+    b <- new_old$Conversion_Add[1]
+    x <- (x-b)/a
+  } else if (is_stop) {
+    stop("Unable to convert ", old_unit, " to ", new_unit)
+  }
+  return(x)
+}
+
 #' Check units
 #'
 #' @description Checks if more than one `Result_Unit` per `Parameter`. Creates
@@ -370,6 +414,92 @@ check_units <- function(df, ignore_dq = TRUE, ignore_qc = TRUE) {
     stop("Only one unit allowed per parameter. Multiple units listed for:\n\t-",
          paste(dup_param, collapse = "\n\t-"), call. = FALSE)
   }
+}
+
+#' Converts depth to m
+#'
+#' @description Converts columns Depth, Depth_Unit to meters.
+#'
+#' @param df Dataframe
+#' @param ignore_dq Boolean. If TRUE, ignores rows where `Qualifier` listed in
+#'   `qaqc_fail`. Default TRUE.
+#' @param ignore_qc Boolean. If TRUE, ignores rows where `Activity_Type` starts
+#'   with "Quality Control". Default TRUE.
+#' @param ignore_depth_param Boolean. If TRUE, ignores rows where `Parameter` is
+#'   a depth reading.
+#'
+#' @noRd
+depth_to_m <- function(df) {
+  if (!"Depth_Unit" %in% colnames(df)) {
+    stop("The following column is missing: Depth_Unit", call. = FALSE)
+  }
+  check_val_numeric(df, "Depth", exceptions = NA)
+
+  # Exempt rows
+  exempt <- stringr::str_detect(df$Parameter, "Depth")
+  exempt <- skip_dq_rows(df, exempt)
+  exempt <- skip_qc_rows(df, exempt)
+
+  if ("Depth_Category" %in% colnames(df)) {
+    ok_cat <- c("Surface", "Bottom", "Midwater", "Near Bottom")
+    exempt <- (exempt | df$Depth_Category %in% c(ok_cat))
+    chk <- (exempt | df$Depth_Category %in% NA)
+    if (any(!chk)) {
+      stop("Invalid Depth_Category. Acceptable values: ",
+           paste(c(ok_cat,NA), collapse = ", "), ". Check rows ",
+           paste(rws, collapse = ", "), call. = FALSE)
+    }
+  }
+
+  chk <- (!is.na(df$Depth) | exempt)
+  if(any(!chk)) {
+    rws <- which(!chk)
+    warning("\tDepth is missing in rows ", paste(rws, collapse = ", "),
+            call. = FALSE)
+  }
+  chk <- (!is.na(df$Depth_Unit) | exempt)
+  if(any(!chk)) {
+    rws <- which(!chk)
+    warning("\tDepth_Unit is missing in rows ", paste(rws, collapse = ", "),
+            call. = FALSE)
+  }
+  chk <- (df$Depth_Unit %in% c(NA, "m") | exempt)
+  if (all(chk)) {
+    return(df)
+  }
+
+  ok_units <- c("in", "ft", "cm", "m")
+  chk <- df$Depth_Unit %in% c(ok_units, NA)
+  chk <- (chk | exempt)
+
+  if (any(!chk)) {
+    rws <- which(!chk)
+    stop("Invalid Depth_Unit. Acceptable values: ",
+         paste(ok_units, collapse = ", "), ". Check rows ",
+         paste(rws, collapse = ", "), call. = FALSE)
+  }
+
+  df_temp <- df %>%
+    dplyr::select(Depth, Depth_Unit) %>%
+    dplyr::filter(!is.na(Depth)) %>%
+    dplyr::filter(Depth_Unit %in% ok_units[ok_units != "m"]) %>%
+    unique() %>%
+    dplyr::mutate(temp_depth =
+      mapply(function(x, y) convert_unit(x, y, "m"), Depth, Depth_Unit))
+
+  df <- dplyr::left_join(df, df_temp,
+      by = dplyr::join_by(Depth, Depth_Unit)) %>%
+    dplyr::mutate(Depth = dplyr::if_else(
+      is.na(temp_depth),
+      Depth,
+      temp_depth)) %>%
+    dplyr::mutate(Depth_Unit = dplyr::if_else(
+      is.na(temp_depth),
+      Depth_Unit,
+      "m")) %>%
+    dplyr::select(!temp_depth)
+  message("\tConverted depth to meters")
+  return(df)
 }
 
 #' List sites

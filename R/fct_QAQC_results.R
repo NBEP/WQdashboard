@@ -18,6 +18,7 @@ QAQC_results <- function(df, date_format=NULL){
   field_need <- colnames_results$WQdashboard_short
   field_need <- field_need[!field_need == ""]
   field_optional <- dplyr::setdiff(field_all, field_need)
+  field_skip <- c("Qualifier", "Depth", "Depth_Unit", "Depth_Category")
 
   # QAQC columns --------------------------------------------------------------
   message("Checking data...\n")
@@ -30,7 +31,7 @@ QAQC_results <- function(df, date_format=NULL){
     check_val_missing(df, field = field)
   }
   field_check <- intersect(field_optional, colnames(df))
-  field_check <- field_check[field_check != "Qualifier"]
+  field_check <- field_check[!field_check %in% field_skip]
   for (field in field_check) {
     check_val_missing(df, field = field, is_stop = FALSE)
   }
@@ -53,22 +54,15 @@ QAQC_results <- function(df, date_format=NULL){
     dplyr::mutate(
       Parameter = sapply(Parameter, function(x) rename_param(x))) %>%
     dplyr::mutate(
-      Result_Unit = sapply(Result_Unit, function(x) rename_unit(x))
-    )
+      Result_Unit = sapply(Result_Unit, function(x) rename_unit(x)))
   check_units(df)
 
-  if(all(c("Depth", "Depth_Unit") %in% colnames(df))) {
-    ok_units <- c("in", "ft", "cm", "m")
-    chk <- df$Depth_Unit %in% c(ok_units, NA)
-    chk <- skip_dq_rows(df, chk)
-    chk <- skip_qc_rows(df, chk)
-    if (any(!chk)) {
-      rws <- which(!chk)
-      stop("Invalid Depth_Unit. Acceptable values: ",
-           paste(ok_units, collapse = ", "), ". Check rows ",
-           paste(rws, collapse = ", "), call. = FALSE)
-    }
+  if("Depth" %in% colnames(df)) {
+    df <- depth_to_m(df)
   }
+
+  # Remove surplus name attribute (argh)
+  df[] <- lapply(df, unname)
 
   message("\nQAQC complete")
   return(df)
