@@ -10,16 +10,9 @@ sites <- "test_sites_brc.csv"
 # CODE ------------------------------------------------------------------------
 devtools::load_all()
 
-# Import data
-df_sites <- read.csv(paste0("data-raw/", sites),
+df <- read.csv(paste0("data-raw/", sites),
     na.strings=c("","NA"),
     check.names=FALSE) %>%
   dplyr::mutate_if(is.character, trimws)
-
-# Check data
-df_sites <- QAQC_sites(df_sites)
-
-# Save data
-msg <- "Uploading data..."
-usethis::use_data(df_sites, overwrite = TRUE)
-message(msg, "OK")
+df <- QAQC_sites(df)
+format_sites(df)

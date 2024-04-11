@@ -9,7 +9,7 @@ golem::detach_all_attached()
 # rm(list=ls(all.names = TRUE))
 
 # Document and reload your package
-devtools::load_all() # otherwise golem isn't loading dplyr because ???
+library(dplyr) # otherwise golem isn't loading dplyr because ???
 golem::document_and_reload()
 
 # Run the application

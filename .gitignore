@@ -3,6 +3,7 @@
 .Rdata
 .httr-oauth
 .DS_Store
-data-raw/sites.csv
-data-raw/monitoring_locations.csv
 data-raw/test_*
+data/state_thresholds.rda
+data-raw/state_thresholds.csv
+data/df_*

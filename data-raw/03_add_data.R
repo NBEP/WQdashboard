@@ -24,11 +24,5 @@ df_results <- read.csv(paste0("data-raw/", wq_data),
     na.strings=c("","NA"),
     check.names=FALSE) %>%
   dplyr::mutate_if(is.character, trimws)
-
-# Check data
 df_results <- QAQC_results(df_results, date_format)
 format_results(df_results)
-
-# Check for match between data, sites
-
-# Calculate scores

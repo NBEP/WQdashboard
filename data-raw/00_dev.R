@@ -39,3 +39,8 @@ qaqc_fail <- c("$", "A", "AR", "BVER", "C", "CAN", "CBC", "CSR", "DE", "EER",
   "NSQ", "PNQ", "PP", "PPD", "Q", "QC", "QCI", "R", "RNON", "S2", "SCA", "SCF",
   "SCP", "SCX", "SSR", "SUS", "UNC")
 usethis::use_data(qaqc_fail, overwrite = TRUE)
+
+state_thresholds <- read.csv("data-raw/state_thresholds.csv") %>%
+  dplyr::mutate_if(is.character, trimws)
+state_thresholds <- QAQC_thresholds(state_thresholds, extra_col = "State")
+usethis::use_data(state_thresholds, overwrite = TRUE)

@@ -21,7 +21,7 @@ df_par <- data.frame(
 df_depth <- data.frame(
   Site_ID = c("001", "002", "003"),
   Parameter = c("Temperature, Air", "Temperature, Water", "Depth"),
-  Depth = c(1, 50, 10),
+  Depth = c(1, 150, 10),
   Depth_Unit = c("m", "cm", "foo"))
 
 # Run tests --------------------------------------------------------------------
@@ -150,8 +150,14 @@ test_that("check_units flags multiple units per parameter", {
 
 test_that("depth_to_m converts depth to meters", {
   chk <- depth_to_m(df_depth)
-  expect_equal(chk$Depth, c(1,0.5,10))
+  expect_equal(chk$Depth, c(1,1.5,10))
   expect_equal(chk$Depth_Unit, c("m", "m", "foo"))
+})
+
+test_that("assign_depth_category assigns depth category", {
+  df <- depth_to_m(df_depth)
+  chk <- assign_depth_category(df, sites=df_wqdashboard)
+  expect_equal(chk$Depth_Category, c("Shallow", "Deep", NA))
 })
 
 test_that("list_sites lists unique sites", {

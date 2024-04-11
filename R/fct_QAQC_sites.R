@@ -9,7 +9,6 @@
 #'   * Checks for duplicate Site_ID, Latitude/Longitude
 #'   * Checks that Latitude, Longitude are numeric
 #'   * If present, checks that entries in State column are correctly spelled
-#'   * Adds Town_Code column if Town column included
 #'
 #' @param df Input dataframe.
 #'
@@ -25,13 +24,6 @@ QAQC_sites <- function(df){
   message("Checking site data...\n")
   df <- update_column_names(df, colnames_sites)
   check_column_missing(df, field_need)
-  # Drop extra columns
-  field_keep <- intersect(field_all, colnames(df))
-  chk <- length(df) - length(field_keep)
-  if (chk > 0) {
-    df <- dplyr::select(df, all_of(field_keep))  # Drop extra columns
-    message("\t", toString(chk), " columns removed")
-  }
   # QAQC column values ---------------------------------------------------------
   for (field in field_need) {
     check_val_missing(df, field = field)
@@ -41,11 +33,14 @@ QAQC_sites <- function(df){
     check_val_missing(df, field = field, is_stop = FALSE)
   }
   check_val_duplicate(df, field = "Site_ID")
-  check_val_duplicate(df, field = c("Site_Name"), is_stop = FALSE)
+  check_val_duplicate(df, field = "Site_Name", is_stop = FALSE)
   check_val_duplicate(df, field = c("Latitude", "Longitude"),
                       is_stop = FALSE)
   check_val_numeric(df, field = "Latitude")
   check_val_numeric(df, field = "Longitude")
+  if ("Max_Depth_Shallow" %in% colnames(df)) {
+    check_val_numeric(df, "Max_Depth_Shallow")
+  }
   # Update data format---------------------------------------------------------
   if ("State" %in% colnames(df)) {
     chk <- df$State %in% c(state.name, state.abb)
@@ -64,16 +59,21 @@ QAQC_sites <- function(df){
               abbreviation")
     }
   }
-  df <- check_val_count(df, "State")
-  df <- check_val_count(df, "Town")
-  df <- check_val_count(df, "Watershed")
-  if ("Town" %in% colnames(df)) {
-    if ("State" %in% colnames(df)) {
-      df <- dplyr::mutate(df, Town_Code = paste0(Town, ", ", State))
-    } else {
-      df <- dplyr:: mutate(df, Town_Code = Town)
+  if ("Location_Type" %in% colnames(df)) {
+    chk <- stringr::str_detect(df$Location_Type, "Ocean")
+    # chk <- (chk | stringr::str_detect(df$Location_Type, "Lake"))
+    if (any(chk)) {
+      if (!"Group" %in% colnames(df)) {
+        df <- dplyr::mutate(df, Group = NA)
+        message("\tAdded column Group")
+      }
+      df <- df %>%
+        dplyr::mutate(Group = dplyr::case_when(
+          !is.na(Group) ~ Group,
+          stringr::str_detect(Location_Type, "Ocean") ~ "Saltwater",
+          # stringr::str_detect(Location_Type, "Lake") ~ "Lake",
+          TRUE ~ NA))
     }
-    message("\tAdded column Town_Code")
   }
   return(df)
 }

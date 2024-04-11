@@ -22,5 +22,4 @@ Run quick quality control check on site data. Runs the
   * Checks for duplicate Site_ID, Latitude/Longitude
   * Checks that Latitude, Longitude are numeric
   * If present, checks that entries in State column are correctly spelled
-  * Adds Town_Code column if Town column included
 }

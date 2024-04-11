@@ -441,7 +441,7 @@ depth_to_m <- function(df) {
   exempt <- skip_qc_rows(df, exempt)
 
   if ("Depth_Category" %in% colnames(df)) {
-    ok_cat <- c("Surface", "Bottom", "Midwater", "Near Bottom")
+    ok_cat <- c("Shallow", "Deep")
     exempt <- (exempt | df$Depth_Category %in% c(ok_cat))
     chk <- (exempt | df$Depth_Category %in% NA)
     if (any(!chk)) {
@@ -499,6 +499,52 @@ depth_to_m <- function(df) {
       "m")) %>%
     dplyr::select(!temp_depth)
   message("\tConverted depth to meters")
+  return(df)
+}
+
+#' Assign depth category
+#'
+#' @description Assigns depth category. Run `depth_to_m` first.
+#'
+#' @param df Input dataframe.
+#' @param overwrite_cat Boolean. If TRUE, replaces existing depth_category
+#'   scores with calculated scores. Default FALSE.
+#' @param sites Site dataframe. Only present for testing purposes.
+#'
+#' @noRd
+assign_depth_category <- function(df, overwrite_cat = FALSE,
+                                  sites = df_sites) {
+  col_keep <- c(colnames(df), "Depth_Category")
+
+  if (!"Depth_Category" %in% colnames(df)) {
+    message("Added column Depth_Category")
+    df <- dplyr::mutate(df, Depth_Category=NA)
+  }
+
+  if (overwrite_cat) {
+    chk <- (is.na(df$Depth_Category) | is.na(df$Depth) | df$Depth_Unit != "m")
+    if (any(!chk)) {
+      rws <- which(!chk)
+      df$Depth_Category[rws] <- NA
+      warning("Recalculating depth category for rows ",
+        paste(rws, collapse = ", "), call. = FALSE)
+    }
+  }
+
+  if (!"Max_Depth_Shallow" %in% colnames(sites)) {
+    df <- dplyr::mutate(df, Max_Depth_Shallow = NA)
+  }
+
+  df <- dplyr::left_join(df, sites, by="Site_ID", keep = FALSE) %>%
+    dplyr::mutate(df, Max_Depth_Shallow = dplyr::if_else(
+      is.na(Max_Depth_Shallow), 1, Max_Depth_Shallow)) %>%
+    dplyr::mutate(Depth_Category = dplyr::case_when(
+      !is.na(Depth_Category) ~ Depth_Category,
+      is.na(Depth) | Depth_Unit != "m" ~ Depth_Category,
+      Depth > Max_Depth_Shallow ~ "Deep",
+      TRUE ~ "Shallow")) %>%
+    dplyr::select(dplyr::all_of(col_keep))
+
   return(df)
 }
 

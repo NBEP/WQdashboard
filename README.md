@@ -12,9 +12,11 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 WQdashboard is an open source dashboard template that displays water
 quality data as maps, graphs, and report cards.
 
-## Accessibility
+**UNDER HEAVY DEVELOPMENT.** Code has been made public in order to
+facilitate collaboration.
 
-List accessibility issues, planned fixes here…
+<!-- ## Accessibility -->
+<!-- List accessibility issues, planned fixes here... -->
 
 ## Disclaimer
 

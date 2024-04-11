@@ -59,6 +59,7 @@ QAQC_results <- function(df, date_format=NULL){
 
   if("Depth" %in% colnames(df)) {
     df <- depth_to_m(df)
+    df <- assign_depth_category(df)
   }
 
   # Remove surplus name attribute (argh)

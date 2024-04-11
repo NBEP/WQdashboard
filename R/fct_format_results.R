@@ -15,7 +15,10 @@ format_results <- function(df){
   message("\nFormatting df_data...\n")
   # Drop extra columns
   field_all <- colnames_results$WQdashboard
+  field_drop <- c("Depth", "Depth_Unit")
   field_keep <- intersect(field_all, colnames(df))
+  field_keep <- field_keep[!field_keep %in% field_drop]
+
   chk <- length(df) - length(field_keep)
   if (chk > 0) {
     df <- dplyr::select(df, dplyr::all_of(field_keep))
@@ -45,8 +48,8 @@ format_results <- function(df){
   df <- df %>%
     dplyr::mutate(Year = lubridate::year(Date)) %>%
     dplyr::mutate(Month = strftime(Date, "%B"))
-  # Replace BDL with -999999
-  df$Result[df$Result == "BDL"] <- -999999
+  # Replace BDL with 0 -- not ideal, but only way to avoid skewing results
+  df$Result[df$Result == "BDL"] <- 0
   df$Result <- as.numeric(df$Result)
 
   # Save data
@@ -62,10 +65,6 @@ format_results <- function(df){
   }
 
   df_score <- df %>%
-    dplyr::mutate(Result = dplyr::if_else(
-      Result == -999999,
-      0,
-      Result)) %>%
     dplyr::group_by_at(dplyr::all_of(field_group)) %>%
     dplyr::summarise(
       score_min = min(Result),
