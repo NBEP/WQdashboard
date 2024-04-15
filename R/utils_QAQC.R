@@ -349,10 +349,6 @@ rename_unit <- function(unit) {
 #'
 #' @noRd
 convert_unit <- function(x, old_unit, new_unit, is_stop = TRUE) {
-  # Check if null
-  if (is.na(old_unit) | is.na(new_unit)) {
-    return(x)
-  }
   # Standardize names
   old_unit <- rename_unit(old_unit)
   new_unit <- rename_unit(new_unit)
@@ -369,14 +365,16 @@ convert_unit <- function(x, old_unit, new_unit, is_stop = TRUE) {
     a <- old_new$Conversion_Multiply[1]
     b <- old_new$Conversion_Add[1]
     x <- a*x + b
+    return(x)
   } else if (nrow(new_old) > 0 ){
     a <- new_old$Conversion_Multiply[1]
     b <- new_old$Conversion_Add[1]
     x <- (x-b)/a
+    return(x)
   } else if (is_stop) {
     stop("Unable to convert ", old_unit, " to ", new_unit)
   }
-  return(x)
+  return(NA)
 }
 
 #' Check units

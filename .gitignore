@@ -7,3 +7,6 @@ data-raw/test_*
 data/state_thresholds.rda
 data-raw/state_thresholds.csv
 data/df_*
+data/epa_thresholds.rda
+data-raw/epa_thresholds.csv
+inst/doc

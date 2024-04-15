@@ -11,7 +11,9 @@ df_wqx <- data.frame(
   "Monitoring Location Name" = c("Site1", "Site2"),
   "Monitoring Location Latitude (DD.DDDD)" = c(41.83, 42.28),
   "Monitoring Location Longitude (-DDD.DDDD)" = c(-71.41, -71.77),
+  "Monitoring Location County Name" = c("Providence", "Worcester"),
   "State Code" = c("RI", "MA"),
+  "Monitoring Location Type" = c("River/Stream", "River/Stream"),
   check.names = FALSE)
 df_par <- data.frame(
   Site_ID = c("001", "002"),
@@ -28,7 +30,8 @@ df_depth <- data.frame(
 test_that("detect_column_format detects format", {
   df_error <- dplyr::select(df_wqx, !"State Code")
 
-  expect_equal(detect_column_format(df_wqdashboard, colnames_sites), "WQdashboard_short")
+  expect_equal(detect_column_format(df_wqdashboard, colnames_sites),
+               "WQdashboard_short")
   expect_equal(detect_column_format(df_wqx, colnames_sites), "WQX")
   expect_error(detect_column_format(df_error, colnames_sites))
   expect_error(detect_column_format(df_wqdashboard, colnames_results))
@@ -39,7 +42,8 @@ test_that("update_column_names renames columns", {
   chk <- update_column_names(df_wqx, colnames_sites)
   expect_equal(
     colnames(chk),
-    c("Site_ID", "Site_Name", "Latitude", "Longitude", "State"))
+    c("Site_ID", "Site_Name", "Latitude", "Longitude", "County", "State",
+      "Location_Type"))
 })
 
 test_that("check_column_missing produces error if any columns missing", {

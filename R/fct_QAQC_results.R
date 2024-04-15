@@ -62,7 +62,7 @@ QAQC_results <- function(df, date_format=NULL){
     df <- assign_depth_category(df)
   }
 
-  # Remove surplus name attribute (argh)
+  # Remove surplus name attributes
   df[] <- lapply(df, unname)
 
   message("\nQAQC complete")

@@ -1,6 +1,6 @@
 # Add thresholds
 #
-# README: aaaaa
+# README: (add detailed instructions)
 
 # Custom thresholds:
 thresholds <- "test_threshold_brc.csv"

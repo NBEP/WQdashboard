@@ -3,7 +3,7 @@
 # README: This script defines a series of universal variables necessary for the
 #  app to run. DOES NOT NEED TO BE RERUN UNLESS VARIABLES CHANGE, DO NOT EDIT.
 
-library(dplyr)
+devtools::load_all()
 
 colnames_sites <- read.csv("data-raw/colnames_sites.csv") %>%
   dplyr::mutate_if(is.character, trimws) %>%
@@ -40,7 +40,14 @@ qaqc_fail <- c("$", "A", "AR", "BVER", "C", "CAN", "CBC", "CSR", "DE", "EER",
   "SCP", "SCX", "SSR", "SUS", "UNC")
 usethis::use_data(qaqc_fail, overwrite = TRUE)
 
-state_thresholds <- read.csv("data-raw/state_thresholds.csv") %>%
+state_thresholds <- read.csv("data-raw/state_thresholds.csv",
+                             na.strings=c("","NA")) %>%
   dplyr::mutate_if(is.character, trimws)
-state_thresholds <- QAQC_thresholds(state_thresholds, extra_col = "State")
+state_thresholds <- QAQC_thresholds(state_thresholds)
 usethis::use_data(state_thresholds, overwrite = TRUE)
+
+epa_thresholds <- read.csv("data-raw/epa_thresholds.csv",
+                           na.strings=c("","NA")) %>%
+  dplyr::mutate_if(is.character, trimws)
+epa_thresholds <- QAQC_thresholds(epa_thresholds)
+usethis::use_data(epa_thresholds, overwrite = TRUE)
