@@ -64,7 +64,7 @@ format_results <- function(df){
     field_group <- c(field_group, "Depth_Category")
   }
 
-  df_score <- df %>%
+  df <- df %>%
     dplyr::group_by_at(dplyr::all_of(field_group)) %>%
     dplyr::summarise(
       score_min = min(Result),
@@ -72,6 +72,21 @@ format_results <- function(df){
       score_mean = mean(Result),
       score_median = median(Result),
       .groups = "drop")
+  message("\tGrouped data by year\n\tCalculating scores...")
+
+  df <- df %>%
+    dplyr::mutate(
+      score_num = mapply(
+        function(id, par, a, b, c, d) calc_score_num(id, par, a, b, c, d),
+        Site_ID, Parameter, score_max, score_min, score_mean, score_median))
+  message("\t\tNumeric score done")
+
+  df_score <- df %>%
+    dplyr::mutate(
+      score_chr = mapply(
+        function(id, par, unit, score) calc_score_str(id, par, unit, score),
+        Site_ID, Parameter, Result_Unit, score_num))
+  message("\t\tCategory score done")
 
   usethis::use_data(df_score, overwrite = TRUE)
   message("df_score saved")

@@ -1,6 +1,8 @@
 #' filter_threshold_depth
 #'
-#' @description A helper function for `filter_threshold`.
+#' @description A helper function for `filter_threshold`. Filters input
+#'   dataframe by matching depth category, else NA depth category, else returns
+#'   NULL.
 #'
 #' @param df Input dataframe.
 #' @param depth_cat Desired depth category.
@@ -27,9 +29,20 @@ filter_threshold_depth <- function(df, depth_category) {
 
 #' filter_threshold
 #'
-#' @description A helper function for `find_threshold`.
+#' @description A helper function for `find_threshold`. Searches input threshold
+#'   table for row that matches parameter, site, depth, group, and state
+#'   criteria. Returns NULL if no match found.
 #'
-#' @return The return value, if any, from executing the utility.
+#' @param threshold_table Input dataframe with threshold values. (Acceptable
+#'   entries: df_thresholds, state_thresholds, epa_thresholds.)
+#' @param site_id Site ID.
+#' @param depth_category Depth category. (Shallow, Deep, NA) Default value NA.
+#' @param group Group. Default value NA.
+#' @param state State. Default value NA.
+#' @param param Parameter
+#'
+#' @return Dataframe row with appropriate threshold values, if any. Returns NULL
+#'   if no match found.
 #'
 #' @noRd
 filter_threshold <- function(threshold_table, site_id, depth_category = NA,
@@ -76,7 +89,9 @@ filter_threshold <- function(threshold_table, site_id, depth_category = NA,
 
 #' find_threshold
 #'
-#' @description A utils function
+#' @description Iterates through df_thresholds, state_thresholds, and
+#'   epa_thresholds to find appropriate threshold values for given site,
+#'   parameter. If no match found, returns NULL.
 #'
 #' @param site_id String. Site ID.
 #' @param parameter String. Parameter.
@@ -135,66 +150,94 @@ find_threshold <- function(site_id, parameter) {
   return(NULL)
 }
 
-#' calculate_score
+#' calc_score_num
 #'
-#' @description A helper function for find_threshold_row.
+#' @description Calculates numeric score for given site and parameter value.
+#'   Returns score_mean unless otherwise specified by site_id, parameter match
+#'   in threshold table.
 #'
-#' @return The return value, if any, from executing the utility.
+#' @param site_id Site ID.
+#' @param parameter Parameter.
+#' @param score_max Maximum score.
+#' @param score_min Minimum score.
+#' @param score_mean Average score.
+#' @param score_median Median score.
+#'
+#' @return Numeric score.
 #'
 #' @noRd
-calculate_score <- function(site_id, parameter, unit, score_max, score_min,
-                            score_mean, score_median) {
+calc_score_num <- function(site_id, parameter, score_max, score_min,
+                           score_mean, score_median) {
   # Define vars
   df <- find_threshold(site_id, parameter)
   if (is.null(df)) {
+    return(score_mean)
+  } else if (df$Min_Max_Mean == "max") {
     return(score_max)
+  } else if (df$Min_Max_Mean == "min") {
+    return(score_min)
+  } else if (df$Min_Max_Mean == "median") {
+    return(score_median)
+  } else {
+    return(score_mean)
   }
+}
+
+#' calc_score_str
+#'
+#' @description Calculates category score for given site, parameter, and value.
+#'
+#' @param site_id Site ID.
+#' @param parameter Parameter.
+#' @param unit Parameter unit.
+#' @param score Numeric score.
+#'
+#' @return Character score.
+#'
+#' @noRd
+calc_score_str <- function(site_id, parameter, unit, score) {
+  # Define vars
+  df <- find_threshold(site_id, parameter)
+  if (is.null(df)) { return(NA) }
+  score <- convert_unit(score, unit, df$Unit, FALSE)
+  if (is.na(score)) { return (NA) }
   score_excellent <- "Excellent"
   score_good <- "Good"
   score_fair <- "Fair"
   score_poor <- "Poor"
-  if (df$Min_Max_Mean == "max") {
-    score <- score_max
-  } else if (df$Min_Max_Mean == "min") {
-    score <- score_min
-  } else if (df$Min_Max_Mean == "median") {
-    score <- score_median
-  } else {
-    score <- score_mean
-  }
-
-  excellent <- convert_unit(df$Excellent, df$Unit, unit, FALSE)
-  good <- convert_unit(df$Good, df$Unit, unit, FALSE)
-  fair <- convert_unit(df$Fair, df$Unit, unit, FALSE)
-  chk <- (excellent > good & good > fair) |
-    (excellent < good & good < fair)
-  if (is.na(chk)) { chk <- FALSE }
-  if (chk) {
-    if (score >= excellent & score > good |
-        score <= excellent & score < good) {
-      return(score_excellent)
-    } else if (score < excellent & score >= good |
-               score > excellent & score <= good) {
-      return(score_good)
-    } else if (score < good & score >= fair |
-               score > good & score <= fair) {
-      return(score_fair)
-    } else {
-      return(score_poor)
+  if (!is.na(df$Excellent) & !is.na(df$Good) & !is.na(df$Fair)) {
+    if (df$Excellent > df$Good & df$Good > df$Fair) {
+      if (score >= df$Excellent) {
+        return(score_excellent)
+      } else if (score >= df$Good) {
+        return(score_good)
+      } else if (score >= df$Fair) {
+        return(score_fair)
+      } else {
+        return(score_poor)
+      }
+    } else if (df$Excellent < df$Good & df$Good < df$Fair) {
+      if (score <= df$Excellent) {
+        return(score_excellent)
+      } else if (score <= df$Good) {
+        return(score_good)
+      } else if (score <= df$Fair) {
+        return(score_fair)
+      } else {
+        return(score_poor)
+      }
     }
   }
-  thresh_min <- convert_unit(df$Threshold_Min, df$Unit, unit, FALSE)
-  thresh_max <- convert_unit(df$Threshold_Max, df$Unit, unit, FALSE)
-  if (!is.na(thresh_min) | !is.na(thresh_max)) {
-    if (!is.na(thresh_min) & score < thresh_min) {
+  if (!is.na(df$Threshold_Min) | !is.na(df$Threshold_Max)) {
+    if (!is.na(df$Threshold_Min) & score < df$Threshold_Min) {
       return("Does Not Meet Criteria")
-    } else if (!is.na(thresh_max) & score > thresh_max) {
+    } else if (!is.na(df$Threshold_Max) & score > df$Threshold_Max) {
       return("Does Not Meet Criteria")
     } else {
       return("Meets Criteria")
     }
   }
-  return(score)
+  return(NA)
 }
 
 #' threshold_max
