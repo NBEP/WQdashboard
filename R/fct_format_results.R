@@ -74,19 +74,16 @@ format_results <- function(df){
       .groups = "drop")
   message("\tGrouped data by year\n\tCalculating scores...")
 
-  df <- df %>%
-    dplyr::mutate(
-      score_num = mapply(
-        function(id, par, a, b, c, d) calc_score_num(id, par, a, b, c, d),
-        Site_ID, Parameter, score_max, score_min, score_mean, score_median))
-  message("\t\tNumeric score done")
-
   df_score <- df %>%
     dplyr::mutate(
-      score_chr = mapply(
-        function(id, par, unit, score) calc_score_str(id, par, unit, score),
-        Site_ID, Parameter, Result_Unit, score_num))
-  message("\t\tCategory score done")
+      score = mapply(
+        function(id, par, unit, a, b, c, d)
+          calculate_score(id, par, unit, a, b, c, d),
+        Site_ID, Parameter, Result_Unit,
+        score_max, score_min, score_mean, score_median,
+        SIMPLIFY = FALSE)) %>%
+    tidyr::unnest_wider(score)
+  message("\t... ok")
 
   usethis::use_data(df_score, overwrite = TRUE)
   message("df_score saved")

@@ -150,94 +150,85 @@ find_threshold <- function(site_id, parameter) {
   return(NULL)
 }
 
-#' calc_score_num
+#' calculate_score
 #'
-#' @description Calculates numeric score for given site and parameter value.
-#'   Returns score_mean unless otherwise specified by site_id, parameter match
-#'   in threshold table.
+#' @description Calculates numeric and category scores for given site,
+#'   parameter, and values.
 #'
 #' @param site_id Site ID.
 #' @param parameter Parameter.
+#' @param unit Parameter unit.
 #' @param score_max Maximum score.
 #' @param score_min Minimum score.
 #' @param score_mean Average score.
 #' @param score_median Median score.
 #'
-#' @return Numeric score.
+#' @return Two value list with numeric, category scores.
 #'
 #' @noRd
-calc_score_num <- function(site_id, parameter, score_max, score_min,
-                           score_mean, score_median) {
-  # Define vars
+calculate_score <- function(site_id, parameter, unit, score_max, score_min,
+                            score_mean, score_median) {
+  # Find thresholds
   df <- find_threshold(site_id, parameter)
   if (is.null(df)) {
-    return(score_mean)
-  } else if (df$Min_Max_Mean == "max") {
-    return(score_max)
-  } else if (df$Min_Max_Mean == "min") {
-    return(score_min)
-  } else if (df$Min_Max_Mean == "median") {
-    return(score_median)
-  } else {
-    return(score_mean)
+    return(list(score_num = score_mean, score_str = NA))
   }
-}
-
-#' calc_score_str
-#'
-#' @description Calculates category score for given site, parameter, and value.
-#'
-#' @param site_id Site ID.
-#' @param parameter Parameter.
-#' @param unit Parameter unit.
-#' @param score Numeric score.
-#'
-#' @return Character score.
-#'
-#' @noRd
-calc_score_str <- function(site_id, parameter, unit, score) {
-  # Define vars
-  df <- find_threshold(site_id, parameter)
-  if (is.null(df)) { return(NA) }
-  score <- convert_unit(score, unit, df$Unit, FALSE)
-  if (is.na(score)) { return (NA) }
+  # Select numeric score
+  if (df$Min_Max_Mean == "max") {
+    score <- score_max
+  } else if (df$Min_Max_Mean == "min") {
+    score <- score_min
+  } else if (df$Min_Max_Mean == "median") {
+    score <- score_median
+  } else {
+    score <- score_mean
+  }
+  # Convert to new units
+  new_score <- convert_unit(score, unit, df$Unit, FALSE)
+  if (is.na(new_score)) {
+    return(list(score_num = score, score_str = NA))
+  }
+  # Find category score
   score_excellent <- "Excellent"
   score_good <- "Good"
   score_fair <- "Fair"
   score_poor <- "Poor"
   if (!is.na(df$Excellent) & !is.na(df$Good) & !is.na(df$Fair)) {
     if (df$Excellent > df$Good & df$Good > df$Fair) {
-      if (score >= df$Excellent) {
-        return(score_excellent)
-      } else if (score >= df$Good) {
-        return(score_good)
-      } else if (score >= df$Fair) {
-        return(score_fair)
+      if (new_score >= df$Excellent) {
+        score2 <- score_excellent
+      } else if (new_score >= df$Good) {
+        score2 <- score_good
+      } else if (new_score >= df$Fair) {
+        score2 <- score_fair
       } else {
-        return(score_poor)
+        score2 <- score_poor
       }
+      return(list(score_num = score, score_str = score2))
     } else if (df$Excellent < df$Good & df$Good < df$Fair) {
-      if (score <= df$Excellent) {
-        return(score_excellent)
-      } else if (score <= df$Good) {
-        return(score_good)
-      } else if (score <= df$Fair) {
-        return(score_fair)
+      if (new_score <= df$Excellent) {
+        score2 <- score_excellent
+      } else if (new_score <= df$Good) {
+        score2 <- score_good
+      } else if (new_score <= df$Fair) {
+        score2 <- score_fair
       } else {
-        return(score_poor)
+        score2 <- score_poor
       }
+      return(list(score_num = score, score_str = score2))
     }
   }
   if (!is.na(df$Threshold_Min) | !is.na(df$Threshold_Max)) {
-    if (!is.na(df$Threshold_Min) & score < df$Threshold_Min) {
-      return("Does Not Meet Criteria")
-    } else if (!is.na(df$Threshold_Max) & score > df$Threshold_Max) {
-      return("Does Not Meet Criteria")
+    if (!is.na(df$Threshold_Min) & new_score < df$Threshold_Min) {
+      score2 <- "Does Not Meet Criteria"
+    } else if (!is.na(df$Threshold_Max) & new_score > df$Threshold_Max) {
+      score2 <- "Does Not Meet Criteria"
     } else {
-      return("Meets Criteria")
+      score2 <- "Meets Criteria"
     }
+    return(list(score_num = score, score_str = score2))
   }
-  return(NA)
+  return(list(score_num = score, score_str = NA))
 }
 
 #' threshold_max
