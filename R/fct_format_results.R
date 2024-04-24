@@ -67,14 +67,14 @@ format_results <- function(df){
   df <- df %>%
     dplyr::group_by_at(dplyr::all_of(field_group)) %>%
     dplyr::summarise(
-      score_min = min(Result),
       score_max = max(Result),
+      score_min = min(Result),
       score_mean = mean(Result),
       score_median = median(Result),
       .groups = "drop")
   message("\tGrouped data by year\n\tCalculating scores...")
 
-  df_score <- df %>%
+  df <- df %>%
     dplyr::mutate(
       score = mapply(
         function(id, par, unit, a, b, c, d)
@@ -82,8 +82,43 @@ format_results <- function(df){
         Site_ID, Parameter, Result_Unit,
         score_max, score_min, score_mean, score_median,
         SIMPLIFY = FALSE)) %>%
-    tidyr::unnest_wider(score)
+    tidyr::unnest_wider(score) %>%
+    dplyr::select(!score_max:score_median) %>%
+    dplyr::mutate(score_num = dplyr::if_else(
+      score_num <1,
+      signif(score_num, 2),
+      round(score_num, 2)))
   message("\t... ok")
+
+  # Add missing site/year/parameter combos ------------------------------------
+  list_sites <- unique(df_sites$Site_ID)
+  list_years <- unique(df_data$Year)
+  list_param <- unique(df_data$Parameter)
+
+  df_present <- df %>%
+    select(Site_ID, Year) %>%
+    unique()
+
+  df_all <- expand.grid(list_sites, list_years)
+  colnames(df_all) <- c("Site_ID", "Year")
+  df_missing <- setdiff(df_all, df_present)
+  df_join <- merge(df_present, list_param, by = NULL) %>%
+    dplyr::rename(Parameter = y)
+  df_join <- merge(df_join, df, all.x = TRUE)
+  df_score <- dplyr::bind_rows(df_join, df_missing)
+
+  # Add site data
+  site_col <- c("Site_ID", "Site_Name", "Latitude", "Longitude", "Town_Code",
+                "County_Code", "State", "Watershed", "Group")
+  site_col <- intersect(colnames(df_sites), site_col)
+  if (any(c("Town_Code", "County_Code") %in% colnames(df_sites))) {
+    site_col <- site_col[site_col != "State"]
+  }
+  sites_temp <- dplyr::select(df_sites, all_of(site_col))
+
+  df_score <- merge(df_score, sites_temp, all.x = TRUE)
+
+  message("Filled in missing data")
 
   usethis::use_data(df_score, overwrite = TRUE)
   message("df_score saved")

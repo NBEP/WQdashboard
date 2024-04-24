@@ -14,8 +14,8 @@
 #  Z Timezone
 
 # parameter data:
-wq_data <- "test_data_brc.csv"
-date_format = "m/d/Y H:M"
+wq_data <- "test_data_masswater.csv"
+date_format = "m/d/Y"
 
 # CODE ------------------------------------------------------------------------
 devtools::load_all()

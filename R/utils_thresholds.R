@@ -163,7 +163,8 @@ find_threshold <- function(site_id, parameter) {
 #' @param score_mean Average score.
 #' @param score_median Median score.
 #'
-#' @return Two value list with numeric, category scores.
+#' @return Three value list with type of numeric score, numeric score, and
+#'   category score.
 #'
 #' @noRd
 calculate_score <- function(site_id, parameter, unit, score_max, score_min,
@@ -171,22 +172,26 @@ calculate_score <- function(site_id, parameter, unit, score_max, score_min,
   # Find thresholds
   df <- find_threshold(site_id, parameter)
   if (is.null(df)) {
-    return(list(score_num = score_mean, score_str = NA))
+    return(list(score_typ = "Average", score_num = score_mean, score_str = NA))
   }
   # Select numeric score
   if (df$Min_Max_Mean == "max") {
     score <- score_max
+    typ <- "High"
   } else if (df$Min_Max_Mean == "min") {
     score <- score_min
+    typ <- "Low"
   } else if (df$Min_Max_Mean == "median") {
     score <- score_median
+    typ <- "Median"
   } else {
     score <- score_mean
+    typ <- "Average"
   }
   # Convert to new units
   new_score <- convert_unit(score, unit, df$Unit, FALSE)
   if (is.na(new_score)) {
-    return(list(score_num = score, score_str = NA))
+    return(list(score_typ = typ, score_num = score, score_str = NA))
   }
   # Find category score
   score_excellent <- "Excellent"
@@ -204,7 +209,7 @@ calculate_score <- function(site_id, parameter, unit, score_max, score_min,
       } else {
         score2 <- score_poor
       }
-      return(list(score_num = score, score_str = score2))
+      return(list(score_typ = typ, score_num = score, score_str = score2))
     } else if (df$Excellent < df$Good & df$Good < df$Fair) {
       if (new_score <= df$Excellent) {
         score2 <- score_excellent
@@ -215,7 +220,7 @@ calculate_score <- function(site_id, parameter, unit, score_max, score_min,
       } else {
         score2 <- score_poor
       }
-      return(list(score_num = score, score_str = score2))
+      return(list(score_typ = typ, score_num = score, score_str = score2))
     }
   }
   if (!is.na(df$Threshold_Min) | !is.na(df$Threshold_Max)) {
@@ -226,9 +231,9 @@ calculate_score <- function(site_id, parameter, unit, score_max, score_min,
     } else {
       score2 <- "Meets Criteria"
     }
-    return(list(score_num = score, score_str = score2))
+    return(list(score_typ = typ, score_num = score, score_str = score2))
   }
-  return(list(score_num = score, score_str = NA))
+  return(list(score_typ = typ, score_num = score, score_str = NA))
 }
 
 #' threshold_max

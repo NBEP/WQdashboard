@@ -11,12 +11,14 @@ mod_sidebar_ui <- function(id){
   ns <- NS(id)
   tagList(
     bslib::accordion(
-      # multiple = FALSE,
+      multiple = FALSE,
+      # Select location ------------------------------------------------------
       bslib::accordion_panel(
         title = h2("Location"),
         value = "location",
         mod_select_location_ui(ns("select_location"))
       ),
+      # Select indicator -----------------------------------------------------
       bslib::accordion_panel(
         title = h2("Indicator"),
         value = "indicators",
@@ -41,12 +43,13 @@ mod_sidebar_ui <- function(id){
           type = "hidden",
           tabPanelBody(
             "show_score",
-            select_dropdown(
-              ns("select_score"),
-              label = h3("Select Scores"),
-              choices = c("Excellent", "Good", "Fair", "Poor", "No Data"),
-              sort_choices = FALSE)),
-          tabPanelBody("hide_score"))),
+            checkboxInput(
+              ns("chk_nascore"),
+              label = "Include missing scores",
+              value = TRUE)),
+          tabPanelBody("hide_score"))
+        ),
+      # Select date -----------------------------------------------------------
       bslib::accordion_panel(
         title = h2("Date"),
         value = "dates",
@@ -76,10 +79,10 @@ mod_sidebar_ui <- function(id){
               label = h3("Select Months"),
               choices = sort_months(df_data$Month),
               sort_choices = FALSE))
-          )  # end tabsetPanel
-        )  # end accordion_panel
-    )  # end accordion
-  )  # end taglist
+          )
+        )
+    )
+  )
 }
 
 #' sidebar Server Functions
@@ -91,14 +94,10 @@ mod_sidebar_server <- function(id, selected_tab){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    # Send vars to ui
-    output$selected_tab <- renderText({ selected_tab() })
-    outputOptions(output, "selected_tab", suspendWhenHidden = FALSE)
-
-    # Modules
+    # Modules ----------------------------------------------------------------
     loc_server <- mod_select_location_server("select_location", selected_tab)
 
-    # Show/hide secret tabs
+    # Show/hide secret tabs ---------------------------------------------------
     observe({
       if (selected_tab() == "map") {
         updateTabsetPanel(inputId = "tabset_param", selected = "param_n")
@@ -120,17 +119,30 @@ mod_sidebar_server <- function(id, selected_tab){
     }) %>%
       bindEvent(selected_tab())
 
+    # Filter scores -----------------------------------------------------------
+    df_score_filter <- reactive({
+      req(input$select_year)
+      req(loc_server$sites_all())
 
+      df <- df_score %>%
+        dplyr::filter(Year == input$select_year) %>%
+        dplyr::filter(Site_ID %in% loc_server$sites_all())
+
+      return(df)
+    })
+
+    # Return data -------------------------------------------------------------
     return(
       list(
         sites_all = reactive({ loc_server$sites_all() }),
         sites_n = reactive({ loc_server$sites_n() }),
         param_all = reactive({ input$select_param_all }),
         param_n = reactive({ input$select_param_n }),
-        #score = reactive({ input$select_score }),
+        score = reactive({ input$chk_nascore }),
         year = reactive({ input$select_year }),
         date_range = reactive({ input$select_date_range }),
-        month = reactive({ input$select_month })
+        month = reactive({ input$select_month }),
+        df_score_f = reactive({ df_score_filter() })
       )
     )
 

@@ -22,7 +22,7 @@ app_ui <- function(request) {
       bslib::nav_panel("Report Card",
         value="report_card",
         class = "bslib-page-dashboard",
-        "Report Card"),
+        mod_report_card_ui("report_card_1")),
       bslib::nav_panel("Graphs",
         value="graphs",
         class = "bslib-page-dashboard",

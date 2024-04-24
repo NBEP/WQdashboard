@@ -5,7 +5,7 @@
 #  up to date before running script.
 
 # Site data:
-sites <- "test_sites_brc.csv"
+sites <- "test_sites_masswater.csv"
 
 # CODE ------------------------------------------------------------------------
 devtools::load_all()

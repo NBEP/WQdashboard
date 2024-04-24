@@ -443,6 +443,7 @@ depth_to_m <- function(df) {
     exempt <- (exempt | df$Depth_Category %in% c(ok_cat))
     chk <- (exempt | df$Depth_Category %in% NA)
     if (any(!chk)) {
+      rws <- which(!chk)
       stop("Invalid Depth_Category. Acceptable values: ",
            paste(c(ok_cat,NA), collapse = ", "), ". Check rows ",
            paste(rws, collapse = ", "), call. = FALSE)
