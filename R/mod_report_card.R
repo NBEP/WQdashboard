@@ -31,8 +31,8 @@ mod_report_card_server <- function(id, selected_var){
 
       df <- selected_var$df_score_f()
 
-      col_order <- c("Site_Name", "Site_ID", "Town_Code", "County_Code",
-                     "State", "Watershed", "Group", "Parameter")
+      col_order <- c("Site_Name", "Site_ID", "Town", "County", "State",
+                     "Watershed", "Group", "Depth", "Parameter")
       col_order <- intersect(col_order, colnames(df))
 
       df <- df %>%

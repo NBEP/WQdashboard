@@ -4,7 +4,7 @@
 \alias{format_results}
 \title{format_results}
 \usage{
-format_results(df)
+format_results(df, default_state = NA)
 }
 \arguments{
 \item{df}{Input dataframe.}

@@ -4,7 +4,16 @@
 #'   `QAQC_results` first.
 #'
 #' @param df Input dataframe.
-format_results <- function(df){
+format_results <- function(df, default_state = NA){
+  # Validate data
+  chk <- is.na(default_state) | default_state %in% c(state.name, state.abb)
+  if (!chk) {
+    stop(default_state, " is not a valid state", call. = FALSE)
+  }
+  if (default_state %in% state.name) {
+    default_state <- state.abb[match(default_state, state.name)]
+  }
+
   # Prep data for download -----------------------------------------------------
   message("Formatting df_data_all...\n")
   df_data_all <- df
@@ -48,7 +57,10 @@ format_results <- function(df){
   df <- df %>%
     dplyr::mutate(Year = lubridate::year(Date)) %>%
     dplyr::mutate(Month = strftime(Date, "%B"))
-  # Replace BDL with 0 -- not ideal, but only way to avoid skewing results
+  # Tweak columns
+  df <- df %>%
+    dplyr::rename(Unit = Result_Unit) %>%
+    dplyr::rename(Depth = Depth_Category)
   df$Result[df$Result == "BDL"] <- 0
   df$Result <- as.numeric(df$Result)
 
@@ -59,9 +71,9 @@ format_results <- function(df){
 
   # Calculate scores -----------------------------------------------------------
   message("\nFormatting df_score...\n")
-  field_group <- c("Site_ID", "Parameter", "Result_Unit", "Year")
-  if ("Depth_Category" %in% colnames(df)) {
-    field_group <- c(field_group, "Depth_Category")
+  field_group <- c("Site_ID", "Parameter", "Unit", "Year")
+  if ("Depth" %in% colnames(df)) {
+    field_group <- c(field_group, "Depth")
   }
 
   df <- df %>%
@@ -75,50 +87,68 @@ format_results <- function(df){
   message("\tGrouped data by year\n\tCalculating scores...")
 
   df <- df %>%
+    dplyr::mutate(temp_state = default_state) %>%
     dplyr::mutate(
       score = mapply(
-        function(id, par, unit, a, b, c, d)
-          calculate_score(id, par, unit, a, b, c, d),
-        Site_ID, Parameter, Result_Unit,
+        function(id, par, unit, state, a, b, c, d)
+          calculate_score(id, par, unit, state, a, b, c, d),
+        Site_ID, Parameter, Unit, temp_state,
         score_max, score_min, score_mean, score_median,
         SIMPLIFY = FALSE)) %>%
     tidyr::unnest_wider(score) %>%
     dplyr::select(!score_max:score_median) %>%
+    dplyr::select(!temp_state) %>%
     dplyr::mutate(score_num = dplyr::if_else(
       score_num <1,
       signif(score_num, 2),
       round(score_num, 2)))
   message("\t... ok")
 
-  # Add missing site/year/parameter combos ------------------------------------
+  # Format scores ------------------------------------------------------------
+  # Add rows for null data
   list_sites <- unique(df_sites$Site_ID)
   list_years <- unique(df_data$Year)
   list_param <- unique(df_data$Parameter)
+  list_depth <- NA
+
+  if("Depth" %in% colnames(df_data)) {
+    list_depth <- unique(df_data$Depth)
+  } else {
+    df <- dplyr::mutate(df, Depth = NA)
+  }
 
   df_present <- df %>%
-    select(Site_ID, Year) %>%
+    dplyr::select(Site_ID, Year) %>%
     unique()
-
   df_all <- expand.grid(list_sites, list_years)
   colnames(df_all) <- c("Site_ID", "Year")
-  df_missing <- setdiff(df_all, df_present)
+  df_missing <- dplyr::setdiff(df_all, df_present)
+
   df_join <- merge(df_present, list_param, by = NULL) %>%
     dplyr::rename(Parameter = y)
+  df_join <- merge(df_join, list_depth, by = NULL) %>%
+    dplyr::rename(Depth = y)
   df_join <- merge(df_join, df, all.x = TRUE)
-  df_score <- dplyr::bind_rows(df_join, df_missing)
+
+  df <- dplyr::bind_rows(df_join, df_missing)
+  df <- check_val_count(df, "Depth")
 
   # Add site data
   site_col <- c("Site_ID", "Site_Name", "Latitude", "Longitude", "Town_Code",
                 "County_Code", "State", "Watershed", "Group")
   site_col <- intersect(colnames(df_sites), site_col)
-  if (any(c("Town_Code", "County_Code") %in% colnames(df_sites))) {
-    site_col <- site_col[site_col != "State"]
-  }
   sites_temp <- dplyr::select(df_sites, all_of(site_col))
+  if ("Town_Code" %in% colnames(sites_temp)) {
+    sites_temp <- sites_temp %>%
+      dplyr::select(!State) %>%
+      dplyr::rename(Town = Town_Code)
+  } else if ("County_Code" %in% colnames(sites_temp)) {
+    sites_temp <- sites_temp %>%
+      dplyr::select(!State) %>%
+      dplyr::rename(County = County_Code)
+  }
 
-  df_score <- merge(df_score, sites_temp, all.x = TRUE)
-
-  message("Filled in missing data")
+  df_score <- merge(df, sites_temp, all.x = TRUE)
 
   usethis::use_data(df_score, overwrite = TRUE)
   message("df_score saved")
