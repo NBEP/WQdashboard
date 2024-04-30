@@ -30,14 +30,20 @@ mod_sidebar_ui <- function(id){
             select_dropdown(
               ns("select_param_n"),
               label = h3("Select Indicator"),
-              choices = unique(df_data$Parameter),
+              choices = list_param,
               multiple = FALSE)),
+          tabPanelBody(
+            "param_short",
+            select_dropdown(
+              ns("select_param_short"),
+              label = h3("Select Indicators"),
+              choices = list_param_short)),
           tabPanelBody(
             "param_all",
             select_dropdown(
               ns("select_param_all"),
               label = h3("Select Indicators"),
-              choices = unique(df_data$Parameter)))),
+              choices = list_param))),
         tabsetPanel(
           id = ns("tabset_score"),
           type = "hidden",
@@ -104,7 +110,7 @@ mod_sidebar_server <- function(id, selected_tab){
         updateTabsetPanel(inputId = "tabset_score", selected = "show_score")
         updateTabsetPanel(inputId = "tabset_dates", selected = "by_year")
       } else if (selected_tab() == "report_card") {
-        updateTabsetPanel(inputId = "tabset_param", selected = "param_all")
+        updateTabsetPanel(inputId = "tabset_param", selected = "param_short")
         updateTabsetPanel(inputId = "tabset_score", selected = "show_score")
         updateTabsetPanel(inputId = "tabset_dates", selected = "by_year")
       } else if (selected_tab() == "graphs") {
@@ -138,6 +144,7 @@ mod_sidebar_server <- function(id, selected_tab){
         sites_n = reactive({ loc_server$sites_n() }),
         param_all = reactive({ input$select_param_all }),
         param_n = reactive({ input$select_param_n }),
+        param_short = reactive({ input$select_param_short }),
         score = reactive({ input$chk_nascore }),
         year = reactive({ input$select_year }),
         date_range = reactive({ input$select_date_range }),

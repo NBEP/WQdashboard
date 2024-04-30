@@ -23,12 +23,15 @@ calculate_score <- function(site_id, parameter, unit, default_state = NA,
     return(list(score_typ = "Average", score_num = score_mean, score_str = NA))
   }
   # Select numeric score
-  if (df$Min_Max_Mean == "max") {
+  if (is.na(df$Min_Max_Mean)) {
+    score <- score_mean
+    typ <- "Average"
+  } else if (df$Min_Max_Mean == "max") {
     score <- score_max
-    typ <- "High"
+    typ <- "Highest"
   } else if (df$Min_Max_Mean == "min") {
     score <- score_min
-    typ <- "Low"
+    typ <- "Lowest"
   } else if (df$Min_Max_Mean == "median") {
     score <- score_median
     typ <- "Median"
@@ -46,6 +49,16 @@ calculate_score <- function(site_id, parameter, unit, default_state = NA,
   score_good <- "Good"
   score_fair <- "Fair"
   score_poor <- "Poor"
+  if (!is.na(df$Score_Names[1])){
+    new_names <- trimws(unlist(strsplit(df$Score_Names[1], ";")))
+    if (length(new_names) == 4) {
+      score_excellent <- new_names[1]
+      score_good <- new_names[2]
+      score_fair <- new_names[3]
+      score_poor <- new_names[4]
+    }
+  }
+
   if (!is.na(df$Excellent) & !is.na(df$Good) & !is.na(df$Fair)) {
     if (df$Excellent > df$Good & df$Good > df$Fair) {
       if (new_score >= df$Excellent) {

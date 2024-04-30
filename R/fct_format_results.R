@@ -58,14 +58,17 @@ format_results <- function(df, default_state = NA){
     dplyr::mutate(Year = lubridate::year(Date)) %>%
     dplyr::mutate(Month = strftime(Date, "%B"))
   # Tweak columns
-  df <- df %>%
-    dplyr::rename(Unit = Result_Unit) %>%
-    dplyr::rename(Depth = Depth_Category)
+  df <- dplyr::rename(df, Unit = Result_Unit)
+  if ("Depth_Category" %in% colnames(df)) {
+    df <- dplyr::rename(df, Depth = Depth_Category)
+  }
   df$Result[df$Result == "BDL"] <- 0
   df$Result <- as.numeric(df$Result)
 
   # Save data
-  df_data <- df
+  df_data <- df %>%
+    dplyr::mutate(Parameter = dplyr::if_else(
+      Parameter == "Escherichia coli", "E. coli", Parameter))
   usethis::use_data(df_data, overwrite = TRUE)
   message("df_data saved")
 
@@ -77,7 +80,7 @@ format_results <- function(df, default_state = NA){
   }
 
   df <- df %>%
-    dplyr::group_by_at(dplyr::all_of(field_group)) %>%
+    dplyr::group_by_at(field_group) %>%
     dplyr::summarise(
       score_max = max(Result),
       score_min = min(Result),
@@ -89,15 +92,14 @@ format_results <- function(df, default_state = NA){
   df <- df %>%
     dplyr::mutate(temp_state = default_state) %>%
     dplyr::mutate(
-      score = mapply(
+      score_temp = mapply(
         function(id, par, unit, state, a, b, c, d)
           calculate_score(id, par, unit, state, a, b, c, d),
         Site_ID, Parameter, Unit, temp_state,
         score_max, score_min, score_mean, score_median,
         SIMPLIFY = FALSE)) %>%
-    tidyr::unnest_wider(score) %>%
-    dplyr::select(!score_max:score_median) %>%
-    dplyr::select(!temp_state) %>%
+    tidyr::unnest_wider(score_temp) %>%
+    dplyr::select(!c(score_max:score_median, temp_state)) %>%
     dplyr::mutate(score_num = dplyr::if_else(
       score_num <1,
       signif(score_num, 2),
@@ -105,17 +107,10 @@ format_results <- function(df, default_state = NA){
   message("\t... ok")
 
   # Format scores ------------------------------------------------------------
-  # Add rows for null data
+  # Generate dataframe of site/year/parameter/depth combinations
   list_sites <- unique(df_sites$Site_ID)
   list_years <- unique(df_data$Year)
   list_param <- unique(df_data$Parameter)
-  list_depth <- NA
-
-  if("Depth" %in% colnames(df_data)) {
-    list_depth <- unique(df_data$Depth)
-  } else {
-    df <- dplyr::mutate(df, Depth = NA)
-  }
 
   df_present <- df %>%
     dplyr::select(Site_ID, Year) %>%
@@ -126,11 +121,16 @@ format_results <- function(df, default_state = NA){
 
   df_join <- merge(df_present, list_param, by = NULL) %>%
     dplyr::rename(Parameter = y)
-  df_join <- merge(df_join, list_depth, by = NULL) %>%
-    dplyr::rename(Depth = y)
-  df_join <- merge(df_join, df, all.x = TRUE)
+  if("Depth" %in% colnames(df_data)) {
+    df_join <- merge(df_join, unique(df_data$Depth), by = NULL) %>%
+      dplyr::rename(Depth = y)
+  }
 
+  # Join df with dataframe, add rows for missing site/year combos
+  df_join <- merge(df_join, df, all.x = TRUE)
   df <- dplyr::bind_rows(df_join, df_missing)
+
+  # Tidy data
   df <- check_val_count(df, "Depth")
 
   # Add site data
@@ -148,8 +148,39 @@ format_results <- function(df, default_state = NA){
       dplyr::rename(County = County_Code)
   }
 
-  df_score <- merge(df, sites_temp, all.x = TRUE)
+  df <- merge(df, sites_temp, all.x = TRUE)
+
+  # Final tweaks
+  col_order <- c("Year", "Site_ID", "Site_Name", "Town", "County", "State",
+                 "Watershed", "Group", "Depth", "Parameter", "Unit",
+                 "score_typ", "score_num", "score_str", "Latitude", "Longitude")
+  col_order <- intersect(col_order, colnames(df))
+
+  df_score <- df %>%
+    dplyr::select(dplyr::all_of(col_order)) %>%
+    dplyr::mutate(score_str = case_when(
+      !is.na(score_str) ~ score_str,
+      !is.na(score_num) ~ "No Threshold Established",
+      TRUE ~ "No Data Available")) %>%
+    dplyr::mutate(Parameter = dplyr::if_else(
+      is.na(Parameter), "-", Parameter)) %>%
+    dplyr::mutate(Parameter = dplyr::if_else(
+      Parameter == "Escherichia coli", "E. coli", Parameter))
 
   usethis::use_data(df_score, overwrite = TRUE)
   message("df_score saved")
+
+  # Generate drop down lists --------------------------------------------------
+  message("\nGenerating dropdown lists\n")
+
+  # list_sites <- unique(df_data$Site_ID)
+  # usethis::use_data(list_sites, overwrite = TRUE)
+  list_param <- unique(df_data$Parameter)
+  usethis::use_data(list_param, overwrite = TRUE)
+  df_temp <- df_score %>%
+    dplyr::filter(!score_str %in% c("No Data Available",
+                                    "No Threshold Established"))
+  list_param_short <- unique(df_temp$Parameter)
+  usethis::use_data(list_param_short, overwrite = TRUE)
+  message("\nFinished processing data")
 }

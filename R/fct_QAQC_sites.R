@@ -34,6 +34,7 @@ QAQC_sites <- function(df){
   }
   check_val_duplicate(df, field = "Site_ID")
   check_val_duplicate(df, field = "Site_Name", is_stop = FALSE)
+  df <- dplyr::mutate(df, Site_Name = make.unique(Site_Name, sep = " "))
   check_val_duplicate(df, field = c("Latitude", "Longitude"),
                       is_stop = FALSE)
   check_val_numeric(df, field = "Latitude")

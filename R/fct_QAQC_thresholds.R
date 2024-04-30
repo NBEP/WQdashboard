@@ -15,8 +15,7 @@ QAQC_thresholds <- function(df, extra_col = NULL){
     "Unit", "Min_Max_Mean", "Threshold_Min", "Threshold_Max", "Excellent",
     "Good", "Fair", "Score_Names")
   field_need <- c("Parameter", "Unit")
-  field_optional <- c("State", "Group", "Site_ID", "Depth_Category",
-    "Score_Names")
+  field_optional <- c("State", "Group", "Site_ID", "Depth_Category")
   field_tvalues <- c("Threshold_Min", "Threshold_Max", "Excellent", "Good",
     "Fair")
 
@@ -47,8 +46,9 @@ QAQC_thresholds <- function(df, extra_col = NULL){
       df <- dplyr::select(df, !{{field}})
     }
   }
-  # Add missing columns
-  field_missing <- setdiff(field_tvalues, colnames(df))
+  # Add missing columns (need threshold values, score names for calculate_score)
+  field_missing <- c(field_tvalues, "Score_Names")
+  field_missing <- setdiff(field_missing, colnames(df))
   if (length(field_missing) > 0) {
     warning("Replacing missing columns: ",
       paste(field_missing, collapse = ", "), call. = FALSE)
@@ -66,9 +66,9 @@ QAQC_thresholds <- function(df, extra_col = NULL){
            paste(rws, collapse = ", "), call. = FALSE)
     }
   }
-  rw_id <- c("State", "Group", "Site_ID", "Parameter")
-  rw_id <- intersect(rw_id, colnames(df))
-  check_val_duplicate(df, field = rw_id)
+  col_id <- c("State", "Group", "Site_ID", "Parameter")
+  col_id <- intersect(col_id, colnames(df))
+  check_val_duplicate(df, field = col_id)
   if ("State" %in% colnames(df)) {
     check_val_missing(df, "State", is_stop = FALSE)
   }

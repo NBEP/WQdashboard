@@ -115,7 +115,7 @@ find_threshold <- function(site_id, parameter, state = NA) {
     df <- dplyr::filter(df_sites, Site_ID == site_id)
     group <- df$Group[1]
   }
-  if (!is.na(state) & "State" %in% colnames(df_sites_all)) {
+  if (is.na(state) & "State" %in% colnames(df_sites_all)) {
     df <- dplyr::filter(df_sites_all, Site_ID == site_id)
     state <- df$State[1]
   }
