@@ -40,12 +40,14 @@ mod_report_card_server <- function(id, selected_var){
       # Define var
       df <- selected_var$df_score_f()
       param <- c(selected_var$param_short(), "-")
-      if (nrow(df) == 0 | length(param) == 1) { return(df_default[0,]) }
+      sites <- selected_var$sites_all()
+      if (length(sites) == 0 | length(param) == 1) { return(df_default[0,]) }
 
       # Update dataframe
       df <- df %>%
-        dplyr::select(!dplyr::all_of(drop_rows)) %>%
-        dplyr::filter(Parameter %in% param)
+        dplyr::filter(Parameter %in% param) %>%
+        dplyr::filter(Site_ID %in% sites) %>%
+        dplyr::select(!dplyr::all_of(drop_rows))
 
       if(!selected_var$score()){
         df <- dplyr::filter(df,
@@ -57,39 +59,7 @@ mod_report_card_server <- function(id, selected_var){
 
     # Table ------------------------------------------------------------------
     output$table <- reactable::renderReactable({
-      reactable::reactable(
-        df_default,
-        highlight = TRUE,
-        defaultSorted = c("Site_Name", "Parameter"),
-        defaultColDef = reactable::colDef(
-          header = function(value) gsub("_", " ", value, fixed = TRUE),
-          headerStyle = list(background = "#f7f7f8")
-        ),
-        columns = list(
-          Site_Name = reactable::colDef(
-            rowHeader = TRUE,
-            sticky = "left"),
-          score_str = reactable::colDef(
-            name = "Score"#,
-            # style = function(score) {
-            #   background <- NA
-            #   fontStyle <- "Normal"
-            #   if (score == "Excellent") {
-            #     background <- "#afccec"
-            #   } else if (score == "Good") {
-            #     background <- "#cbe4e7"
-            #   } else if (score == "Fair") {
-            #     background <- "#ffffe0"
-            #   } else if (score == "Poor") {
-            #     background <- "#f9cfb4"
-            #   } else if (score %in% c("No Data Available",
-            #                           "No Threshold Established")) {
-            #     fontStyle <- "italic"
-            #   }
-            #   list(background = background, fontStyle = fontStyle)
-            # }
-          ))
-        )
+      reactable_table(df_default)
     })
 
     # Update table

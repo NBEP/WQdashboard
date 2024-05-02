@@ -22,11 +22,11 @@ mod_select_location_ui <- function(id){
         "toggle",
         radioButtons(
           ns("loc_type"),
-          label = h3("Filter Sites"),
+          label = h3("Select Location"),
           choices = loc_choices)),
       tabPanelBody(
         "notoggle",
-        h3("Filter Sites")),
+        h3("Select Location")),
       tabPanelBody("blank")
     ),
     tabsetPanel(

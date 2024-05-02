@@ -12,15 +12,9 @@ mod_sidebar_ui <- function(id){
   tagList(
     bslib::accordion(
       multiple = FALSE,
-      # Select location ------------------------------------------------------
-      bslib::accordion_panel(
-        title = h2("Location"),
-        value = "location",
-        mod_select_location_ui(ns("select_location"))
-      ),
       # Select indicator -----------------------------------------------------
       bslib::accordion_panel(
-        title = h2("Indicator"),
+        title = h2("1. Data"),
         value = "indicators",
         tabsetPanel(
           id = ns("tabset_param"),
@@ -53,12 +47,14 @@ mod_sidebar_ui <- function(id){
               ns("chk_nascore"),
               label = "Include missing scores",
               value = TRUE)),
-          tabPanelBody("hide_score"))
-        ),
+          tabPanelBody("hide_score")),
+        # ),
+        h3("Select Depth"),
+        "[dropdown here]",
       # Select date -----------------------------------------------------------
-      bslib::accordion_panel(
-        title = h2("Date"),
-        value = "dates",
+      # bslib::accordion_panel(
+      #   title = h2("Year"),
+      #   value = "dates",
         tabsetPanel(
           id = ns("tabset_dates"),
           type = "hidden",
@@ -86,7 +82,13 @@ mod_sidebar_ui <- function(id){
               choices = sort_months(df_data$Month),
               sort_choices = FALSE))
           )
-        )
+        ),
+      # Select location ------------------------------------------------------
+      bslib::accordion_panel(
+        title = h2("2. Location"),
+        value = "location",
+        mod_select_location_ui(ns("select_location"))
+      )
     )
   )
 }
@@ -128,11 +130,8 @@ mod_sidebar_server <- function(id, selected_tab){
     # Filter scores -----------------------------------------------------------
     df_score_filter <- reactive({
       req(input$select_year)
-      req(loc_server$sites_all())
 
-      df <- df_score %>%
-        dplyr::filter(Year == input$select_year) %>%
-        dplyr::filter(Site_ID %in% loc_server$sites_all())
+      df <- dplyr::filter(df_score, Year == input$select_year)
 
       return(df)
     })
@@ -146,7 +145,7 @@ mod_sidebar_server <- function(id, selected_tab){
         param_n = reactive({ input$select_param_n }),
         param_short = reactive({ input$select_param_short }),
         score = reactive({ input$chk_nascore }),
-        year = reactive({ input$select_year }),
+        # year = reactive({ input$select_year }),
         date_range = reactive({ input$select_date_range }),
         month = reactive({ input$select_month }),
         df_score_f = reactive({ df_score_filter() })

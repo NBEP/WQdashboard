@@ -51,6 +51,7 @@ golem::add_fct("format_sites", with_test = TRUE)
 golem::add_fct("format_results", with_test = TRUE)
 golem::add_fct("calculate_score", with_test = TRUE)
 golem::add_fct("select_dropdown", with_test = TRUE)
+golem::add_fct("table", with_test = TRUE)
 golem::add_fct("scatter_plot", with_test = TRUE)
 
 ## External resources

@@ -18,7 +18,7 @@ app_ui <- function(request) {
       bslib::nav_panel("Map",
         value="map",
         class = "bslib-page-dashboard",
-        "Map"),
+        mod_map_ui("map_1")),
       bslib::nav_panel("Report Card",
         value="report_card",
         class = "bslib-page-dashboard",

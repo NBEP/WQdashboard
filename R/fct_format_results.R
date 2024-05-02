@@ -151,7 +151,7 @@ format_results <- function(df, default_state = NA){
   df <- merge(df, sites_temp, all.x = TRUE)
 
   # Final tweaks
-  col_order <- c("Year", "Site_ID", "Site_Name", "Town", "County", "State",
+  col_order <- c("Year", "Site_Name", "Site_ID", "Town", "County", "State",
                  "Watershed", "Group", "Depth", "Parameter", "Unit",
                  "score_typ", "score_num", "score_str", "Latitude", "Longitude")
   col_order <- intersect(col_order, colnames(df))
@@ -165,7 +165,8 @@ format_results <- function(df, default_state = NA){
     dplyr::mutate(Parameter = dplyr::if_else(
       is.na(Parameter), "-", Parameter)) %>%
     dplyr::mutate(Parameter = dplyr::if_else(
-      Parameter == "Escherichia coli", "E. coli", Parameter))
+      Parameter == "Escherichia coli", "E. coli", Parameter)) %>%
+    dplyr::arrange(Site_Name, Parameter)
 
   usethis::use_data(df_score, overwrite = TRUE)
   message("df_score saved")
