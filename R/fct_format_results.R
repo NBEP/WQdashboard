@@ -66,9 +66,7 @@ format_results <- function(df, default_state = NA){
   df$Result <- as.numeric(df$Result)
 
   # Save data
-  df_data <- df %>%
-    dplyr::mutate(Parameter = dplyr::if_else(
-      Parameter == "Escherichia coli", "E. coli", Parameter))
+  df_data <- df
   usethis::use_data(df_data, overwrite = TRUE)
   message("df_data saved")
 
@@ -164,8 +162,6 @@ format_results <- function(df, default_state = NA){
       TRUE ~ "No Data Available")) %>%
     dplyr::mutate(Parameter = dplyr::if_else(
       is.na(Parameter), "-", Parameter)) %>%
-    dplyr::mutate(Parameter = dplyr::if_else(
-      Parameter == "Escherichia coli", "E. coli", Parameter)) %>%
     dplyr::arrange(Site_Name, Parameter)
 
   df_score <- add_popup_text(df)

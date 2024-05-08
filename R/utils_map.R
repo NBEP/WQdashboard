@@ -96,6 +96,11 @@ pal_num <- function(df_param, df) {
     par_max <- max(df_param$score_num, na.rm = TRUE)
   }
 
+  if (par_min == par_max) {
+    if (par_min > 1) { par_min <- par_min - 1 }
+    par_max <- par_max + 1
+  }
+
   pal <- leaflet::colorNumeric(
     palette = c("#cdcef1", "#aca8d3", "#8b83b6", "#6c5f9a", "#4d3d7f"),
     reverse = TRUE,

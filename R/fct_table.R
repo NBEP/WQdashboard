@@ -35,11 +35,13 @@ column_styles <- function(df, hide_cols = NA) {
           "function(rowInfo) {
             if (rowInfo.values['score_str'] == 'Excellent') {
               return { backgroundColor: '#afccec' }
-            } else if (rowInfo.values['score_str'] == 'Good') {
+            } else if (rowInfo.values['score_str'] == 'Good' |
+                rowInfo.values['score_str'] == 'Meets Criteria') {
               return { backgroundColor: '#cbe4e7' }
             } else if (rowInfo.values['score_str'] == 'Fair') {
               return { backgroundColor: '#ffffe0' }
-            } else if (rowInfo.values['score_str'] == 'Poor') {
+            } else if (rowInfo.values['score_str'] == 'Poor' |
+                rowInfo.values['score_str'] == 'Does Not Meet Criteria') {
               return { backgroundColor: '#f9cfb4' }
             } else if (rowInfo.values['score_str'] == 'No Data Available' |
                 rowInfo.values['score_str'] == 'No Threshold Established') {
