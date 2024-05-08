@@ -15,6 +15,11 @@ mod_map_ui <- function(id){
       full_screen = FALSE,
       h2("Map"),
       shinycssloaders::withSpinner(
+        leaflet::leafletOutput(ns('map')),
+        type = 5
+      ),
+      h2("Table"),
+      shinycssloaders::withSpinner(
         reactable::reactableOutput(ns("table")),
         type = 5
       )
@@ -26,19 +31,25 @@ mod_map_ui <- function(id){
 #'
 #' @noRd
 mod_map_server <- function(id, selected_var){
-  moduleServer( id, function(input, output, session){
+  moduleServer(id, function(input, output, session){
     ns <- session$ns
 
     df_default <- df_score %>%
       dplyr::filter(Year == max(Year))
 
     df_param <- reactive({
+      req(selected_var$param_n())
+
       # Define var
       df <- selected_var$df_score_f()
       param <- c(selected_var$param_n(), "-")
 
       # Update dataframe
       df <- dplyr::filter(df, Parameter %in% param)
+
+      if ("Depth" %in% colnames(df_score)) {
+        df <- dplyr::filter(df, Depth == selected_var$depth_n())
+      }
 
       return(df)
     })
@@ -49,6 +60,8 @@ mod_map_server <- function(id, selected_var){
     })
 
     df_map <- reactive({
+      req(selected_var$sites_all())
+
       # Define var
       df <- df_param()
       sites <- selected_var$sites_all()
@@ -56,25 +69,94 @@ mod_map_server <- function(id, selected_var){
       # Update dataframe
       df <- dplyr::filter(df, Site_ID %in% sites)
 
-      if(!selected_var$score() & map_type() == "score_num"){
+      if(!selected_var$score()) {
         df <- dplyr::filter(df, !is.na(score_num))
-      } else if (!selected_var$score()) {
-        df <- dplyr::filter(df,
-          !(score_str %in% c("No Data Available", "No Threshold Established")))
       }
 
       return(df)
     })
 
+    # Map --------------------------------------------------------------------
+    output$map <- leaflet::renderLeaflet({
+      leaflet::leaflet() %>%
+        leaflet::fitBounds(
+          min(df_sites$Longitude), # Lon min
+          min(df_sites$Latitude), # Lat min
+          max(df_sites$Longitude), # Lon max
+          max(df_sites$Latitude) # Lat max
+          ) %>%
+        leaflet::addProviderTiles(
+          leaflet::providers$Esri.WorldTopoMap) %>%
+        leaflet.extras2::addSpinner() %>%
+        leaflet::addScaleBar(position='bottomleft')
+    })
+
+    # * Add sites ---
+    observe({
+      if (nrow(df_map()) == 0) {
+        leaflet::leafletProxy("map") %>%
+          leaflet::clearMarkers()
+      } else if (map_type() == "score_num") {
+        leaflet::leafletProxy("map") %>%
+          leaflet::clearMarkers() %>%
+          leaflet::addMarkers(
+            data = df_map(),
+            lng = ~Longitude,
+            lat = ~Latitude,
+            # Icons
+            icon = ~leaflet::icons(
+              iconUrl = pal_num(df_param(), df_map()),
+              iconWidth = 20,
+              iconHeight = 20),
+            # Label
+            label = ~Site_Name,
+            labelOptions = leaflet::labelOptions(textsize = "15px"),
+            # Popup
+            popup = ~paste0(
+              popup_loc,
+              "<br/><br/><b>", selected_var$param_n(), "</b>",
+              popup_score),
+            # Accessibility
+            options = leaflet::markerOptions(alt = ~alt))
+      } else {
+        leaflet::leafletProxy("map") %>%
+          leaflet::clearMarkers() %>%
+          leaflet::addMarkers(
+            data = df_map(),
+            lng = ~Longitude,
+            lat = ~Latitude,
+            # Icons
+            icon = ~leaflet::icons(
+              iconUrl = pal_cat(df_param())[score_str],
+              iconWidth = 20,
+              iconHeight = 20),
+            # Label
+            label = ~Site_Name,
+            labelOptions = leaflet::labelOptions(textsize = "15px"),
+            # Popup
+            popup = ~paste0(
+              popup_loc,
+              "<br/><br/><b>", selected_var$param_n(), "</b>",
+              popup_score),
+            # Accessibility
+            options = leaflet::markerOptions(alt = ~alt))
+      }
+    }) %>%
+      bindEvent(df_map())
+
     # Table ------------------------------------------------------------------
     output$table <- reactable::renderReactable({
       reactable_table(df_default,
-        hide_cols = c("Year", "Site_ID", "score_typ", "Latitude", "Longitude"))
+        hide_cols = c("Year", "Site_ID", "Parameter", "Unit", "score_typ",
+                      "Latitude", "Longitude", "popup_loc", "popup_score",
+                      "alt"))
     })
 
     # Update table
     observe({ reactable::updateReactable("table", data = df_map()) }) %>%
       bindEvent(df_map())
+
+    # To update score_num name --- have to use "meta" attribute
 
   })
 }

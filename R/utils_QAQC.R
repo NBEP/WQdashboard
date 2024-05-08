@@ -235,7 +235,7 @@ check_val_numeric <- function(df, field, exceptions = NULL, ignore_dq = TRUE,
   # Modified code from MassWateR::checkMWRsites
 
   typ <- df[field]
-  chk <- !is.na(suppressWarnings(mapply(as.numeric, typ)))
+  chk <- !is.na(suppressWarnings(mapply(as.numeric, typ))) | is.na(typ)
   if(ignore_dq) { chk <- skip_dq_rows(df, chk) }
   if(ignore_qc) { chk <- skip_qc_rows(df, chk) }
   if(!is.null(exceptions)){

@@ -28,10 +28,10 @@ calculate_score <- function(site_id, parameter, unit, default_state = NA,
     typ <- "Average"
   } else if (df$Min_Max_Mean == "max") {
     score <- score_max
-    typ <- "Highest"
+    typ <- "Maximum"
   } else if (df$Min_Max_Mean == "min") {
     score <- score_min
-    typ <- "Lowest"
+    typ <- "Minimum"
   } else if (df$Min_Max_Mean == "median") {
     score <- score_median
     typ <- "Median"
@@ -44,42 +44,28 @@ calculate_score <- function(site_id, parameter, unit, default_state = NA,
   if (is.na(new_score)) {
     return(list(score_typ = typ, score_num = score, score_str = NA))
   }
-  # Find category score
-  score_excellent <- "Excellent"
-  score_good <- "Good"
-  score_fair <- "Fair"
-  score_poor <- "Poor"
-  if (!is.na(df$Score_Names[1])){
-    new_names <- trimws(unlist(strsplit(df$Score_Names[1], ";")))
-    if (length(new_names) == 4) {
-      score_excellent <- new_names[1]
-      score_good <- new_names[2]
-      score_fair <- new_names[3]
-      score_poor <- new_names[4]
-    }
-  }
-
+  # Find categorgy score
   if (!is.na(df$Excellent) & !is.na(df$Good) & !is.na(df$Fair)) {
     if (df$Excellent > df$Good & df$Good > df$Fair) {
       if (new_score >= df$Excellent) {
-        score2 <- score_excellent
+        score2 <- "Excellent"
       } else if (new_score >= df$Good) {
-        score2 <- score_good
+        score2 <- "Good"
       } else if (new_score >= df$Fair) {
-        score2 <- score_fair
+        score2 <- "Fair"
       } else {
-        score2 <- score_poor
+        score2 <- "Poor"
       }
       return(list(score_typ = typ, score_num = score, score_str = score2))
     } else if (df$Excellent < df$Good & df$Good < df$Fair) {
       if (new_score <= df$Excellent) {
-        score2 <- score_excellent
+        score2 <- "Excellent"
       } else if (new_score <= df$Good) {
-        score2 <- score_good
+        score2 <- "Good"
       } else if (new_score <= df$Fair) {
-        score2 <- score_fair
+        score2 <- "Fair"
       } else {
-        score2 <- score_poor
+        score2 <- "Poor"
       }
       return(list(score_typ = typ, score_num = score, score_str = score2))
     }

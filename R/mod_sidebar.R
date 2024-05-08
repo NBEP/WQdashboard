@@ -48,9 +48,30 @@ mod_sidebar_ui <- function(id){
               label = "Include missing scores",
               value = TRUE)),
           tabPanelBody("hide_score")),
-        # ),
-        h3("Select Depth"),
-        "[dropdown here]",
+        # Select depth ---------------------------------------------------------
+        conditionalPanel(
+          condition = paste(length(unique(df_score$Depth)), "> 2"),
+          tabsetPanel(
+            id = ns("tabset_depth"),
+            type = "hidden",
+            tabPanelBody(
+              "depth_n",
+              select_dropdown(
+                ns("select_depth_n"),
+                label = h3("Select Depth"),
+                choices = unique(df_score$Depth))),
+            tabPanelBody(
+              "depth_all",
+              select_dropdown(
+                ns("select_depth_all"),
+                label = h3("Select Depths"),
+                choices = unique(df_score$Depth),
+                multiple = FALSE),
+              tabPanelBody(
+                "depth_null"
+              ))
+          )
+        ),
       # Select date -----------------------------------------------------------
       # bslib::accordion_panel(
       #   title = h2("Year"),
@@ -110,18 +131,22 @@ mod_sidebar_server <- function(id, selected_tab){
       if (selected_tab() == "map") {
         updateTabsetPanel(inputId = "tabset_param", selected = "param_n")
         updateTabsetPanel(inputId = "tabset_score", selected = "show_score")
+        updateTabsetPanel(inputId = "tabset_depth", selected = "depth_n")
         updateTabsetPanel(inputId = "tabset_dates", selected = "by_year")
       } else if (selected_tab() == "report_card") {
         updateTabsetPanel(inputId = "tabset_param", selected = "param_short")
         updateTabsetPanel(inputId = "tabset_score", selected = "show_score")
+        updateTabsetPanel(inputId = "tabset_depth", selected = "depth_all")
         updateTabsetPanel(inputId = "tabset_dates", selected = "by_year")
       } else if (selected_tab() == "graphs") {
         updateTabsetPanel(inputId = "tabset_param", selected = "param_n")
         updateTabsetPanel(inputId = "tabset_score", selected = "hide_score")
+        updateTabsetPanel(inputId = "tabset_depth", selected = "depth_all")
         updateTabsetPanel(inputId = "tabset_dates", selected = "by_date")
       } else {
         updateTabsetPanel(inputId = "tabset_param", selected = "param_all")
         updateTabsetPanel(inputId = "tabset_score", selected = "hide_score")
+        updateTabsetPanel(inputId = "tabset_depth", selected = "depth_all")
         updateTabsetPanel(inputId = "tabset_dates", selected = "by_date")
       }
     }) %>%
@@ -145,7 +170,9 @@ mod_sidebar_server <- function(id, selected_tab){
         param_n = reactive({ input$select_param_n }),
         param_short = reactive({ input$select_param_short }),
         score = reactive({ input$chk_nascore }),
-        # year = reactive({ input$select_year }),
+        depth_n = reactive({ input$select_depth_n() }),
+        depth_all = reactive({ input$select_depth_all() }),
+        year = reactive({ input$select_year }),
         date_range = reactive({ input$select_date_range }),
         month = reactive({ input$select_month }),
         df_score_f = reactive({ df_score_filter() })

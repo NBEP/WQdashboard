@@ -156,9 +156,9 @@ format_results <- function(df, default_state = NA){
                  "score_typ", "score_num", "score_str", "Latitude", "Longitude")
   col_order <- intersect(col_order, colnames(df))
 
-  df_score <- df %>%
+  df <- df %>%
     dplyr::select(dplyr::all_of(col_order)) %>%
-    dplyr::mutate(score_str = case_when(
+    dplyr::mutate(score_str = dplyr::case_when(
       !is.na(score_str) ~ score_str,
       !is.na(score_num) ~ "No Threshold Established",
       TRUE ~ "No Data Available")) %>%
@@ -167,6 +167,8 @@ format_results <- function(df, default_state = NA){
     dplyr::mutate(Parameter = dplyr::if_else(
       Parameter == "Escherichia coli", "E. coli", Parameter)) %>%
     dplyr::arrange(Site_Name, Parameter)
+
+  df_score <- add_popup_text(df)
 
   usethis::use_data(df_score, overwrite = TRUE)
   message("df_score saved")
@@ -178,10 +180,12 @@ format_results <- function(df, default_state = NA){
   # usethis::use_data(list_sites, overwrite = TRUE)
   list_param <- unique(df_data$Parameter)
   usethis::use_data(list_param, overwrite = TRUE)
+
   df_temp <- df_score %>%
     dplyr::filter(!score_str %in% c("No Data Available",
                                     "No Threshold Established"))
   list_param_short <- unique(df_temp$Parameter)
   usethis::use_data(list_param_short, overwrite = TRUE)
+
   message("\nFinished processing data")
 }

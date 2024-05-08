@@ -3,22 +3,19 @@
 #' @description Runs quality control on threshold dataframe.
 #'
 #' @param df Input dataframe.
-#' @param extra_col Optional. Surplus that should be kept instead of deleted.
-#'   Default NULL.
+#' @param extra_col Optional. Surplus columns that should be kept instead of
+#'   deleted. Default NULL.
 #'
 #' @return Updated dataframe.
 #'
 #' @noRd
 QAQC_thresholds <- function(df, extra_col = NULL){
   # Define variables ----------------------------------------------------------
-  field_all <- c("State", "Group", "Site_ID", "Depth_Category", "Parameter",
-    "Unit", "Min_Max_Mean", "Threshold_Min", "Threshold_Max", "Excellent",
-    "Good", "Fair", "Score_Names")
   field_need <- c("Parameter", "Unit")
   field_optional <- c("State", "Group", "Site_ID", "Depth_Category")
   field_tvalues <- c("Threshold_Min", "Threshold_Max", "Excellent", "Good",
     "Fair")
-
+  field_all <- c(field_optional, field_need, "Min_Max_Mean", field_tvalues)
 
   # QAQC columns --------------------------------------------------------------
   message("Checking thresholds...\n")
@@ -44,11 +41,11 @@ QAQC_thresholds <- function(df, extra_col = NULL){
     chk <- is.na(df[field])
     if (all(chk)) {
       df <- dplyr::select(df, !{{field}})
+      message("\tDropped empty column: ", field )
     }
   }
-  # Add missing columns (need threshold values, score names for calculate_score)
-  field_missing <- c(field_tvalues, "Score_Names")
-  field_missing <- setdiff(field_missing, colnames(df))
+  # Add missing columns (need threshold values for calculate_score)
+  field_missing <- setdiff(field_tvalues, colnames(df))
   if (length(field_missing) > 0) {
     warning("Replacing missing columns: ",
       paste(field_missing, collapse = ", "), call. = FALSE)
@@ -60,8 +57,8 @@ QAQC_thresholds <- function(df, extra_col = NULL){
   for (field in field_need) { check_val_missing(df, field = field) }
   if (all(c("Group", "Site_ID") %in% colnames(df))) {
     chk <- (!is.na(df$Site_ID) & !is.na(df$Group))
-    if (any(!chk)) {
-      rws <- which(!chk)
+    if (any(chk)) {
+      rws <- which(chk)
       stop("Group and site thresholds must be on seperate rows. Check rows:",
            paste(rws, collapse = ", "), call. = FALSE)
     }
@@ -75,9 +72,8 @@ QAQC_thresholds <- function(df, extra_col = NULL){
   if ("Min_Max_Mean" %in% colnames(df)) {
     check_val_missing(df, "Min_Max_Mean", is_stop = FALSE)
   }
-  field_numeric = intersect(field_tvalues, colnames(df))
-  for (field in field_numeric) {
-    check_val_numeric(df, field = field, exceptions =  NA)
+  for (field in field_tvalues) {
+    check_val_numeric(df, field = field)
   }
   # Update data format---------------------------------------------------------
   df <- df %>%

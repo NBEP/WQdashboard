@@ -30,7 +30,7 @@ mod_report_card_server <- function(id, selected_var){
     ns <- session$ns
 
     drop_rows <- c("Year", "Site_ID", "Unit", "score_typ", "score_num",
-                   "Latitude", "Longitude")
+                   "Latitude", "Longitude", "popup_loc", "popup_score", "alt")
 
     df_default <- df_score %>%
       dplyr::filter(Year == max(Year)) %>%
@@ -48,6 +48,10 @@ mod_report_card_server <- function(id, selected_var){
         dplyr::filter(Parameter %in% param) %>%
         dplyr::filter(Site_ID %in% sites) %>%
         dplyr::select(!dplyr::all_of(drop_rows))
+
+      if ("Depth" %in% colnames(df_score)) {
+        df <- dplyr::filter(df, Depth %in% selected_var$depth_all())
+      }
 
       if(!selected_var$score()){
         df <- dplyr::filter(df,
