@@ -91,7 +91,7 @@ mod_map_server <- function(id, selected_var){
         leaflet::addScaleBar(position='bottomleft')
     })
 
-    # * Add sites ---
+    # * Add sites ----
     observe({
       if (nrow(df_map()) == 0) {
         leaflet::leafletProxy("map") %>%
@@ -105,7 +105,7 @@ mod_map_server <- function(id, selected_var){
             lat = ~Latitude,
             # Icons
             icon = ~leaflet::icons(
-              iconUrl = pal_num(df_param(), df_map()),
+              iconUrl = num_symbols(df_param(), df_map()),
               iconWidth = 20,
               iconHeight = 20),
             # Label
@@ -127,7 +127,7 @@ mod_map_server <- function(id, selected_var){
             lat = ~Latitude,
             # Icons
             icon = ~leaflet::icons(
-              iconUrl = pal_cat(df_param())[score_str],
+              iconUrl = cat_pal(df_param())[score_str],
               iconWidth = 20,
               iconHeight = 20),
             # Label
@@ -143,6 +143,48 @@ mod_map_server <- function(id, selected_var){
       }
     }) %>%
       bindEvent(df_map())
+
+    # * Add legend ----
+    observe({
+      if (map_type() == "score_num") {
+        leaflet::leafletProxy("map") %>%
+          leaflet::clearControls() %>%
+          leaflegend::addLegendNumeric(
+            pal = num_pal(df_param()),
+            values = df_param()$score_num,
+            title = htmltools::tags$div(
+              paste0(selected_var$param_n(), " (", selected_var$year(), ")"),
+              style = 'font-size: 18px'),
+            shape = "rect",
+            orientation = "vertical",
+            bins = 5,
+            numberFormat = function(x) {
+              paste(
+                prettyNum(x, format = "f", big.mark = ",", scientific = FALSE),
+                param_unit(selected_var$param_n()))
+            },
+            naLabel = "No Data Available",
+            labelStyle = 'font-size: 14px;',
+            position = 'topright'
+          )
+      } else {
+        leaflet::leafletProxy("map") %>%
+          leaflet::clearControls() %>%
+          leaflegend::addLegendImage(
+            images = cat_pal(df_param(), TRUE),
+            labels = cat_labels(df_param()),
+            width = 20,
+            height = 20,
+            orientation = 'vertical',
+            title = htmltools::tags$div(
+              paste0(selected_var$param_n(), " (", selected_var$year(), ")"),
+              style = 'font-size: 18px'),
+            labelStyle = 'font-size: 14px;',
+            position = 'topright'
+          )
+      }
+    }) %>%
+      bindEvent(df_param())
 
     # Table ------------------------------------------------------------------
     output$table <- reactable::renderReactable({

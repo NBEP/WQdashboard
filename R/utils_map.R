@@ -61,31 +61,36 @@ add_popup_text <- function(df) {
   return(df)
 }
 
-#' Icon Shape
+#' param_unit
 #'
-#' Helper function for `pal_num`. Sets all icons as circles, except NA values
-#'   are cross.
+#' Finds unit for parameter.
 #'
-#' @param x List of values.
-#'
-#' @returns List of shapes.
-#'
-#' @noRd
-icon_shape <- function(x) {
-  if (is.na(x)) { "cross" } else { "circle" }
-}
-
-#' pal_num
-#'
-#' Creates `leaflet` icons for continuous data.
-#'
-#' @param df_param df_score filtered by year and parameter.
-#' @param df Data to map.
+#' @param param Paramter.
 #'
 #' @returns Icon code.
 #'
 #' @noRd
-pal_num <- function(df_param, df) {
+param_unit <- function(param) {
+  df <- df_score %>%
+    dplyr::filter(!is.na(Unit) & Parameter == param)
+
+  if (length(df) > 0) {
+    return(df$Unit[1])
+  } else {
+    return("")
+  }
+}
+
+#' num_pal
+#'
+#' Creates palette for continuous data.
+#'
+#' @param df_param df_score filtered by year and parameter.
+#'
+#' @returns Icon code.
+#'
+#' @noRd
+num_pal <- function(df_param) {
   chk <- is.na(df_param$score_num)
 
   if (all(chk)) {
@@ -103,13 +108,42 @@ pal_num <- function(df_param, df) {
 
   pal <- leaflet::colorNumeric(
     palette = c("#cdcef1", "#aca8d3", "#8b83b6", "#6c5f9a", "#4d3d7f"),
-    reverse = TRUE,
     domain = c(par_min, par_max),
     #bins = 5,
     na.color = "#f4f4f4")
 
+  return(pal)
+}
+
+#' num_shape
+#'
+#' Helper function for `num_symbols`. Sets all icons as circles, except NA
+#'   values which are cross.
+#'
+#' @param x List of values.
+#'
+#' @returns List of shapes.
+#'
+#' @noRd
+num_shape <- function(x) {
+  if (is.na(x)) { "cross" } else { "circle" }
+}
+
+#' num_symbols
+#'
+#' Creates `leaflet` icons for continuous data.
+#'
+#' @param df_param df_score filtered by year and parameter.
+#' @param df Data to map.
+#'
+#' @returns Icon code.
+#'
+#' @noRd
+num_symbols <- function(df_param, df) {
+  pal <- num_pal(df_param)
+
   icon_symbols <- Map(f = leaflegend::makeSymbol,
-                      shape = lapply(df$score_num, icon_shape),
+                      shape = lapply(df$score_num, num_shape),
                       fillColor = pal(df$score_num),
                       color = "#444444",
                       opacity = 1,
@@ -124,17 +158,37 @@ pal_num <- function(df_param, df) {
 #' Creates `leaflet` icons for categorical data.
 #'
 #' @param df_param df_score filtered by year and parameter.
+#' @param is_legend Boolean. If TRUE, formats symbols legend. If FALSE, formats
+#'   symbols for map. Default FALSE.
 #'
 #' @returns Icon code.
 #'
 #' @noRd
-pal_cat <- function(df_param) {
-  icon_color <- c("#347bc0", "#62c2dd", "#62c2dd", "#f3d56f", "#db7363",
-                  "#db7363", "#f4f4f4")
-  icon_shape <- c("circle", "rect", "rect", "triangle", "diamond", "diamond",
-                  "cross")
-  icon_names <- c("Excellent", "Good", "Meets Criteria", "Fair", "Poor",
-                  "Does Not Meet Criteria", "No Data Available")
+cat_pal <- function(df_param, is_legend = FALSE) {
+  param_score <- unique(df_param$score_str)
+  x <- c("Excellent", "Good", "Fair", "Poor")
+  y <- c("Meets Criteria", "Does Not Meet Criteria")
+
+  icon_color <- "#f4f4f4"
+  icon_shape <- "cross"
+  icon_names <- "No Data Available"
+
+  if (any(param_score %in% x)) {
+    icon_color <- c("#347bc0", "#62c2dd", "#f3d56f", "#db7363", icon_color)
+    icon_shape <- c("circle", "rect", "triangle", "diamond", icon_shape)
+    icon_names <- c(x, icon_names)
+  }
+
+  if (any(param_score %in% y)) {
+    icon_color <- c("#62c2dd", "#db7363", icon_color)
+    icon_shape <- c("rect", "diamond", icon_shape)
+    icon_names <- c(y, icon_names)
+  }
+
+  if (is_legend) {
+    icon_color <- unique(icon_color)
+    icon_shape <- unique(icon_shape)
+  }
 
   icon_symbols <- Map(f = leaflegend::makeSymbol,
                       shape = icon_shape,
@@ -143,7 +197,37 @@ pal_cat <- function(df_param) {
                       opacity = 1,
                       width = 24,
                       "stroke-width" = 1.5)
-  icon_symbols <- setNames(icon_symbols, nm = icon_names)
+  if (!is_legend) {
+    icon_symbols <- setNames(icon_symbols, nm = icon_names)
+  }
 
   return(icon_symbols)
+}
+
+#' cat_labels
+#'
+#' Creates legend labels to accompany `pal_cat`.
+#'
+#' @param df_param df_score filtered by year and parameter.
+#'
+#' @returns List of labels.
+#'
+#' @noRd
+cat_labels <- function(df_param) {
+  param_score <- unique(df_param$score_str)
+  x <- c("Excellent", "Good", "Fair", "Poor")
+  y <- c("Meets Criteria", "Does Not Meet Criteria")
+
+  label_list <- "No Data Available"
+
+  if (any(param_score %in% x) & any(param_score %in% y)) {
+    label_list <- c("Excellent", "Good / Meets Criteria", "Fair",
+      "Poor / Does Not Meet Criteria", label_list)
+  } else if (any(param_score %in% x)) {
+    label_list <- c(x, label_list)
+  } else if (any(param_score %in% y)) {
+    label_list <- c(y, label_list)
+  }
+
+  return(label_list)
 }
