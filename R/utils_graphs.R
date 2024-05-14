@@ -10,8 +10,7 @@
 #'
 #' @noRd
 prep_plot_df <- function(df, site_id, parameter){
-  key_col <- c("Site_ID", "Site_Name", "Date", "Year", "Parameter", "Result",
-               "Result_Unit", "Group", "Depth_Category")
+  key_col <- c("Site_Name", "Date", "Parameter", "Result", "Unit", "Depth")
 
   df <- dplyr::filter(df, Site_ID %in% site_id & Parameter %in% parameter)
   df <- dplyr::left_join(df, df_sites,

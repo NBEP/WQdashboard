@@ -439,7 +439,7 @@ depth_to_m <- function(df) {
   exempt <- skip_qc_rows(df, exempt)
 
   if ("Depth_Category" %in% colnames(df)) {
-    ok_cat <- c("Shallow", "Deep")
+    ok_cat <- c("Surface", "Midwater", "Near Bottom", "Bottom")
     exempt <- (exempt | df$Depth_Category %in% c(ok_cat))
     chk <- (exempt | df$Depth_Category %in% NA)
     if (any(!chk)) {
@@ -530,18 +530,28 @@ assign_depth_category <- function(df, overwrite_cat = FALSE,
     }
   }
 
-  if (!"Max_Depth_Shallow" %in% colnames(sites)) {
-    df <- dplyr::mutate(df, Max_Depth_Shallow = NA)
+  depth_col <- c("Max_Depth_Surface", "Max_Depth_Midwater",
+                 "Max_Depth_Near_Bottom")
+  for (field in depth_col) {
+    if (!field %in% colnames(sites)) {
+      df <- dplyr::mutate(df, {{field}} := NA)
+    }
   }
 
   df <- dplyr::left_join(df, sites, by="Site_ID", keep = FALSE) %>%
-    dplyr::mutate(df, Max_Depth_Shallow = dplyr::if_else(
-      is.na(Max_Depth_Shallow), 1, Max_Depth_Shallow)) %>%
+    dplyr::mutate(Max_Depth_Surface = dplyr::if_else(
+      is.na(Max_Depth_Surface), 1, Max_Depth_Surface)) %>%
+    dplyr::mutate(Max_Depth_Midwater = dplyr::if_else(
+      is.na(Max_Depth_Midwater), max(Depth) + 1, Max_Depth_Midwater)) %>%
+    dplyr::mutate(Max_Depth_Near_Bottom = dplyr::if_else(
+      is.na(Max_Depth_Near_Bottom), max(Depth) + 1, Max_Depth_Near_Bottom)) %>%
     dplyr::mutate(Depth_Category = dplyr::case_when(
       !is.na(Depth_Category) ~ Depth_Category,
       is.na(Depth) | Depth_Unit != "m" ~ Depth_Category,
-      Depth > Max_Depth_Shallow ~ "Deep",
-      TRUE ~ "Shallow")) %>%
+      Depth > Max_Depth_Near_Bottom ~ "Bottom",
+      Depth > Max_Depth_Midwater ~ "Near Bottom",
+      Depth > Max_Depth_Surface ~ "Midwater",
+      TRUE ~ "Surface")) %>%
     dplyr::select(dplyr::all_of(col_keep))
 
   return(df)

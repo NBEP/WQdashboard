@@ -9,4 +9,6 @@ State,,State,State Code,,
 Watershed,,HUC_12_NAME,,,HUC_NAME
 Location_Type,,,Monitoring Location Type,,
 Group,,,,Location Group,CFR
-Max_Depth_Shallow,,,,,
+Max_Depth_Surface,,,,,
+Max_Depth_Midwater,,,,,
+Max_Depth_Near_Bottom,,,,,

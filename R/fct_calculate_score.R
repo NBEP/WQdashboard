@@ -6,19 +6,22 @@
 #' @param site_id Site ID.
 #' @param parameter Parameter.
 #' @param unit Parameter unit.
+#' @param depth Depth category. Default value NA.
+#' @param default_state Which state thresholds to use. Overrides state listed
+#'   for Site_ID. Default value NA.
 #' @param score_max Maximum score.
 #' @param score_min Minimum score.
 #' @param score_mean Average score.
 #' @param score_median Median score.
 #'
-#' @return Three value list with type of numeric score, numeric score, and
-#'   category score.
+#' @return Three value list with type of score type (eg minimum, maximum,
+#'   average), numeric score, and category score.
 #'
 #' @noRd
-calculate_score <- function(site_id, parameter, unit, default_state = NA,
-                            score_max, score_min, score_mean, score_median) {
+calculate_score <- function(site_id, parameter, unit, depth = NA,
+    default_state = NA, score_max, score_min, score_mean, score_median) {
   # Find thresholds
-  df <- find_threshold(site_id, parameter, default_state)
+  df <- find_threshold(site_id, parameter, depth, default_state)
   if (is.null(df)) {
     return(list(score_typ = "Average", score_num = score_mean, score_str = NA))
   }

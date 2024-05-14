@@ -37,10 +37,11 @@ QAQC_sites <- function(df){
   df <- dplyr::mutate(df, Site_Name = make.unique(Site_Name, sep = " "))
   check_val_duplicate(df, field = c("Latitude", "Longitude"),
                       is_stop = FALSE)
-  check_val_numeric(df, field = "Latitude")
-  check_val_numeric(df, field = "Longitude")
-  if ("Max_Depth_Shallow" %in% colnames(df)) {
-    check_val_numeric(df, "Max_Depth_Shallow")
+  field_numeric <- c("Latitude", "Longitude", "Max_Depth_Surface",
+    "Max_Depth_Midwater", "Max_Depth_Near_Bottom")
+  field_numeric <- intersect(field_numeric, colnames(df))
+  for (field in field_numeric) {
+    check_val_numeric(df, field)
   }
   # Update data format---------------------------------------------------------
   if ("State" %in% colnames(df)) {

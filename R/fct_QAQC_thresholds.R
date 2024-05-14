@@ -25,7 +25,6 @@ QAQC_thresholds <- function(df, extra_col = NULL){
     stop("Must include at least one threshold column. (eg ",
          paste(field_tvalues, collapse =", "), ")", call. = FALSE)
   }
-
   # Drop extra columns
   field_keep <- intersect(field_all, colnames(df))
   if (!is.null(extra_col)) {
@@ -72,8 +71,26 @@ QAQC_thresholds <- function(df, extra_col = NULL){
   if ("Min_Max_Mean" %in% colnames(df)) {
     check_val_missing(df, "Min_Max_Mean", is_stop = FALSE)
   }
+  if ("Depth_Category" %in% colnames(df)) {
+    ok_cat <- c("Surface", "Midwater", "Near Bottom", "Bottom")
+    chk <- df$Depth_Category %in% c(ok_cat, NA)
+    if (any(!chk)) {
+      rws <- which(!chk)
+      stop("Invalid Depth_Category. Acceptable values: ",
+           paste(ok_cat, collapse = ", "), ". Check rows ",
+           paste(rws, collapse = ", "), call. = FALSE)
+    }
+  }
+  # Check threshold values
   for (field in field_tvalues) {
     check_val_numeric(df, field = field)
+  }
+  chk <- is.na(df$Threshold_Min) & is.na(df$Threshold_Max) &
+    is.na(df$Excellent) & is.na(df$Good) & is.na(df$Fair)
+  if (any(chk)) {
+    rws <- which(chk)
+    stop("Rows must contain at least one threshold value. Check rows ",
+         paste(rws, collapse = ", "), call. = FALSE)
   }
   # Update data format---------------------------------------------------------
   df <- df %>%

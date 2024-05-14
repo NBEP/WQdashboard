@@ -109,7 +109,7 @@ mod_map_server <- function(id, selected_var){
               iconWidth = 20,
               iconHeight = 20),
             # Label
-            label = ~Site_Name,
+            label = ~alt,
             labelOptions = leaflet::labelOptions(textsize = "15px"),
             # Popup
             popup = ~paste0(
@@ -131,7 +131,7 @@ mod_map_server <- function(id, selected_var){
               iconWidth = 20,
               iconHeight = 20),
             # Label
-            label = ~Site_Name,
+            label = ~alt,
             labelOptions = leaflet::labelOptions(textsize = "15px"),
             # Popup
             popup = ~paste0(
@@ -153,16 +153,12 @@ mod_map_server <- function(id, selected_var){
             pal = num_pal(df_param()),
             values = df_param()$score_num,
             title = htmltools::tags$div(
-              paste0(selected_var$param_n(), " (", selected_var$year(), ")"),
+              paste(selected_var$param_n(),
+                param_unit(selected_var$param_n())),
               style = 'font-size: 18px'),
             shape = "rect",
             orientation = "vertical",
             bins = 5,
-            numberFormat = function(x) {
-              paste(
-                prettyNum(x, format = "f", big.mark = ",", scientific = FALSE),
-                param_unit(selected_var$param_n()))
-            },
             naLabel = "No Data Available",
             labelStyle = 'font-size: 14px;',
             position = 'topright'
@@ -177,7 +173,7 @@ mod_map_server <- function(id, selected_var){
             height = 20,
             orientation = 'vertical',
             title = htmltools::tags$div(
-              paste0(selected_var$param_n(), " (", selected_var$year(), ")"),
+              selected_var$param_n(),
               style = 'font-size: 18px'),
             labelStyle = 'font-size: 14px;',
             position = 'topright'

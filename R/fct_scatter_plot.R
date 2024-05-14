@@ -10,11 +10,14 @@
 #'
 #' @noRd
 
-scatter_plot <- function(df, site_id, parameter){
-  df <- prep_plot_df(df, site_id, parameter) %>%
-    dplyr::select(!Year)
+scatter_plot <- function(df, site_id, parameter, depth = NA){
+  df <- prep_plot_df(df, site_id, parameter)
+  thresh <- NA
 
   # Calculate threshold
+  if (length(c(site_id, parameter, depth)) == 3) {
+    thresh <- find_threshold(site_id, parameter, depth_cat = depth)
+  }
 
 
 

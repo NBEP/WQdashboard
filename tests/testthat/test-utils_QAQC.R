@@ -161,7 +161,7 @@ test_that("depth_to_m converts depth to meters", {
 test_that("assign_depth_category assigns depth category", {
   df <- depth_to_m(df_depth)
   chk <- assign_depth_category(df, sites=df_wqdashboard)
-  expect_equal(chk$Depth_Category, c("Shallow", "Deep", NA))
+  expect_equal(chk$Depth_Category, c("Surface", "Midwater", NA))
 })
 
 test_that("list_sites lists unique sites", {

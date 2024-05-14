@@ -46,7 +46,11 @@ add_popup_text <- function(df) {
       is.na(score_num),
       paste(popup_score, "<br/><i>No data</i>"),
       paste0(popup_score,
-        "<br/>", score_typ, ": ", score_num, " ", Unit))) %>%
+        "<br/>", score_typ, ": ", score_num))) %>%
+    dplyr::mutate(popup_score = dplyr::if_else(
+      is.na(score_num) | Unit %in% c(NA, "None"),
+      popup_score,
+      paste(popup_score, Unit))) %>%
     dplyr::mutate(popup_score = dplyr::if_else(
       is.na(score_num) | score_str == "No Threshold Established",
       popup_score,
@@ -72,13 +76,14 @@ add_popup_text <- function(df) {
 #' @noRd
 param_unit <- function(param) {
   df <- df_score %>%
-    dplyr::filter(!is.na(Unit) & Parameter == param)
+    dplyr::filter(!Unit %in% c(NA, "None") & Parameter == param)
+  unit <- ""
 
-  if (length(df) > 0) {
-    return(df$Unit[1])
-  } else {
-    return("")
+  if (nrow(df) > 0) {
+    unit <- paste0("(", df$Unit[1], ")")
   }
+
+  return(unit)
 }
 
 #' num_pal
@@ -107,7 +112,8 @@ num_pal <- function(df_param) {
   }
 
   pal <- leaflet::colorNumeric(
-    palette = c("#cdcef1", "#aca8d3", "#8b83b6", "#6c5f9a", "#4d3d7f"),
+    palette = c("#b2fd99", "#97e39d", "#7dcaa1", "#63b1a5", "#4997a9",
+                "#417ea0", "#47638c", "#4e4876", "#55285d"),
     domain = c(par_min, par_max),
     #bins = 5,
     na.color = "#f4f4f4")

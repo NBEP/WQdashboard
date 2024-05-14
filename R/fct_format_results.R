@@ -61,6 +61,8 @@ format_results <- function(df, default_state = NA){
   df <- dplyr::rename(df, Unit = Result_Unit)
   if ("Depth_Category" %in% colnames(df)) {
     df <- dplyr::rename(df, Depth = Depth_Category)
+  } else {
+    df <- dplyr::mutate(df, Depth = NA)
   }
   df$Result[df$Result == "BDL"] <- 0
   df$Result <- as.numeric(df$Result)
@@ -72,10 +74,7 @@ format_results <- function(df, default_state = NA){
 
   # Calculate scores -----------------------------------------------------------
   message("\nFormatting df_score...\n")
-  field_group <- c("Site_ID", "Parameter", "Unit", "Year")
-  if ("Depth" %in% colnames(df)) {
-    field_group <- c(field_group, "Depth")
-  }
+  field_group <- c("Site_ID", "Depth", "Parameter", "Unit", "Year")
 
   df <- df %>%
     dplyr::group_by_at(field_group) %>%
@@ -91,9 +90,9 @@ format_results <- function(df, default_state = NA){
     dplyr::mutate(temp_state = default_state) %>%
     dplyr::mutate(
       score_temp = mapply(
-        function(id, par, unit, state, a, b, c, d)
-          calculate_score(id, par, unit, state, a, b, c, d),
-        Site_ID, Parameter, Unit, temp_state,
+        function(id, par, unit, depth, state, a, b, c, d)
+          calculate_score(id, par, unit, depth, state, a, b, c, d),
+        Site_ID, Parameter, Unit, Depth, temp_state,
         score_max, score_min, score_mean, score_median,
         SIMPLIFY = FALSE)) %>%
     tidyr::unnest_wider(score_temp) %>%
@@ -102,6 +101,7 @@ format_results <- function(df, default_state = NA){
       score_num <1,
       signif(score_num, 2),
       round(score_num, 2)))
+  df <- suppressMessages(check_val_count(df, "Depth"))
   message("\t... ok")
 
   # Format scores ------------------------------------------------------------
@@ -119,17 +119,14 @@ format_results <- function(df, default_state = NA){
 
   df_join <- merge(df_present, list_param, by = NULL) %>%
     dplyr::rename(Parameter = y)
-  if("Depth" %in% colnames(df_data)) {
-    df_join <- merge(df_join, unique(df_data$Depth), by = NULL) %>%
+  if("Depth" %in% colnames(df)) {
+    df_join <- merge(df_join, unique(df$Depth), by = NULL) %>%
       dplyr::rename(Depth = y)
   }
 
   # Join df with dataframe, add rows for missing site/year combos
   df_join <- merge(df_join, df, all.x = TRUE)
   df <- dplyr::bind_rows(df_join, df_missing)
-
-  # Tidy data
-  df <- check_val_count(df, "Depth")
 
   # Add site data
   site_col <- c("Site_ID", "Site_Name", "Latitude", "Longitude", "Town_Code",
@@ -168,20 +165,6 @@ format_results <- function(df, default_state = NA){
 
   usethis::use_data(df_score, overwrite = TRUE)
   message("df_score saved")
-
-  # Generate drop down lists --------------------------------------------------
-  message("\nGenerating dropdown lists\n")
-
-  # list_sites <- unique(df_data$Site_ID)
-  # usethis::use_data(list_sites, overwrite = TRUE)
-  list_param <- unique(df_data$Parameter)
-  usethis::use_data(list_param, overwrite = TRUE)
-
-  df_temp <- df_score %>%
-    dplyr::filter(!score_str %in% c("No Data Available",
-                                    "No Threshold Established"))
-  list_param_short <- unique(df_temp$Parameter)
-  usethis::use_data(list_param_short, overwrite = TRUE)
 
   message("\nFinished processing data")
 }

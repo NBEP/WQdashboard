@@ -103,14 +103,9 @@ filter_threshold <- function(threshold_table, site_id, depth_category = NA,
 #'   If no available thresholds, returns NULL.
 #'
 #' @noRd
-find_threshold <- function(site_id, parameter, state = NA) {
+find_threshold <- function(site_id, parameter, depth_cat = NA, state = NA) {
   # Define vars
-  depth_cat <- NA
   group <- NA
-  if ("Depth_Category" %in% colnames(df_sites)) {
-    df <- dplyr::filter(df_sites, Site_ID == site_id)
-    depth_cat <- df$Depth_Category[1]
-  }
   if ("Group" %in% colnames(df_sites)) {
     df <- dplyr::filter(df_sites, Site_ID == site_id)
     group <- df$Group[1]
@@ -163,9 +158,9 @@ find_threshold <- function(site_id, parameter, state = NA) {
 #' @return Maximum threshold for given site, parameter.
 #'
 #' @noRd
-threshold_max <- function(site_id, parameter, unit) {
+threshold_max <- function(site_id, parameter, unit, depth = NA) {
   # Define vars
-  df <- find_threshold(site_id, parameter)
+  df <- find_threshold(site_id, parameter, depth_cat = depth)
   if (is.null(df)) {
     return(NA)
   }
@@ -184,9 +179,9 @@ threshold_max <- function(site_id, parameter, unit) {
 #' @return Minimum threshold for given site, parameter.
 #'
 #' @noRd
-threshold_min <- function(site_id, parameter, unit) {
+threshold_min <- function(site_id, parameter, unit, depth = NA) {
   # Define vars
-  df <- find_threshold(site_id, parameter)
+  df <- find_threshold(site_id, parameter, depth_cat = depth)
   if (is.null(df)) {
     return(NA)
   }

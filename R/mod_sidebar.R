@@ -9,6 +9,10 @@
 #' @importFrom shiny NS tagList
 mod_sidebar_ui <- function(id){
   ns <- NS(id)
+
+  param_short <- dplyr::filter(df_score,
+      !score_str %in% c("No Data Available", "No Threshold Established"))
+
   tagList(
     bslib::accordion(
       multiple = FALSE,
@@ -24,20 +28,20 @@ mod_sidebar_ui <- function(id){
             select_dropdown(
               ns("select_param_n"),
               label = h3("Select Indicator"),
-              choices = list_param,
+              choices = unique(df_data$Parameter),
               multiple = FALSE)),
           tabPanelBody(
             "param_short",
             select_dropdown(
               ns("select_param_short"),
               label = h3("Select Indicators"),
-              choices = list_param_short)),
+              choices = unique(param_short$Parameter))),
           tabPanelBody(
             "param_all",
             select_dropdown(
               ns("select_param_all"),
               label = h3("Select Indicators"),
-              choices = list_param))),
+              choices = unique(df_data$Parameter)))),
         tabsetPanel(
           id = ns("tabset_score"),
           type = "hidden",
