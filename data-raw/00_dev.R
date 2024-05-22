@@ -43,11 +43,11 @@ usethis::use_data(qaqc_fail, overwrite = TRUE)
 state_thresholds <- read.csv("data-raw/state_thresholds.csv",
                              na.strings=c("","NA")) %>%
   dplyr::mutate_if(is.character, trimws)
-state_thresholds <- QAQC_thresholds(state_thresholds)
+state_thresholds <- qaqc_thresholds(state_thresholds)
 usethis::use_data(state_thresholds, overwrite = TRUE)
 
 epa_thresholds <- read.csv("data-raw/epa_thresholds.csv",
                            na.strings=c("","NA")) %>%
   dplyr::mutate_if(is.character, trimws)
-epa_thresholds <- QAQC_thresholds(epa_thresholds)
+epa_thresholds <- qaqc_thresholds(epa_thresholds)
 usethis::use_data(epa_thresholds, overwrite = TRUE)

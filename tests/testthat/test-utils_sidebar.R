@@ -82,3 +82,8 @@ test_that("update_site_list filters sites by selected col, variables", {
       filter_col = "Red_Herring",
       filter_list = "MA"))
 })
+
+test_that("sort_months sorts months chronologically", {
+  chk <- c("December", "January", "March", "January")
+  expect_equal(sort_months(chk), c("January", "March", "December"))
+})

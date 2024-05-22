@@ -16,9 +16,14 @@ mod_sidebar_ui <- function(id){
   tagList(
     bslib::accordion(
       multiple = FALSE,
+      # Select location ------------------------------------------------------
+      bslib::accordion_panel(
+        title = h2("1. Location"),
+        value = "location",
+        mod_select_location_ui(ns("select_location"))),
       # Select indicator -----------------------------------------------------
       bslib::accordion_panel(
-        title = h2("1. Data"),
+        title = h2("2. Data"),
         value = "indicators",
         tabsetPanel(
           id = ns("tabset_param"),
@@ -70,16 +75,15 @@ mod_sidebar_ui <- function(id){
                 ns("select_depth_all"),
                 label = h3("Select Depths"),
                 choices = unique(df_score$Depth),
-                multiple = FALSE),
-              tabPanelBody(
-                "depth_null"
-              ))
-          )
+                multiple = FALSE)),
+              tabPanelBody("depth_null")
+            )
+        )
         ),
       # Select date -----------------------------------------------------------
-      # bslib::accordion_panel(
-      #   title = h2("Year"),
-      #   value = "dates",
+      bslib::accordion_panel(
+        title = h2("3. Date"),
+        value = "dates",
         tabsetPanel(
           id = ns("tabset_dates"),
           type = "hidden",
@@ -106,13 +110,7 @@ mod_sidebar_ui <- function(id){
               label = h3("Select Months"),
               choices = sort_months(df_data$Month),
               sort_choices = FALSE))
-          )
-        ),
-      # Select location ------------------------------------------------------
-      bslib::accordion_panel(
-        title = h2("2. Location"),
-        value = "location",
-        mod_select_location_ui(ns("select_location"))
+        )
       )
     )
   )

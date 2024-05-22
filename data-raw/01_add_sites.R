@@ -14,5 +14,13 @@ df <- read.csv(paste0("data-raw/", sites),
     na.strings=c("","NA"),
     check.names=FALSE) %>%
   dplyr::mutate_if(is.character, trimws)
-df <- QAQC_sites(df)
-format_sites(df)
+
+# Check for errors
+df <- qaqc_sites(df)
+
+df_sites_all <- df
+usethis::use_data(df_sites_all, overwrite = TRUE)
+
+df_sites <- format_sites(df)
+usethis::use_data(df_sites, overwrite = TRUE)
+message("\nUpload complete")

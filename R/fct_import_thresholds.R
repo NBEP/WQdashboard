@@ -9,7 +9,7 @@
 #' @return Updated dataframe.
 #'
 #' @noRd
-QAQC_thresholds <- function(df, extra_col = NULL){
+qaqc_thresholds <- function(df, extra_col = NULL){
   # Define variables ----------------------------------------------------------
   field_need <- c("Parameter", "Unit")
   field_optional <- c("State", "Group", "Site_ID", "Depth_Category")

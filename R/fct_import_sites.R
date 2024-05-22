@@ -1,4 +1,4 @@
-#' QAQC_sites
+#' qaqc_sites
 #'
 #' @description Run quick quality control check on site data. Runs the
 #'   following checks:
@@ -13,18 +13,19 @@
 #' @param df Input dataframe.
 #'
 #' @return The return value, if any, from executing the function.
-QAQC_sites <- function(df){
-  # Define variables ----------------------------------------------------------
+qaqc_sites <- function(df){
+  # Define variables
   field_all <- colnames_sites$WQdashboard
   field_need <- colnames_sites$WQdashboard_short
   field_need <- field_need[!field_need == ""]
   field_optional <- dplyr::setdiff(field_all, field_need)
 
-  # QAQC columns --------------------------------------------------------------
+  # Check columns
   message("Checking site data...\n")
   df <- update_column_names(df, colnames_sites)
   check_column_missing(df, field_need)
-  # QAQC column values ---------------------------------------------------------
+
+  # Check values
   for (field in field_need) {
     check_val_missing(df, field = field)
   }
@@ -43,7 +44,8 @@ QAQC_sites <- function(df){
   for (field in field_numeric) {
     check_val_numeric(df, field)
   }
-  # Update data format---------------------------------------------------------
+
+  # Update data
   if ("State" %in% colnames(df)) {
     chk <- df$State %in% c(state.name, state.abb)
     if (any(!chk)) {
@@ -77,5 +79,48 @@ QAQC_sites <- function(df){
           TRUE ~ NA))
     }
   }
+  return(df)
+}
+
+#' format_sites
+#'
+#' @description Formats site data for use in the app.
+#'
+#' @param df Input dataframe.
+#'
+#' @return Updated dataframe.
+format_sites <- function(df){
+  message("\nFormatting site data...\n")
+  # Drop extra columns
+  field_all <- colnames_sites$WQdashboard
+  field_keep <- intersect(field_all, colnames(df))
+  chk <- length(df) - length(field_keep)
+  if (chk > 0) {
+    df <- dplyr::select(df, all_of(field_keep))  # Drop extra columns
+    message("\t", toString(chk), " columns removed")
+  }
+  df <- check_val_count(df, "State")
+  df <- check_val_count(df, "Watershed")
+  if (!"State" %in% colnames(df)) {
+    df <- check_val_count(df, "Town")
+    df <- check_val_count(df, "County")
+  }
+  # Add new columns
+  if ("Town" %in% colnames(df)) {
+    if ("State" %in% colnames(df)) {
+      df <- dplyr::mutate(df, Town_Code = paste0(Town, ", ", State))
+    } else {
+      df <- dplyr::mutate(df, Town_Code = Town)
+    }
+    message("\tAdded column Town_Code")
+  } else if ("County" %in% colnames(df)) {
+    if ("State" %in% colnames(df)) {
+      df <- dplyr::mutate(df, County_Code = paste(County, "County,", State))
+    } else {
+      df <- dplyr:: mutate(df, County_Code = paste(County, "County"))
+    }
+    message("\tAdded column County_Code")
+  }
+
   return(df)
 }

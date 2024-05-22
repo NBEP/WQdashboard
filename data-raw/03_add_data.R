@@ -25,5 +25,5 @@ df_results <- read.csv(paste0("data-raw/", wq_data),
     na.strings=c("","NA"),
     check.names=FALSE) %>%
   dplyr::mutate_if(is.character, trimws)
-df_results <- QAQC_results(df_results, date_format)
+df_results <- qaqc_results(df_results, date_format)
 format_results(df_results, default_state)
