@@ -14,8 +14,8 @@
 #  Z Timezone
 
 # parameter data:
-wq_data <- "test_data_masswater.csv"
-date_format = "m/d/Y"
+wq_data <- "test_data_brc.csv"
+date_format = "m/d/Y H:M"
 default_state = "MA"
 
 # CODE ------------------------------------------------------------------------

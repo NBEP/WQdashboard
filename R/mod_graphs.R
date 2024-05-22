@@ -14,7 +14,7 @@ mod_graphs_ui <- function(id){
       min_height = 250,
       full_screen = FALSE,
       h2("Graphs"),
-      reactable::reactableOutput(ns("test")),
+      plotly::plotlyOutput(outputId = ns("plot")),
       h3("Long Term Trends"),
       "bar graph?"
       ),
@@ -43,24 +43,13 @@ mod_graphs_server <- function(id, selected_var){
       return(df)
     })
 
-    # Precision filters
-    df_basic <- reactive({
-      req(selected_var$sites_n())
-      req(selected_var$param_n())
-
-      df <- prep_plot_df(
+    # Graph
+    output$plot <- plotly::renderPlotly({
+      scatter_plot(
         df_filter(),
         site_id = selected_var$sites_n(),
-        parameter = selected_var$param_n())
-
-      return(df)
-    })
-
-    # Test table...
-    output$test <- reactable::renderReactable({
-      reactable::reactable(
-        df_basic(),
-        highlight = TRUE)
+        parameter = selected_var$param_n(),
+        depth = NA)
     })
 
   })

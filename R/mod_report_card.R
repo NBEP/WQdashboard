@@ -13,7 +13,8 @@ mod_report_card_ui <- function(id){
     bslib::card(
       min_height = 250,
       full_screen = FALSE,
-      h2("Report Card"),
+      htmlOutput(ns("title")),
+      # downloadButton(ns("download_report"), "Download PDF"),
       shinycssloaders::withSpinner(
         reactable::reactableOutput(ns("table")),
         type = 5
@@ -25,16 +26,27 @@ mod_report_card_ui <- function(id){
 #' report_card Server Functions
 #'
 #' @noRd
-mod_report_card_server <- function(id, selected_var){
+mod_report_card_server <- function(id, selected_var, selected_tab){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
+    # Pass info to ui ----
+    output$title <- renderUI({
+      HTML(paste0(
+        "<h2>Report Card (", selected_var$year(), ")</h2>"))
+    })
+
+    # Define variables
     drop_rows <- c("Year", "Site_ID", "Unit", "score_typ", "score_num",
                    "Latitude", "Longitude", "popup_loc", "popup_score", "alt")
 
     df_default <- df_score %>%
       dplyr::filter(Year == max(Year)) %>%
       dplyr::select(!dplyr::all_of(drop_rows))
+
+    val <- reactiveValues(
+      df = df_default,
+      count = 0)
 
     df_filter <- reactive({
       # Define var
@@ -61,14 +73,46 @@ mod_report_card_server <- function(id, selected_var){
       return(df)
     })
 
+    observe({
+      if (val$count < 2 & selected_tab() == "report_card") {
+        val$count <- val$count + 1
+        val$df <- df_filter()
+      }
+    }) %>%
+      bindEvent(selected_tab())
+
     # Table ------------------------------------------------------------------
     output$table <- reactable::renderReactable({
-      reactable_table(df_default)
+      reactable_table(val$df)
     })
 
     # Update table
     observe({ reactable::updateReactable("table", data = df_filter()) }) %>%
       bindEvent(df_filter())
+
+    # # Download PDF ----
+    # output$download_report <- downloadHandler(
+    #   filename = paste0(selected_var$year(), "_water_quality_report.pdf"),
+    #
+    #   content = function(file) {
+    #     src <- normalizePath(system.file("rmd", "report_card.Rmd",
+    #                                      package = "WQdashboard"))
+    #
+    #     # temporarily switch to the temp dir, in case you do not have write
+    #     # permission to the current working directory
+    #     tempReport <- file.path(tempdir(), "report_card.Rmd")
+    #     file.copy(src, tempReport, overwrite = TRUE)
+    #
+    #     # Set up parameters to pass to Rmd document
+    #     params <- list(
+    #       df_report = df_filter(),
+    #       report_title = paste0(org_name, " Report Card (",
+    #                             selected_var$year(), ")"))
+    #
+    #     rmarkdown::render(tempReport, output_file = file,
+    #                       params = params,
+    #                       envir = new.env(parent = globalenv()))
+    #   })
   })
 }
 

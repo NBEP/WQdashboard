@@ -47,7 +47,7 @@ calculate_score <- function(site_id, parameter, unit, depth = NA,
   if (is.na(new_score)) {
     return(list(score_typ = typ, score_num = score, score_str = NA))
   }
-  # Find categorgy score
+  # Find category score
   if (!is.na(df$Excellent) & !is.na(df$Good) & !is.na(df$Fair)) {
     if (df$Excellent > df$Good & df$Good > df$Fair) {
       if (new_score >= df$Excellent) {

@@ -12,7 +12,7 @@ app_ui <- function(request) {
     shinya11y::use_tota11y(),
     bslib::page_navbar(
       theme = bslib::bs_theme(version = 5),
-      title = h1("Title"),
+      title = h1(paste(org_name, "Water Quality")),
       id = "tabset",
       sidebar = mod_sidebar_ui("sidebar_1"),
       bslib::nav_panel("Map",

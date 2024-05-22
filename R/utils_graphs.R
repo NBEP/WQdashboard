@@ -9,15 +9,18 @@
 #' @return Updated dataframe.
 #'
 #' @noRd
-prep_plot_df <- function(df, site_id, parameter){
-  key_col <- c("Site_Name", "Date", "Parameter", "Result", "Unit", "Depth")
+prep_plot_df <- function(df, site_id, parameter, depth = NA){
+  key_col <- c("Site_Name", "Year", "Date", "Parameter", "Result", "Unit")
 
   df <- dplyr::filter(df, Site_ID %in% site_id & Parameter %in% parameter)
+  if (!is.na(depth) & "Depth" %in% colnames(df)) {
+    df <- dplyr::filter(df, Depth %in% depth)
+    key_col <- c(key_col, "Depth")
+  }
   df <- dplyr::left_join(df, df_sites,
                          by = "Site_ID",
                          keep = FALSE)
 
-  key_col <- intersect(key_col, colnames(df))
   df <- dplyr::select(df, dplyr::all_of(key_col))
 
   return(df)
