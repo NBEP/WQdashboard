@@ -69,30 +69,17 @@ qaqc_results <- function(df, date_format=NULL){
   return(df)
 }
 
-#' format_results
+#' format_df_data
 #'
 #' @description Formats water quality data for use in app. Must run
 #'   `QAQC_results` first.
 #'
 #' @param df Input dataframe.
-format_results <- function(df, default_state = NA){
-  # Validate data
-  chk <- is.na(default_state) | default_state %in% c(state.name, state.abb)
-  if (!chk) {
-    stop(default_state, " is not a valid state", call. = FALSE)
-  }
-  if (default_state %in% state.name) {
-    default_state <- state.abb[match(default_state, state.name)]
-  }
-
-  # Prep data for download -----------------------------------------------------
-  message("Formatting df_data_all...\n")
-  df_data_all <- df
-  usethis::use_data(df_data_all, overwrite = TRUE)
-  message("df_data_all saved")
-
-  # Prep data for app ----------------------------------------------------------
+#'
+#' @return Updated dataframe.
+format_df_data <- function(df){
   message("\nFormatting df_data...\n")
+
   # Drop extra columns
   field_all <- colnames_results$WQdashboard
   field_drop <- c("Depth", "Depth_Unit")
@@ -104,6 +91,7 @@ format_results <- function(df, default_state = NA){
     df <- dplyr::select(df, dplyr::all_of(field_keep))
     message("\t", toString(chk), " columns removed")
   }
+
   # Drop extra rows
   if("Qualifier" %in% colnames(df)) {
     chk <- df$Qualifier %in% qaqc_fail
@@ -118,16 +106,13 @@ format_results <- function(df, default_state = NA){
     chk <- stringr::str_detect(df$Activity_Type, "Quality Control")
 
     if(any(chk)){
-      df <- dplyr::filter(df,
-                          !stringr::str_detect(Activity_Type, "Quality Control"))
+      df <- df %>%
+        dplyr::filter(!stringr::str_detect(Activity_Type, "Quality Control"))
       message("\tDropped replicate, blank data")
     }
     df <- dplyr::select(df, !Activity_Type)
   }
-  # Add new columns
-  df <- df %>%
-    dplyr::mutate(Year = lubridate::year(Date)) %>%
-    dplyr::mutate(Month = strftime(Date, "%B"))
+
   # Tweak columns
   df <- dplyr::rename(df, Unit = Result_Unit)
   if ("Depth_Category" %in% colnames(df)) {
@@ -138,12 +123,47 @@ format_results <- function(df, default_state = NA){
   df$Result[df$Result == "BDL"] <- 0
   df$Result <- as.numeric(df$Result)
 
-  # Save data
-  df_data <- df
-  usethis::use_data(df_data, overwrite = TRUE)
-  message("df_data saved")
+  # Add columns for Month, Year
+  df <- df %>%
+    dplyr::mutate(Year = lubridate::year(Date)) %>%
+    dplyr::mutate(Month = strftime(Date, "%B"))
 
-  # Calculate scores -----------------------------------------------------------
+  # Add Site_Name, Description
+  field_keep <- c(colnames(df), "Site_Name")
+  df <- left_join(df, df_sites, by = "Site_ID") %>%
+    dplyr::select(dplyr::all_of(field_keep)) %>%
+    dplyr::mutate(Description = paste0(
+      "<b>", Site_Name, "</b><br>",
+      format(Date, format = "%B %d, %Y"), "<br>",
+      Parameter, ": ", Result)) %>%
+    dplyr::mutate(Description = dplyr::if_else(
+      !Unit %in% c(NA, "None"),
+      paste(Description, Unit),
+      Description))
+
+  return(df)
+}
+
+#' format_results
+#'
+#' @description Formats water quality data for use in app. Must run
+#'   `format_df_data` first.
+#'
+#' @param df Input dataframe.
+#' @param default_state Which state to use when calculating score, thresholds.
+#'
+#' @return Updated dataframe.
+format_df_score <- function(df, default_state = NA){
+  # Check if default_state is valid
+  chk <- is.na(default_state) | default_state %in% c(state.name, state.abb)
+  if (!chk) {
+    stop(default_state, " is not a valid state", call. = FALSE)
+  }
+  if (default_state %in% state.name) {
+    default_state <- state.abb[match(default_state, state.name)]
+  }
+
+  # Calculate scores, etc
   message("\nFormatting df_score...\n")
   field_group <- c("Site_ID", "Depth", "Parameter", "Unit", "Year")
 
@@ -175,7 +195,6 @@ format_results <- function(df, default_state = NA){
   df <- suppressMessages(check_val_count(df, "Depth"))
   message("\t... ok")
 
-  # Format scores ------------------------------------------------------------
   # Generate dataframe of site/year/parameter/depth combinations
   list_sites <- unique(df_sites$Site_ID)
   list_years <- unique(df_data$Year)
@@ -232,10 +251,7 @@ format_results <- function(df, default_state = NA){
       is.na(Parameter), "-", Parameter)) %>%
     dplyr::arrange(Site_Name, Parameter)
 
-  df_score <- add_popup_text(df)
+  df <- add_popup_text(df)
 
-  usethis::use_data(df_score, overwrite = TRUE)
-  message("df_score saved")
-
-  message("\nFinished processing data")
+  return(df)
 }

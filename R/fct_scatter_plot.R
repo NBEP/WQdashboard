@@ -20,9 +20,10 @@ plot_style <- function(fig, fig_title, y_title, date_range) {
         titlefont = list(size = 16),
         tickfont = list(size = 16),
         linecolor = "black",
-        # showgrid = FALSE,
+        showgrid = FALSE,
         tickcolor = "black"),
       xaxis = list(
+        title = "Date",
         rangemode = "tozero",
         # fixedrange = TRUE,
         rangeslider = list(type = "date"),
@@ -114,21 +115,18 @@ scatter_plot <- function(df, site_id, parameter, depth = NA) {
 
   # Calculate threshold ----
   if (length(c(site_id, parameter)) == 2) {
-    unit <- param_unit(parameter)
+    unit <- df$Unit[1]
     thresh_min <- threshold_min(site_id, parameter, unit, depth)
     thresh_max <- threshold_max(site_id, parameter, unit, depth)
   }
 
   # Add gaps between years ----
-  list_sites <- unique(df$Site_Name)
-  list_years <- unique(df$Year)
-  list_param <- unique(df$Parameter)
-
-  df_null <- expand.grid(list_sites, list_years)
-  colnames(df_null) <- c("Site_Name", "Year")
-  df_null <- merge(df_null, list_param, by = NULL) %>%
-    dplyr::rename(Parameter = y) %>%
-    dplyr::mutate(Date = as.Date(paste0(Year, "-1-1")))
+  df_null <- expand.grid(
+    Site_Name = unique(df$Site_Name),
+    Parameter = unique(df$Parameter),
+    Year = unique(df$Year))
+  df_null <- dplyr::mutate(df_null,
+    Date = as.Date(paste0(Year, "-1-1")))
 
   df <- bind_rows(df, df_null) %>%
     dplyr::arrange(Date)
@@ -140,12 +138,21 @@ scatter_plot <- function(df, site_id, parameter, depth = NA) {
     mode = "lines+markers",
     x = ~Date,
     y = ~Result,
-    color = ~Site_Name)
+    color = ~Site_Name,
+    hoverinfo = "text",
+    hovertext = ~Description)
 
   date_range <- difftime(max(df$Date), min(df$Date), units="days")
   date_range <- as.numeric(date_range)/365
 
-  fig <- plot_style(fig, "Title", "Parameter (Unit)", date_range)
+  plot_title <- paste(
+    paste(unique(df$Parameter), sep =" and "),
+    "at",
+    paste(unique(df$Site_Name), sep =", "))
+
+  y_title <- paste(parameter, param_unit(parameter))
+
+  fig <- plot_style(fig, plot_title, y_title, date_range)
 
   return(fig)
 }

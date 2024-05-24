@@ -23,4 +23,4 @@ usethis::use_data(df_sites_all, overwrite = TRUE)
 
 df_sites <- format_sites(df)
 usethis::use_data(df_sites, overwrite = TRUE)
-message("\nUpload complete")
+message("\nFinished processing data")

@@ -21,9 +21,24 @@ default_state = "MA"
 # CODE ------------------------------------------------------------------------
 devtools::load_all()
 
-df_results <- read.csv(paste0("data-raw/", wq_data),
+df <- read.csv(paste0("data-raw/", wq_data),
     na.strings=c("","NA"),
     check.names=FALSE) %>%
   dplyr::mutate_if(is.character, trimws)
-df_results <- qaqc_results(df_results, date_format)
-format_results(df_results, default_state)
+
+# Check results
+df <- qaqc_results(df, date_format)
+
+# Import results
+df_data_all <- df
+usethis::use_data(df_data_all, overwrite = TRUE)
+message("Saved df_data_all")
+
+df_data <- format_df_data(df_data_all)
+usethis::use_data(df_data, overwrite = TRUE)
+message("Saved df_data")
+
+df_score <- format_df_score(df_data, default_state)
+usethis::use_data(df_score, overwrite = TRUE)
+message("Saved df_score \n\nFinished processing data")
+
