@@ -134,7 +134,13 @@ format_df_data <- function(df){
     dplyr::select(dplyr::all_of(field_keep)) %>%
     dplyr::mutate(Description = paste0(
       "<b>", Site_Name, "</b><br>",
-      format(Date, format = "%B %d, %Y"), "<br>",
+      format(Date, format = "%B %d, %Y"), "<br>")) %>%
+    dplyr::mutate(Description = dplyr::if_else(
+      !is.na(Depth),
+      paste0(Description, "Depth: ", Depth, "<br>"),
+      Description)) %>%
+    dplyr::mutate(Description = paste0(
+      Description,
       Parameter, ": ", Result)) %>%
     dplyr::mutate(Description = dplyr::if_else(
       !Unit %in% c(NA, "None"),

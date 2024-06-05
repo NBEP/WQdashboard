@@ -162,9 +162,10 @@ threshold_max <- function(site_id, parameter, unit, depth = NA) {
   # Define vars
   df <- find_threshold(site_id, parameter, depth_cat = depth)
   if (is.null(df)) {
-    return(NA)
+    return(-999999)
   }
   threshold_max <- convert_unit(df$Threshold_Max, df$Unit, unit, FALSE)
+  if (is.na(threshold_max)) { return(-999999) }
   return(threshold_max)
 }
 
@@ -183,8 +184,9 @@ threshold_min <- function(site_id, parameter, unit, depth = NA) {
   # Define vars
   df <- find_threshold(site_id, parameter, depth_cat = depth)
   if (is.null(df)) {
-    return(NA)
+    return(-999999)
   }
   threshold_min <- convert_unit(df$Threshold_Min, df$Unit, unit, FALSE)
+  if (is.na(threshold_min)) { return(-999999) }
   return(threshold_min)
 }

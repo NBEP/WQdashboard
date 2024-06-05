@@ -29,9 +29,11 @@ usethis::use_package("stringr")
 ## Add modules ----
 ## Create a module infrastructure in R/
 golem::add_module(name = "sidebar", with_test = TRUE)
+golem::add_module(name = "select_location", with_test = TRUE)
 golem::add_module(name = "map", with_test = TRUE)
 golem::add_module(name = "report_card", with_test = TRUE)
 golem::add_module(name = "graphs", with_test = TRUE)
+golem::add_module(name = "graphs_graph", with_test = TRUE)
 golem::add_module(name = "download", with_test = TRUE)
 
 ## Add helper functions ----
@@ -49,7 +51,7 @@ golem::add_fct("calculate_score", with_test = TRUE)
 golem::add_utils("add_popup_text", with_test = TRUE)
 golem::add_fct("select_dropdown", with_test = TRUE)
 golem::add_fct("table", with_test = TRUE)
-golem::add_fct("scatter_plot", with_test = TRUE)
+golem::add_fct("graph", with_test = TRUE)
 
 ## External resources
 ## Creates .js and .css files at inst/app/www

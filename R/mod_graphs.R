@@ -10,14 +10,25 @@
 mod_graphs_ui <- function(id){
   ns <- NS(id)
   tagList(
-    bslib::card(
-      min_height = 250,
+    bslib::navset_card_tab(
+      id = "graphs_tabset",
       full_screen = FALSE,
-      h2("Graphs"),
-      plotly::plotlyOutput(outputId = ns("plot")),
-      h3("Long Term Trends"),
-      "bar graph?"
-      ),
+      # title = "Graphs",
+      bslib::nav_panel(
+        "Long Term Trends",
+        mod_graphs_graph_ui(ns("graphs_graph_1"))),
+      if (length(unique(df_data$Depth)) < 1) {
+        bslib::nav_panel(
+          "Compare Depths",
+          "up to 4 depths?")
+      },
+      bslib::nav_panel(
+        "Compare Sites",
+        "up to 5 sites?"),
+      bslib::nav_panel(
+        "Compare Parameters",
+        "max 2 param")
+    )
   )
 }
 
@@ -36,21 +47,32 @@ mod_graphs_server <- function(id, selected_var){
       df <- df_data %>%
         dplyr::filter(
           Date >= selected_var$date_range()[1] &
-            Date <=selected_var$date_range()[2]) %>%
+            Date <= selected_var$date_range()[2]) %>%
         dplyr::filter(Month %in% selected_var$month()) %>%
         dplyr::select(!Month)
 
       return(df)
     })
 
-    # Graph
-    output$plot <- plotly::renderPlotly({
-      scatter_plot(
-        df_filter(),
-        site_id = selected_var$sites_n(),
-        parameter = selected_var$param_n(),
-        depth = NA)
+    # Tab 1 ----
+    df_trends <- reactive({
+      req(selected_var$sites_n())
+      req(selected_var$param_n())
+
+      sites <- selected_var$sites_n()
+      param <- selected_var$param_n()
+      depth <- c(NA, selected_var$depth_n())
+
+      df <- df_filter() %>%
+        dplyr::filter(Site_ID == sites & Parameter == param & Depth %in% depth)
+
+      return(df)
     })
+
+    # Modules ----
+    mod_graphs_graph_server("graphs_graph_1",
+      df = reactive({ df_trends() }),
+      thresholds = TRUE)
 
   })
 }
