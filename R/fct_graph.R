@@ -10,18 +10,18 @@
 #'
 #' @noRd
 
-graph_one_var <- function(df, thresholds = FALSE) {
+graph_one_var <- function(df, fig_title, group = "Site_Name",
+    thresholds = FALSE) {
   if (nrow(df) == 0) { return(NULL) }
-
-  if ("Depth" %in% colnames(df)) {
-    len_depth <- length(unique(df$Depth))
-  } else {
-    len_depth <- 0
-  }
 
   df_new <- add_line_breaks(df)
 
-  if (len_depth < 2) {
+  pal <- palette.colors(palette = "R4")
+  # pal <- c("#2daebe", "#6f3d61", "#f5b400", "#cf4e13", "#2c2c2c")
+  # pal_len <- length(unique(df[[group]]))
+  # pal <- pal[1:pal_len]
+
+  if (group == "Site_Name") {
     fig <- plotly::plot_ly(
       data = df_new,
       type = "scatter",
@@ -29,6 +29,7 @@ graph_one_var <- function(df, thresholds = FALSE) {
       x = ~Date,
       y = ~Result,
       color = ~Site_Name,
+      colors = pal,
       hoverinfo = "text",
       hovertext = ~Description)
   } else {
@@ -39,9 +40,11 @@ graph_one_var <- function(df, thresholds = FALSE) {
       x = ~Date,
       y = ~Result,
       color = ~Depth,
+      colors = pal,
       hoverinfo = "text",
       hovertext = ~Description)
   }
+
 
   if (thresholds) {
     fig <- add_thresholds(fig, df)
@@ -57,7 +60,7 @@ graph_one_var <- function(df, thresholds = FALSE) {
   if (max_val == min_val) { max_val <- min_val + 1 }
 
   fig <- graph_style(fig,
-    fig_title = df$Parameter[1],
+    fig_title = fig_title,
     y_title = paste(df$Parameter[1], param_unit(df$Parameter[1])),
     y_range = list(min_val, max_val),
     years = years)

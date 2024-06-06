@@ -17,22 +17,16 @@ mod_graphs_graph_ui <- function(id){
         "show_graph",
         tabsetPanel(
           id = ns("graph_table"),
-          type = "hidden",
-          tabPanelBody(
-            "graph",
-            actionButton(
-              ns("btn_table"),
-              label = "View as Table",
-              width = "fit-content"),
-            plotly::plotlyOutput(outputId = ns("plot")),
+          tabPanel(
+            "Graph",
+            plotly::plotlyOutput(outputId = ns("plot")) %>%
+              shinycssloaders::withSpinner(type = 5),
             "for trendlines - seperate graph? modify existing graph?"),
-          tabPanelBody(
-            "table",
-            actionButton(
-              ns("btn_graph"),
-              label = "View as Graph",
-              width = "fit-content"),
-            "this is a table"))
+          tabPanel(
+            "Table",
+            htmlOutput(ns("fig_title")),
+            reactable::reactableOutput(ns("table")) %>%
+              shinycssloaders::withSpinner(type = 5)))
         ),
       tabPanelBody(
         "hide_graph",
@@ -44,7 +38,8 @@ mod_graphs_graph_ui <- function(id){
 #' graphs_graph Server Functions
 #'
 #' @noRd
-mod_graphs_graph_server <- function(id, df, thresholds = FALSE){
+mod_graphs_graph_server <- function(id, df, thresholds = FALSE,
+    group = "Site_Name"){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
@@ -63,22 +58,33 @@ mod_graphs_graph_server <- function(id, df, thresholds = FALSE){
     }) %>%
       bindEvent(hide_graph())
 
-    observe({
-      updateTabsetPanel(inputId = "graph_table", selected = "table")
-    }) %>%
-      bindEvent(input$btn_table)
+    # Graph/Table Title ----
+    fig_title <- reactive({
+      df <- df()
 
-    observe({
-      updateTabsetPanel(inputId = "graph_table", selected = "graph")
-    }) %>%
-      bindEvent(input$btn_graph)
+      if (group == "Site_Name") {
+        fig_title <- df$Parameter[1]
+      } else if (group == "Depth") {
+        fig_title <- paste(df$Parameter[1], "at", df$Site_Name[1])
+      } else {
+        fig_title <- df$Site_Name[1]
+      }
+
+      return(fig_title)
+    })
 
     # Graph ----
     output$plot <- plotly::renderPlotly({
-      graph_one_var(df(), thresholds = thresholds)
+      graph_one_var(df(), fig_title(), group, thresholds)
     })
 
     # Table ----
+    output$fig_title <- renderUI({ h2(fig_title()) })
+
+    output$table <- reactable::renderReactable({
+      format_graph_table(df(), group)
+    })
+
   })
 }
 

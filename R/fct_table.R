@@ -8,12 +8,20 @@
 #' @return Formatted list of column styles.
 #'
 #' @noRd
-column_styles <- function(df, hide_cols = NA) {
-  col_style <- list(
-    Site_Name = reactable::colDef(
-      rowHeader = TRUE,
-      sticky = "left",
-      style = list(borderRight = "1px solid #eee")))
+column_styles <- function(df, graph_table, hide_cols = NA) {
+  if (graph_table) {
+    col_style <- list(
+      Date = reactable::colDef(
+        rowHeader = TRUE,
+        sticky = "left",
+        style = list(borderRight = "1px solid #eee")))
+  } else {
+    col_style <- list(
+      Site_Name = reactable::colDef(
+        rowHeader = TRUE,
+        sticky = "left",
+        style = list(borderRight = "1px solid #eee")))
+  }
 
   col_loc <- c("Town", "County", "State", "Watershed", "Group")
   col_loc <- intersect(colnames(df), col_loc)
@@ -69,7 +77,7 @@ column_styles <- function(df, hide_cols = NA) {
 #' @return Reactable table.
 #'
 #' @noRd
-reactable_table <- function(df, hide_cols = NA) {
+reactable_table <- function(df, graph_table = FALSE, hide_cols = NA) {
   reactable::reactable(
     df,
     highlight = TRUE,
@@ -77,5 +85,5 @@ reactable_table <- function(df, hide_cols = NA) {
       header = function(value) gsub("_", " ", value, fixed = TRUE),
       headerStyle = list(background = "#f7f7f8")
     ),
-    columns = column_styles(df, hide_cols))
+    columns = column_styles(df, graph_table, hide_cols))
 }

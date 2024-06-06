@@ -199,3 +199,40 @@ add_thresholds <- function(fig, df) {
 
   return(fig)
 }
+
+#' format_graph_table
+#'
+#' @description Format graph data as table.
+#'
+#' @param df Input dataframe.
+#' @param group How to group data. Options: Site_Name, Parameter, Depth.
+#'
+#' @return Updated dataframe.
+#'
+#' @noRd
+format_graph_table <- function(df, group) {
+  col_select <- c("Date", "Result", group)
+
+  df <- df %>%
+    dplyr::mutate(Result = dplyr::if_else(
+      Unit %in% c(NA, "None"),
+      as.character(Result),
+      paste(Result, Unit))) %>%
+    dplyr::select(dplyr::all_of(col_select))
+
+  var_count <- length(unique(df[[group]]))
+
+  if (var_count == 1) {
+    var_name <- df[[group]][1]
+
+    df_wide <- df %>%
+      dplyr::select(Date, Result) %>%
+      dplyr::rename({{var_name}} := Result)
+  } else {
+    df_wide <- tidyr::spread(df, {{group}}, Result)
+  }
+
+  df_wide <- reactable_table(df_wide, graph_table = TRUE)
+
+  return(df_wide)
+}

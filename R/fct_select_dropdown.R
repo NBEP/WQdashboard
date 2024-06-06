@@ -21,14 +21,19 @@ select_dropdown <- function(
     names(choices) <- choice_names
   }
   choices <- choices[!duplicated(choices)]
-  if (sort_choices) {
+
+  if (sort_choices & !is.null(choice_names)) {
+    choices <- choices[order(names(choices))]
+  } else if (sort_choices) {
     choices <- sort(choices, decreasing = sort_decreasing)
   }
 
   if (is.null(max_options) & multiple == TRUE) {
     selected = choices
+    allow_actions = TRUE
   } else {
     selected = choices[1]
+    allow_actions = FALSE
   }
 
   shinyWidgets::pickerInput(id,
@@ -36,7 +41,7 @@ select_dropdown <- function(
     choices = choices,
     selected = selected,
     options = list(
-      `actions-box` = TRUE,
+      `actions-box` = allow_actions,
       `live-search` = TRUE,
       `selected-text-format` = 'count > 1',
       `max-options` = max_options,
