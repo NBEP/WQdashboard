@@ -10,9 +10,13 @@
 mod_graphs_graph_ui <- function(id){
   ns <- NS(id)
   tagList(
+    # Enable javascript ----
+    shinyjs::useShinyjs(),
+    # UI ----
     tabsetPanel(
       id = ns("hide_show"),
       type = "hidden",
+      # * Graph/table ----
       tabPanelBody(
         "show_graph",
         tabsetPanel(
@@ -20,14 +24,28 @@ mod_graphs_graph_ui <- function(id){
           tabPanel(
             "Graph",
             plotly::plotlyOutput(outputId = ns("plot")) %>%
-              shinycssloaders::withSpinner(type = 5),
-            "for trendlines - seperate graph? modify existing graph?"),
+              shinycssloaders::withSpinner(type = 5)),
           tabPanel(
             "Table",
             htmlOutput(ns("fig_title")),
             reactable::reactableOutput(ns("table")) %>%
-              shinycssloaders::withSpinner(type = 5)))
+              shinycssloaders::withSpinner(type = 5))),
+        # * Trend analysis ----
+        tabsetPanel(
+          id = ns("tabset_trends"),
+          type = "hidden",
+          tabPanelBody(
+            "trend_btn",
+            actionButton(
+              ns("btn_trends"),
+              label = "Run Trend Analysis",
+              width = "fit-content")),
+          tabPanelBody(
+            "trend_desc",
+            htmlOutput(ns("trend_desc"))),
+          tabPanelBody("trend_blank"))
         ),
+      # * No data message ----
       tabPanelBody(
         "hide_graph",
         "No data found. Please change selection.")
@@ -39,7 +57,7 @@ mod_graphs_graph_ui <- function(id){
 #'
 #' @noRd
 mod_graphs_graph_server <- function(id, df, thresholds = FALSE,
-    group = "Site_Name"){
+    best_fit = FALSE, group = "Site_Name", par1 = NA){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
@@ -58,7 +76,7 @@ mod_graphs_graph_server <- function(id, df, thresholds = FALSE,
     }) %>%
       bindEvent(hide_graph())
 
-    # Graph/Table Title ----
+    # Figure Title ----
     fig_title <- reactive({
       df <- df()
 
@@ -75,7 +93,11 @@ mod_graphs_graph_server <- function(id, df, thresholds = FALSE,
 
     # Graph ----
     output$plot <- plotly::renderPlotly({
-      graph_one_var(df(), fig_title(), group, thresholds)
+      if (group == "Parameter") {
+        graph_two_var(df(), fig_title(), par1())
+      } else {
+        graph_one_var(df(), fig_title(), group, thresholds)
+      }
     })
 
     # Table ----
@@ -83,6 +105,115 @@ mod_graphs_graph_server <- function(id, df, thresholds = FALSE,
 
     output$table <- reactable::renderReactable({
       format_graph_table(df(), group)
+    })
+
+    # Trend line ----
+
+    # Button/tabs
+    len_years <- reactive({ length(unique(df()$Year)) })
+
+    shinyjs::disable("btn_trends")
+
+    observe({
+      if (len_years() > 10) {
+        shinyjs::enable("btn_trends")
+      } else {
+        shinyjs::disable("btn_trends")
+      }
+    }) %>%
+      bindEvent(len_years())
+
+    observe({
+      updateTabsetPanel(inputId = "tabset_trends", selected = "trend_desc")
+    }) %>%
+      bindEvent(input$btn_trends)
+
+    observe({
+      if (best_fit) {
+        updateTabsetPanel(inputId = "tabset_trends", selected = "trend_btn")
+      } else {
+        updateTabsetPanel(inputId = "tabset_trends", selected = "trend_blank")
+      }
+    }) %>%
+      bindEvent(df())
+
+    # Calc trend
+    df_trendline <- reactive({ trend_line(df()) }) %>%
+      bindEvent(input$btn_trends)
+
+    observe({
+      df <- df_trendline()$df
+      p <- df_trendline()$p
+
+      if (p < .1) {
+        dash_color = "#4e4e90"
+        dash_width = 2
+        dash_type = NA
+      } else {
+        dash_color = "#c2c2d5"
+        dash_width = 1
+        dash_type = "dash"
+      }
+
+      plotly::plotlyProxy("plot", session) %>%
+        plotly::plotlyProxyInvoke(
+          "addTraces",
+          list(
+            x = df$Date,
+            y = df$Result_fit,
+            type = "scatter",
+            mode = "lines",
+            line = list(
+              color = dash_color,
+              width = dash_width,
+              dash = dash_type),
+            name = "Trend Line")) %>%
+        plotly::plotlyProxyInvoke(
+          "addTraces",
+          list(
+            x = df$Date,
+            y = df$Result_avg,
+            type = "scatter",
+            mode = "markers",
+            marker = list(
+              size = 10,
+              color = "#4e4e90",
+              line = list(
+                color = "#07077e",
+                width = 2)),
+            name = "Yearly Average"))
+
+    }) %>%
+      bindEvent(input$btn_trends)
+
+    output$trend_desc <- renderUI({
+      p <- df_trendline()$p
+      slope <- df_trendline()$slope
+
+      desc <- "<b>Trend:</b> "
+
+      if (slope < 0) {
+        trend <- "🢃 Decreasing"
+      } else if (slope > 0) {
+        trend <- "🢁 Increasing"
+      } else {
+        trend <- "No trend"
+      }
+
+      if (p >= 0.1) {
+        conf <- "Confident in no trend"
+      } else if (p >= 0.05) {
+        conf <- "Somewhat confident in trend"
+      } else if (p >= 0.01) {
+        conf <- "Confident in trend"
+      } else {
+        conf <- "Very confident in trend"
+      }
+
+      desc <- HTML(paste0("<b>Trend:</b> ", trend, " (", slope,
+                          ")<br/><b>Confidence:</b> ", conf, " (", p, ")"))
+
+      return(desc)
     })
 
   })

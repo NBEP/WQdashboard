@@ -24,7 +24,7 @@ mod_graphs_ui <- function(id){
           "Compare Depths",
           select_dropdown(
             ns("extra_depth"),
-            label = h3("Select Depths"),
+            label = h2("Select Extra Depths"),
             choices = unique(df_data$Depth)),
           mod_graphs_graph_ui(ns("graph_depth")))
       },
@@ -34,15 +34,21 @@ mod_graphs_ui <- function(id){
         select_dropdown(
           ns("extra_sites"),
           label = HTML(paste(
-            h2("Additional Sites"),
+            h2("Select Extra Sites"),
             "Select up to four sites")),
           choices = df_sites$Site_ID,
           choice_names = df_sites$Site_Name,
           max_options = 4),
         mod_graphs_graph_ui(ns("graph_sites"))),
+      # Parameters ----
       bslib::nav_panel(
         "Compare Parameters",
-        "max 2 param")
+        select_dropdown(
+          ns("extra_param"),
+          label = h2("Select Extra Indicator"),
+          choices = unique(df_data$Parameter),
+          multiple = FALSE),
+        mod_graphs_graph_ui(ns("graph_param")))
     )
   )
 }
@@ -54,7 +60,7 @@ mod_graphs_server <- function(id, selected_var){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    # Initial filter - date & month
+    # Filter data ----
     df_filter <- reactive({
       req(selected_var$date_range())
       req(selected_var$month)
@@ -79,14 +85,18 @@ mod_graphs_server <- function(id, selected_var){
       depth <- c(NA, selected_var$depth_n())
 
       df <- df_filter() %>%
-        dplyr::filter(Site_ID == sites & Parameter == param & Depth %in% depth)
+        dplyr::filter(
+          Site_ID == sites
+          & Parameter == param
+          & Depth %in% depth)
 
       return(df)
     })
 
     mod_graphs_graph_server("graph_trends",
       df = reactive({ df_trends()}),
-      thresholds = TRUE)
+      thresholds = TRUE,
+      best_fit = TRUE)
 
     # Graph: Compare Sites ----
     df_comp_sites <- reactive({
@@ -98,7 +108,10 @@ mod_graphs_server <- function(id, selected_var){
       depth <- c(NA, selected_var$depth_n())
 
       df <- df_filter() %>%
-        dplyr::filter(Site_ID %in% sites & Parameter == param & Depth %in% depth)
+        dplyr::filter(
+          Site_ID %in% sites
+          & Parameter == param
+          & Depth %in% depth)
 
       return(df)
     })
@@ -115,8 +128,11 @@ mod_graphs_server <- function(id, selected_var){
       depth <- c(selected_var$depth_n(), input$extra_depth)
 
       df <- df_filter() %>%
-        dplyr::filter(Site_ID == sites & Parameter == param) %>%
-        dplyr::filter(!is.na(Depth) & Depth %in% depth)
+        dplyr::filter(
+          Site_ID == sites
+          & Parameter == param
+          & !is.na(Depth)
+          & Depth %in% depth)
 
       return(df)
     })
@@ -124,6 +140,29 @@ mod_graphs_server <- function(id, selected_var){
     mod_graphs_graph_server("graph_depth",
       df = reactive({ df_comp_depth() }),
       group = "Depth")
+
+    # Graph: Compare Parameters ----
+    df_comp_par <- reactive({
+      req(selected_var$sites_n())
+      req(selected_var$param_n())
+
+      sites <- selected_var$sites_n()
+      param <- c(selected_var$param_n(), input$extra_param)
+      depth <- c(NA, selected_var$depth_n())
+
+      df <- df_filter() %>%
+        dplyr::filter(
+          Site_ID == sites
+          & Parameter %in% param
+          & Depth %in% depth)
+
+      return(df)
+    })
+
+    mod_graphs_graph_server("graph_param",
+      df = reactive({ df_comp_par() }),
+      par1 = reactive({ selected_var$param_n() }),
+      group = "Parameter")
 
   })
 }

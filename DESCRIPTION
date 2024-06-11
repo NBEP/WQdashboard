@@ -5,6 +5,7 @@ Authors@R: person('Mariel', 'Sorlien', email = 'msorlien@nbep.org', role = c('cr
 Description: A water quality dashboard template.
 License: MIT + file LICENSE
 Imports: 
+    broom,
     bslib,
     config (>= 0.3.2),
     dplyr,
@@ -21,6 +22,7 @@ Imports:
     shiny (>= 1.8.0),
     shinya11y,
     shinycssloaders,
+    shinyjs,
     shinyWidgets,
     stringr,
     tidyr

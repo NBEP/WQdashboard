@@ -200,6 +200,54 @@ add_thresholds <- function(fig, df) {
   return(fig)
 }
 
+#' Trend Line
+#'
+#' @description Calculates linear regression.
+#'
+#' @param df Dataframe.
+#'
+#' @return Dataframe with values for linear regression; slope of linear
+#'   regression; p-value.
+#'
+#' @noRd
+trend_line <- function(df) {
+  # Calc yearly average
+  df <- df %>%
+    dplyr::group_by_at(c("Site_Name", "Year", "Parameter", "Unit")) %>%
+    dplyr::summarise(
+      Date = mean(Date),
+      Result_avg = mean(Result),
+      .groups = "drop") %>%
+    dplyr::mutate(Desc_avg = paste0(
+      "<b>", Site_Name, "</b><br>",
+      Year, "<br>",
+      "Average ", Parameter, ": ", Result_avg)) %>%
+    dplyr::mutate(Desc_avg = dplyr::if_else(
+      !Unit %in% c(NA, "None"),
+      paste(Desc_avg, Unit),
+      Desc_avg)) %>%
+    dplyr::select(!c(Site_Name, Parameter, Unit))
+
+  # Run linear regression
+  df_lm <- lm(Result_avg ~ Year, data = df)
+  a <- broom::tidy(df_lm)$estimate[2]
+  b <- broom::tidy(df_lm)$estimate[1]
+  p <- broom::glance(df_lm)$p.value[1] %>% unname
+
+  # Add lm points to dataframe
+  df <- dplyr::mutate(df, Result_fit = {{a}} * Year + {{b}} )
+
+  # Tidy data
+  if (abs(a) < 1) {
+    a <- signif(a, 2)
+  } else {
+    a <- round(a, 2)
+  }
+  p <- signif(p, 2)
+
+  return(list(df = df, slope = a, p = p))
+}
+
 #' format_graph_table
 #'
 #' @description Format graph data as table.
