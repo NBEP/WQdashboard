@@ -5,6 +5,9 @@
 #' @import shiny
 #' @noRd
 app_ui <- function(request) {
+  # Try to fix the dplyr problem....
+  library(dplyr)
+
   tagList(
     # Leave this function for adding external resources
     golem_add_external_resources(),

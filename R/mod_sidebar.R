@@ -65,14 +65,16 @@ mod_sidebar_ui <- function(id){
             select_dropdown(
               ns("select_depth_n"),
               label = h3("Select Depth"),
-              choices = unique(df_data$Depth),
+              choices = sort_depth(df_data$Depth),
+              sort_choices = FALSE,
               multiple = FALSE)),
           tabPanelBody(
             "depth_all",
             select_dropdown(
               ns("select_depth_all"),
               label = h3("Select Depths"),
-              choices = unique(df_data$Depth))),
+              choices = sort_depth(df_data$Depth),
+              sort_choices = FALSE)),
           tabPanelBody("depth_null")
           )
         ),

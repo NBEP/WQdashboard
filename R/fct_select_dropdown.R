@@ -20,9 +20,11 @@ select_dropdown <- function(
   if (!is.null(choices) & !is.null(choice_names)) {
     names(choices) <- choice_names
   }
-  choices <- choices[!duplicated(choices)]
+  if (length(choices) > 1) {
+    choices <- choices[!duplicated(choices)]
+  }
 
-  if (sort_choices & !is.null(choice_names)) {
+  if (sort_choices & length(choices) > 1 & !is.null(choice_names)) {
     choices <- choices[order(names(choices))]
   } else if (sort_choices) {
     choices <- sort(choices, decreasing = sort_decreasing)

@@ -115,7 +115,7 @@ mod_graphs_graph_server <- function(id, df, thresholds = FALSE,
     shinyjs::disable("btn_trends")
 
     observe({
-      if (len_years() > 10) {
+      if (len_years() >= 10) {
         shinyjs::enable("btn_trends")
       } else {
         shinyjs::disable("btn_trends")

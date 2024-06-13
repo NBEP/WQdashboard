@@ -16,6 +16,8 @@ Imports:
     leaflet,
     leaflet.extras2,
     lubridate,
+    magrittr,
+    pkgload,
     plotly,
     quarto,
     reactable,

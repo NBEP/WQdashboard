@@ -142,3 +142,20 @@ sort_months <- function(month_list) {
   all_months <- all_months[all_months %in% month_list]
   return(all_months)
 }
+
+#' Sort depth
+#'
+#' @description Orders depths from shallow to deep.
+#'
+#' @param depth_list Unsorted depth list.
+#'
+#' @return Sorted depth list.
+#'
+#' @noRd
+sort_depth <- function(depth_list) {
+  depth_list <- unique(depth_list)
+  all_depths <- c("Surface", "Midwater", "Near Bottom", "Bottom")
+
+  all_depths <- all_depths[all_depths %in% depth_list]
+  return(all_depths)
+}

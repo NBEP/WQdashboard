@@ -10,3 +10,4 @@ data/df_*
 data/epa_thresholds.rda
 data-raw/epa_thresholds.csv
 inst/doc
+/rsconnect
