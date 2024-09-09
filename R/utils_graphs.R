@@ -284,3 +284,55 @@ format_graph_table <- function(df, group) {
 
   return(df_wide)
 }
+
+#' format_trend_table
+#'
+#' @description Format linear regression summary as table.
+#'
+#' @param p P-value.
+#' @param slope Slope.
+#'
+#' @return Updated dataframe.
+#'
+#' @noRd
+format_trend_table <- function(p, slope) {
+  if (p >= 0.1 | slope == 0) {
+    trend <- "No trend"
+  } else if (slope < 0) {
+    trend <- "🢃 Decreasing"
+  } else {
+    trend <- "🢁 Increasing"
+  }
+
+  if (p >= 0.1) {
+    conf <- "Confident in no trend"
+    slope <- NA
+  } else if (p >= 0.05) {
+    conf <- "Somewhat confident in trend"
+  } else if (p >= 0.01) {
+    conf <- "Confident in trend"
+  } else {
+    conf <- "Very confident in trend"
+  }
+
+  df <- data.frame(
+    Trend=trend,
+    Slope=slope,
+    Confidence=conf,
+    P_value=p)
+
+  df <- reactable::reactable(
+    df,
+    fullWidth = FALSE,
+    bordered = TRUE,
+    defaultColDef = reactable::colDef(
+      minWidth = 120,
+      align = "left",
+      sortable = FALSE,
+      header = function(value) gsub("_", "-", value, fixed = TRUE),
+      headerStyle = list(background = "#f7f7f8")
+      )
+    )
+
+  return(df)
+}

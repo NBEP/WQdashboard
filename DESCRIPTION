@@ -14,7 +14,6 @@ Imports:
     knitr,
     leaflegend,
     leaflet,
-    leaflet.extras2,
     lubridate,
     magrittr,
     pkgload,

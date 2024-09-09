@@ -10,19 +10,29 @@
 mod_map_ui <- function(id){
   ns <- NS(id)
   tagList(
-    bslib::card(
-      min_height = 250,
-      full_screen = FALSE,
-      h2("Map"),
-      shinycssloaders::withSpinner(
-        leaflet::leafletOutput(ns('map')),
-        type = 5
-      ),
-      h2("Table"),
-      shinycssloaders::withSpinner(
-        reactable::reactableOutput(ns("table")),
-        type = 5
-      )
+    bslib::navset_card_tab(
+      id = ns("tabset"),
+      full_screen = TRUE,
+      bslib::nav_panel(
+        "Map",
+        shinycssloaders::withSpinner(
+          leaflet::leafletOutput(ns('map')),
+          type = 5) %>%
+          # Code from monsterrat
+          # https://stackoverflow.com/questions/77184183/how-to-use-shinycssloaders-withspinner-with-a-plot-output-in-a-bslib-card
+          (\(x) {
+            x[[4]] <- x[[4]] %>% bslib::as_fill_carrier()
+            x
+          })()),
+      bslib::nav_panel(
+        "Table",
+        shinycssloaders::withSpinner(
+          reactable::reactableOutput(ns("table")),
+          type = 5) %>%
+          (\(x) {
+            x[[4]] <- x[[4]] %>% bslib::as_fill_carrier()
+            x
+          })())
     )
   )
 }
@@ -87,7 +97,6 @@ mod_map_server <- function(id, selected_var){
           ) %>%
         leaflet::addProviderTiles(
           leaflet::providers$Esri.WorldTopoMap) %>%
-        leaflet.extras2::addSpinner() %>%
         leaflet::addScaleBar(position='bottomleft')
     })
 
@@ -183,8 +192,20 @@ mod_map_server <- function(id, selected_var){
       bindEvent(df_param())
 
     # Table ------------------------------------------------------------------
+    val <- reactiveValues(
+      df = df_default,
+      count = 0)
+
+    observe({
+      if (val$count < 2) {
+        val$count <- val$count + 1
+        val$df <- df_map()
+      }
+    }) %>%
+      bindEvent(input$tabset)
+
     output$table <- reactable::renderReactable({
-      reactable_table(df_default,
+      reactable_table(val$df,
         hide_cols = c("Year", "Site_ID", "Parameter", "Unit", "score_typ",
                       "Latitude", "Longitude", "popup_loc", "popup_score",
                       "alt"))

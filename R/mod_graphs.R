@@ -24,7 +24,7 @@ mod_graphs_ui <- function(id){
           "Compare Depths",
           select_dropdown(
             ns("extra_depth"),
-            label = h2("Select Extra Depths"),
+            label = h2("Select Depths"),
             choices = unique(df_data$Depth)),
           mod_graphs_graph_ui(ns("graph_depth")))
       },
@@ -34,20 +34,22 @@ mod_graphs_ui <- function(id){
         select_dropdown(
           ns("extra_sites"),
           label = HTML(paste(
-            h2("Select Extra Sites"),
-            "Select up to four sites")),
+            h2("Select Sites"),
+            "Select up to five sites")),
           choices = df_sites$Site_ID,
           choice_names = df_sites$Site_Name,
-          max_options = 4),
+          max_options = 5),
         mod_graphs_graph_ui(ns("graph_sites"))),
       # Parameters ----
       bslib::nav_panel(
         "Compare Parameters",
         select_dropdown(
           ns("extra_param"),
-          label = h2("Select Extra Indicator"),
+          label = HTML(paste(
+            h2("Select Indicators"),
+            "Select two indicators")),
           choices = unique(df_data$Parameter),
-          multiple = FALSE),
+          max_options = 2),
         mod_graphs_graph_ui(ns("graph_param")))
     )
   )
@@ -100,10 +102,10 @@ mod_graphs_server <- function(id, selected_var){
 
     # Graph: Compare Sites ----
     df_comp_sites <- reactive({
-      req(selected_var$sites_n())
+      req(input$extra_sites)
       req(selected_var$param_n())
 
-      sites <- c(selected_var$sites_n(), input$extra_sites)
+      sites <- input$extra_sites
       param <- selected_var$param_n()
       depth <- c(NA, selected_var$depth_n())
 
@@ -122,10 +124,11 @@ mod_graphs_server <- function(id, selected_var){
     df_comp_depth <- reactive({
       req(selected_var$sites_n())
       req(selected_var$param_n())
+      req(input$extra_depth)
 
       sites <- selected_var$sites_n()
       param <- selected_var$param_n()
-      depth <- c(selected_var$depth_n(), input$extra_depth)
+      depth <- input$extra_depth
 
       df <- df_filter() %>%
         dplyr::filter(
@@ -144,10 +147,10 @@ mod_graphs_server <- function(id, selected_var){
     # Graph: Compare Parameters ----
     df_comp_par <- reactive({
       req(selected_var$sites_n())
-      req(selected_var$param_n())
+      req(input$extra_param)
 
       sites <- selected_var$sites_n()
-      param <- c(selected_var$param_n(), input$extra_param)
+      param <- input$extra_param
       depth <- c(NA, selected_var$depth_n())
 
       df <- df_filter() %>%
@@ -161,7 +164,6 @@ mod_graphs_server <- function(id, selected_var){
 
     mod_graphs_graph_server("graph_param",
       df = reactive({ df_comp_par() }),
-      par1 = reactive({ selected_var$param_n() }),
       group = "Parameter")
 
   })

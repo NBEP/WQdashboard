@@ -79,9 +79,9 @@ graph_one_var <- function(df, fig_title, group = "Site_Name",
 #'
 #' @noRd
 
-graph_two_var <- function(df, fig_title, par1) {
+graph_two_var <- function(df, fig_title) {
   if (nrow(df) == 0) { return(NULL) }
-  if (is.na(par1)) { par1 <- df$Parameter[1] }
+  par1 <- df$Parameter[1]
 
   df_new <- add_line_breaks(df)
   df1 <- dplyr::filter(df_new, Parameter == par1)

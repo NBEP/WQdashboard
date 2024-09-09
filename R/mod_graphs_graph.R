@@ -42,7 +42,8 @@ mod_graphs_graph_ui <- function(id){
               width = "fit-content")),
           tabPanelBody(
             "trend_desc",
-            htmlOutput(ns("trend_desc"))),
+            reactable::reactableOutput(ns("trend_summary")) %>%
+              shinycssloaders::withSpinner(type = 5)),
           tabPanelBody("trend_blank"))
         ),
       # * No data message ----
@@ -57,7 +58,7 @@ mod_graphs_graph_ui <- function(id){
 #'
 #' @noRd
 mod_graphs_graph_server <- function(id, df, thresholds = FALSE,
-    best_fit = FALSE, group = "Site_Name", par1 = NA){
+    best_fit = FALSE, group = "Site_Name"){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
@@ -94,7 +95,7 @@ mod_graphs_graph_server <- function(id, df, thresholds = FALSE,
     # Graph ----
     output$plot <- plotly::renderPlotly({
       if (group == "Parameter") {
-        graph_two_var(df(), fig_title(), par1())
+        graph_two_var(df(), fig_title())
       } else {
         graph_one_var(df(), fig_title(), group, thresholds)
       }
@@ -141,6 +142,13 @@ mod_graphs_graph_server <- function(id, df, thresholds = FALSE,
     df_trendline <- reactive({ trend_line(df()) }) %>%
       bindEvent(input$btn_trends)
 
+    output$trend_summary <- reactable::renderReactable({
+      format_trend_table(
+        p = df_trendline()$p,
+        slope = df_trendline()$slope
+        )
+      })
+
     observe({
       df <- df_trendline()$df
       p <- df_trendline()$p
@@ -185,36 +193,6 @@ mod_graphs_graph_server <- function(id, df, thresholds = FALSE,
 
     }) %>%
       bindEvent(input$btn_trends)
-
-    output$trend_desc <- renderUI({
-      p <- df_trendline()$p
-      slope <- df_trendline()$slope
-
-      desc <- "<b>Trend:</b> "
-
-      if (slope < 0) {
-        trend <- "🢃 Decreasing"
-      } else if (slope > 0) {
-        trend <- "🢁 Increasing"
-      } else {
-        trend <- "No trend"
-      }
-
-      if (p >= 0.1) {
-        conf <- "Confident in no trend"
-      } else if (p >= 0.05) {
-        conf <- "Somewhat confident in trend"
-      } else if (p >= 0.01) {
-        conf <- "Confident in trend"
-      } else {
-        conf <- "Very confident in trend"
-      }
-
-      desc <- HTML(paste0("<b>Trend:</b> ", trend, " (", slope,
-                          ")<br/><b>Confidence:</b> ", conf, " (", p, ")"))
-
-      return(desc)
-    })
 
   })
 }
