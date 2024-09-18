@@ -147,46 +147,21 @@ find_threshold <- function(site_id, parameter, depth_cat = NA, state = NA) {
   return(NULL)
 }
 
-#' threshold_max
+#' convert_threshold_unit
 #'
-#' @description Find maximum threshold for selected site, parameter.
+#' @description Converts threshold value to new unit. NA values returned as
+#'  -999999
 #'
-#' @param site_id String. Site ID.
-#' @param parameter String. Parameter.
-#' @param unit String. Parameter unit.
+#' @param x Numeric. Value to convert.
+#' @param old_unit String. Current unit.
+#' @param new_unit String. New unit.
 #'
-#' @return Maximum threshold for given site, parameter.
-#'
-#' @noRd
-threshold_max <- function(site_id, parameter, unit, depth = NA) {
-  # Define vars
-  df <- find_threshold(site_id, parameter, depth_cat = depth)
-  if (is.null(df)) {
-    return(-999999)
-  }
-  threshold_max <- convert_unit(df$Threshold_Max, df$Unit, unit, FALSE)
-  if (is.na(threshold_max)) { return(-999999) }
-  return(threshold_max)
-}
-
-#' threshold_min
-#'
-#' @description Find minimum threshold for selected site, parameter.
-#'
-#' @param site_id String. Site ID.
-#' @param parameter String. Parameter.
-#' @param unit String. Parameter unit.
-#'
-#' @return Minimum threshold for given site, parameter.
+#' @return Updated value
 #'
 #' @noRd
-threshold_min <- function(site_id, parameter, unit, depth = NA) {
-  # Define vars
-  df <- find_threshold(site_id, parameter, depth_cat = depth)
-  if (is.null(df)) {
-    return(-999999)
-  }
-  threshold_min <- convert_unit(df$Threshold_Min, df$Unit, unit, FALSE)
-  if (is.na(threshold_min)) { return(-999999) }
-  return(threshold_min)
+convert_threshold_unit <- function(x, old_unit, new_unit) {
+  if (is.na(x)) { return(-999999) }
+  new_thresh <- convert_unit(x, old_unit, new_unit, FALSE)
+  if (is.na(new_thresh)) { return(-999999) }
+  return(new_thresh)
 }

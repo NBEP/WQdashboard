@@ -1,4 +1,5 @@
 #' wrap_text
+#' NOT USED IN PACKAGE - remove?
 #'
 #' @description Wrap long strings in list.
 #'
@@ -15,4 +16,19 @@ wrap_text <- function(old_list, str_len, linebreak = NULL){
   return(new_list)
 }
 
-## NOT USING ABOVE ANYWHERE IN SCRIPT
+#' pretty_number
+#'
+#' @description Shorten number to two significant digits past the decimal point.
+#'
+#' @param x Input number.
+#'
+#' @return Shortened number.
+#' @noRd
+pretty_number <- function(x){
+  y <- dplyr::if_else(
+    x < 1,
+    signif(x, 2),
+    round(x, 2)
+    )
+  return(y)
+}

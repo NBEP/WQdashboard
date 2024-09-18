@@ -124,77 +124,82 @@ add_line_breaks <- function(df) {
 #' @description Add colored bars to plot to indicate threshold values.
 #'
 #' @param fig Graph.
-#' @param df Dataframe.
-#' @param parameter Parameter.
-#' @param unit Parameter unit.
-#' @param depth Depth.
+#' @param thresh Dataframe with threshold values.
+#' @param date_range Minimum, maximum dates for x-axis.
+#' @param y_range Minimum, maximum values for y-axis.
+#' @param unit Unit used for y-axis.
 #'
 #' @return Updated graph.
 #'
 #' @noRd
-add_thresholds <- function(fig, df) {
-  site = df$Site_ID[1]
-  parameter = df$Parameter[1]
-  unit = df$Unit[1]
-  depth = df$Depth[1]
+add_thresholds <- function(fig, thresh, date_range, y_range, unit) {
+  min_date <- date_range[1] - lubridate::years(1)
+  max_date <- date_range[2] + lubridate::years(1)
+  min_val <- y_range[1]
+  max_val <- y_range[2]
+  old_unit <- thresh$Unit
 
-  min_val <- min(df$Result) * .8
-  if (min_val > 0) {
-    min_val <- 0
+  thresh_min <- convert_threshold_unit(thresh$Threshold_Min, old_unit, unit)
+  thresh_max <- convert_threshold_unit(thresh$Threshold_Max, old_unit, unit)
+  # thresh_excellent <- convert_threshold_unit(thresh$Excellent, old_unit, unit)
+  # thresh_good <- convert_threshold_unit(thresh$Good, old_unit, unit)
+
+  if (thresh_min != -999999 & min_val < thresh_min) {
+    fig <- fig %>%
+      plotly::layout(
+        shapes = list(
+          list(
+            type = "rect",
+            fillcolor = "#f7d0d0",
+            line = list(color = "#f7d0d0"),
+            y0 = thresh_min,
+            y1 = min_val,
+            x0 = min_date,
+            x1 = max_date,
+            layer = "below",
+            name = "Does Not Meet Criteria",
+            showlegend = TRUE)
+        )
+      )
   }
-  max_val <- max(df$Result) * 1.2
-  min_date <- min(df$Date) - lubridate::years(1)
-  max_date <- max(df$Date) + lubridate::years(1)
 
-  thresh_min <- threshold_min(site, parameter, unit, depth)
-  thresh_max <- threshold_max(site, parameter, unit, depth)
-
-  if (thresh_min != -999999 & thresh_max != -999999 & min_val < thresh_min &
-      max_val > thresh_max) {
+  if (thresh_max != -999999 & max_val > thresh_max) {
     fig <- fig %>%
-      plotly::layout(shapes = list(
-        list(
-          type = "rect",
-          fillcolor = "red",
-          line = list(color = "red"),
-          opacity = 0.2,
-          y0 = min_val,
-          y1 = thresh_min,
-          x0 = min_date,
-          x1 = max_date),
-        list(
-          type = "rect",
-          fillcolor = "red",
-          line = list(color = "red"),
-          opacity = 0.2,
-          y0 = thresh_max,
-          y1 = max_val,
-          x0 = min_date,
-          x1 = max_date)))
-  } else if (thresh_min != -999999 & min_val < thresh_min) {
-    fig <- fig %>%
-      plotly::layout(shapes = list(
-        list(
-          type = "rect",
-          fillcolor = "red",
-          line = list(color = "red"),
-          opacity = 0.2,
-          y0 = min_val,
-          y1 = thresh_min,
-          x0 = min_date,
-          x1 = max_date)))
-  } else if (thresh_max != -999999 & max_val > thresh_max) {
-    fig <- fig %>%
-      plotly::layout(shapes = list(
-        list(
-          type = "rect",
-          fillcolor = "red",
-          line = list(color = "red"),
-          opacity = 0.2,
-          y0 = thresh_max,
-          y1 = max_val,
-          x0 = min_date,
-          x1 = max_date)))
+      plotly::layout(
+        shapes = list(
+          list(
+            type = "rect",
+            fillcolor = "#f7d0d0",
+            line = list(color = "#f7d0d0"),
+            y0 = thresh_max,
+            y1 = max_val,
+            x0 = min_date,
+            x1 = max_date,
+            layer = "below",
+            name = "Does Not Meet Criteria",
+            legendgroup = "group1",
+            showlegend = TRUE),
+          list(
+            type = "line",
+            line = list(color = "#ba4345"),
+            y0 = thresh_max,
+            y1 = thresh_max,
+            x0 = min_date,
+            x1 = max_date,
+            layer = "below",
+            name = "Does Not Meet Criteria",
+            legendgroup = "group1",
+            showlegend = TRUE)
+          )
+        ) %>%
+      plotly::add_annotations(
+        x = 1,
+        xref = "paper",
+        y = thresh_max,
+        yref = "y",
+        yanchor = "bottom",
+        showarrow = FALSE,
+        text = "does not meet criteria")
   }
 
   return(fig)
@@ -218,14 +223,14 @@ trend_line <- function(df) {
       Date = mean(Date),
       Result_avg = mean(Result),
       .groups = "drop") %>%
-    dplyr::mutate(Desc_avg = paste0(
+    dplyr::mutate(Description = paste0(
       "<b>", Site_Name, "</b><br>",
       Year, "<br>",
-      "Average ", Parameter, ": ", Result_avg)) %>%
-    dplyr::mutate(Desc_avg = dplyr::if_else(
+      "Average ", Parameter, ": ", pretty_number(Result_avg))) %>%
+    dplyr::mutate(Description = dplyr::if_else(
       !Unit %in% c(NA, "None"),
-      paste(Desc_avg, Unit),
-      Desc_avg)) %>%
+      paste(Description, Unit),
+      Description)) %>%
     dplyr::select(!c(Site_Name, Parameter, Unit))
 
   # Run linear regression

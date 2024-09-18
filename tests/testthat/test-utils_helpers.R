@@ -1,3 +1,19 @@
-test_that("multiplication works", {
-  expect_equal(2 * 2, 4)
+test_that("wrap_text works", {
+  long_text <- "This is a long string of text."
+
+  expect_equal(
+    wrap_text(long_text, str_len=20),
+    "This is a long\nstring of text.")
+  expect_equal(
+    wrap_text(long_text, str_len=10),
+    "This is\na long\nstring of\ntext.")
+  expect_equal(
+    wrap_text(long_text, str_len=20, linebreak="foo"),
+    "This is a longfoostring of text.")
+})
+
+test_that("pretty_number works", {
+  expect_equal(pretty_number(123.123), 123.12)
+  expect_equal(pretty_number(1234), 1234)
+  expect_equal(pretty_number(0.001234), 0.0012)
 })

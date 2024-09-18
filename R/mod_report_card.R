@@ -15,10 +15,7 @@ mod_report_card_ui <- function(id){
       full_screen = FALSE,
       htmlOutput(ns("title")),
       # downloadButton(ns("download_report"), "Download PDF"),
-      shinycssloaders::withSpinner(
-        reactable::reactableOutput(ns("table")),
-        type = 5
-      )
+      reactable::reactableOutput(ns("table"))
     )
   )
 }

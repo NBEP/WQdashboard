@@ -125,22 +125,24 @@ update_site_list <- function(df = df_sites, filter_col, filter_list) {
   return(site_list)
 }
 
-#' Sort months
+#' List months
 #'
-#' @description Orders months chronologically.
+#' @description Creates ordered list of months in range.
 #'
 #' @param month_list Unsorted list of months.
 #'
 #' @return Sorted list of months.
 #'
 #' @noRd
-sort_months <- function(month_list) {
-  month_list <- unique(month_list)
-  all_months <- c("January", "February", "March", "April", "May", "June",
-                  "July", "August", "September", "October", "November", "December")
+list_months <- function(month_list) {
+  min_month <- min(month_list)
+  max_month <- max(month_list)
 
-  all_months <- all_months[all_months %in% month_list]
-  return(all_months)
+  month_range <- seq(as.integer(factor(min_month, levels=month.name)),
+                     as.integer(factor(max_month, levels=month.name)))
+  month_range <- month.name[month_range]
+
+  return(month_range)
 }
 
 #' Sort depth

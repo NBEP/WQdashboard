@@ -22,14 +22,13 @@ Imports:
     reactable,
     shiny (>= 1.8.0),
     shinya11y,
-    shinycssloaders,
     shinyjs,
     shinyWidgets,
     stringr,
     tidyr
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 URL: https://github.com/NBEP/WQdashboard
 BugReports: https://github.com/NBEP/WQdashboard/issues
 Suggests: 

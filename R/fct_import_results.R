@@ -137,11 +137,11 @@ format_df_data <- function(df){
       format(Date, format = "%B %d, %Y"), "<br>")) %>%
     dplyr::mutate(Description = dplyr::if_else(
       !is.na(Depth),
-      paste0(Description, "Depth: ", Depth, "<br>"),
+      paste0(Description, "Depth: ", pretty_number(Depth), "<br>"),
       Description)) %>%
     dplyr::mutate(Description = paste0(
       Description,
-      Parameter, ": ", Result)) %>%
+      Parameter, ": ", pretty_number(Result))) %>%
     dplyr::mutate(Description = dplyr::if_else(
       !Unit %in% c(NA, "None"),
       paste(Description, Unit),
@@ -194,10 +194,7 @@ format_df_score <- function(df, default_state = NA){
         SIMPLIFY = FALSE)) %>%
     tidyr::unnest_wider(score_temp) %>%
     dplyr::select(!c(score_max:score_median, temp_state)) %>%
-    dplyr::mutate(score_num = dplyr::if_else(
-      score_num <1,
-      signif(score_num, 2),
-      round(score_num, 2)))
+    dplyr::mutate(score_num = pretty_number(score_num))
   df <- suppressMessages(check_val_count(df, "Depth"))
   message("\t... ok")
 

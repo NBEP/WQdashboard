@@ -15,24 +15,12 @@ mod_map_ui <- function(id){
       full_screen = TRUE,
       bslib::nav_panel(
         "Map",
-        shinycssloaders::withSpinner(
-          leaflet::leafletOutput(ns('map')),
-          type = 5) %>%
-          # Code from monsterrat
-          # https://stackoverflow.com/questions/77184183/how-to-use-shinycssloaders-withspinner-with-a-plot-output-in-a-bslib-card
-          (\(x) {
-            x[[4]] <- x[[4]] %>% bslib::as_fill_carrier()
-            x
-          })()),
+        leaflet::leafletOutput(ns('map'))
+        ),
       bslib::nav_panel(
         "Table",
-        shinycssloaders::withSpinner(
-          reactable::reactableOutput(ns("table")),
-          type = 5) %>%
-          (\(x) {
-            x[[4]] <- x[[4]] %>% bslib::as_fill_carrier()
-            x
-          })())
+        reactable::reactableOutput(ns("table"))
+      )
     )
   )
 }

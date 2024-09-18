@@ -64,14 +64,16 @@ mod_graphs_server <- function(id, selected_var){
 
     # Filter data ----
     df_filter <- reactive({
-      req(selected_var$date_range())
-      req(selected_var$month)
+      req(selected_var$year_range())
+      req(selected_var$month_range())
+
+      selected_months <- list_months(selected_var$month_range())
 
       df <- df_data %>%
         dplyr::filter(
-          Date >= selected_var$date_range()[1] &
-            Date <= selected_var$date_range()[2]) %>%
-        dplyr::filter(Month %in% selected_var$month()) %>%
+          Year >= selected_var$year_range()[1] &
+            Year <= selected_var$year_range()[2]) %>%
+        dplyr::filter(Month %in% selected_months) %>%
         dplyr::select(!Month)
 
       return(df)

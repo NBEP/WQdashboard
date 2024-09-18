@@ -11,53 +11,100 @@
 #' @noRd
 
 graph_one_var <- function(df, fig_title, group = "Site_Name",
-    thresholds = FALSE) {
+    thresholds = NULL, show_fit = "hide", visible = TRUE, df_fit = NA) {
   if (nrow(df) == 0) { return(NULL) }
 
-  df_new <- add_line_breaks(df)
-
-  pal <- palette.colors(palette = "R4")
-  # pal <- c("#2daebe", "#6f3d61", "#f5b400", "#cf4e13", "#2c2c2c")
-  # pal_len <- length(unique(df[[group]]))
-  # pal <- pal[1:pal_len]
-
-  if (group == "Site_Name") {
-    fig <- plotly::plot_ly(
-      data = df_new,
-      type = "scatter",
-      mode = "lines+markers",
-      x = ~Date,
-      y = ~Result,
-      color = ~Site_Name,
-      colors = pal,
-      hoverinfo = "text",
-      hovertext = ~Description)
-  } else {
-    fig <- plotly::plot_ly(
-      data = df_new,
-      type = "scatter",
-      mode = "lines+markers",
-      x = ~Date,
-      y = ~Result,
-      color = ~Depth,
-      colors = pal,
-      hoverinfo = "text",
-      hovertext = ~Description)
-  }
-
-
-  if (thresholds) {
-    fig <- add_thresholds(fig, df)
-  }
-
-  # Calculate axes, style plot
-  years <- difftime(max(df$Date), min(df$Date), units = "days")
-  years <- as.numeric(years)/365
-
+  # Set variables ----
   min_val <- min(df$Result) * .8
   if (min_val > 0) { min_val <- 0 }
   max_val <- max(df$Result) * 1.2
   if (max_val == min_val) { max_val <- min_val + 1 }
+
+  min_date <- min(df$Date)
+  max_date <- max(df$Date)
+
+  df_new <- add_line_breaks(df)
+  df_new["Group"] <- df_new[[group]]
+
+  # Set line/marker palette, shape, and dash ----
+  group_len <- length(unique(df_new$Group))
+  pal <- c("#2daebe", "#6f3d61", "#f5b400", "#cf4e13", "#2c2c2c")
+  pal <- pal[1:group_len]
+  shapes <- c("circle", "square", "diamond", "triangle-up", "x")
+  shapes <- shapes[1:group_len]
+
+  # Add data ----
+  fig <- plotly::plot_ly(
+    data = df_new,
+    x = ~Date,
+    y = ~Result,
+    type = "scatter",
+    mode = "lines+markers",
+    color = ~Group,
+    colors = pal,
+    symbol = ~Group,
+    symbols = shapes,
+    marker = list(size = 7),
+    hoverinfo = "text",
+    hovertext = ~Description
+  )
+
+  # Add trendlines ----
+  if (show_fit == "show") {
+    df_trend <- df_fit$df
+    p <- df_fit$p
+
+    if (p < 0.1) {
+      fig <- fig %>%
+        plotly::add_trace(
+          data = df_trend,
+          x = ~Date,
+          y = ~Result_fit,
+          type = "scatter",
+          mode = "lines",
+          line = list(
+            color = "#2c2c2c",
+            width = 2,
+            dash = "dash"),
+          visible = visible,
+          inherit = FALSE,
+          name = "Trend Line")
+    }
+
+    fig <- fig %>%
+      plotly::add_trace(
+        data = df_trend,
+        x = ~Date,
+        y = ~Result_avg,
+        type = "scatter",
+        mode = "markers",
+        marker = list(
+          size = 10,
+          color = "#cccccc",
+          line = list(
+            color = "#2c2c2c",
+            width = 2),
+          symbol = "diamond"),
+        hoverinfo = "text",
+        hovertext = ~Description,
+        visible = visible,
+        inherit = FALSE,
+        name = "Yearly Average")
+  }
+
+  # Add thresholds ----
+  if (!is.null(thresholds)) {
+    fig <- add_thresholds(
+      fig = fig,
+      thresh = thresholds,
+      date_range = c(min_date, max_date),
+      y_range = c(min_val, max_val),
+      unit = df$Unit[1])
+  }
+
+  # Style plot ----
+  years <- difftime(max_date, min_date, units = "days")
+  years <- as.numeric(years)/365
 
   fig <- graph_style(fig,
     fig_title = fig_title,
@@ -87,10 +134,9 @@ graph_two_var <- function(df, fig_title) {
   df1 <- dplyr::filter(df_new, Parameter == par1)
   df2 <- dplyr::filter(df_new, Parameter != par1)
 
-  pal <- palette.colors(palette = "R4")
-  # pal <- c("#2daebe", "#6f3d61", "#f5b400", "#cf4e13", "#2c2c2c")
-  # pal_len <- length(unique(df[[group]]))
-  # pal <- pal[1:pal_len]
+  pal <- "#2daebe"
+  shapes <- c("circle", "diamond")
+  if (nrow(df2) > 0) { pal <- c("#2daebe", "#2c2c2c") }
 
   # Create graph with first parameter
   fig <- plotly::plot_ly(
@@ -101,6 +147,9 @@ graph_two_var <- function(df, fig_title) {
     y = ~Result,
     color = ~Parameter,
     colors = pal,
+    symbol = ~Parameter,
+    symbols = shapes,
+    marker = list(size = 7),
     hoverinfo = "text",
     hovertext = ~Description)
 
@@ -118,6 +167,9 @@ graph_two_var <- function(df, fig_title) {
         y = ~Result,
         color = ~Parameter,
         colors = pal,
+        symbol = ~Parameter,
+        symbols = shapes,
+        marker = list(size = 7),
         hoverinfo = "text",
         hovertext = ~Description) %>%
       plotly::layout(

@@ -2,7 +2,8 @@
 % Please edit documentation in R/utils_helpers.R
 \name{wrap_text}
 \alias{wrap_text}
-\title{wrap_text}
+\title{wrap_text
+NOT USED IN PACKAGE - remove?}
 \usage{
 wrap_text(old_list, str_len, linebreak = NULL)
 }

@@ -94,20 +94,20 @@ mod_sidebar_ui <- function(id){
               sort_decreasing = TRUE,
               multiple = FALSE)),
           tabPanelBody(
-            "by_date",
-            dateRangeInput(
-              ns("select_date_range"),
-              label = h3("Select Date Range"),
-              start = min(df_data$Date),
-              end = max(df_data$Date),
-              min = min(df_data$Date),
-              max = max(df_data$Date),
-              format = "mm/dd/yy"),
-            select_dropdown(
+            "by_range",
+            sliderInput(
+              ns("select_year_range"),
+              label = h3("Select Years"),
+              min = min(df_data$Year),
+              max = max(df_data$Year),
+              value = c(min(df_data$Year), max(df_data$Year)),
+              sep = ""),
+            shinyWidgets::sliderTextInput(
               ns("select_month"),
               label = h3("Select Months"),
-              choices = sort_months(df_data$Month),
-              sort_choices = FALSE))
+              choices = list_months(df_data$Month),
+              selected = c(min(df_data$Month), max(df_data$Month)))
+          )
         )
       )
     )
@@ -139,11 +139,11 @@ mod_sidebar_server <- function(id, selected_tab){
       } else if (selected_tab() == "graphs") {
         updateTabsetPanel(inputId = "tabset_param", selected = "param_n")
         updateTabsetPanel(inputId = "tabset_score", selected = "hide_score")
-        updateTabsetPanel(inputId = "tabset_dates", selected = "by_date")
+        updateTabsetPanel(inputId = "tabset_dates", selected = "by_range")
       } else {
         updateTabsetPanel(inputId = "tabset_param", selected = "param_all")
         updateTabsetPanel(inputId = "tabset_score", selected = "hide_score")
-        updateTabsetPanel(inputId = "tabset_dates", selected = "by_date")
+        updateTabsetPanel(inputId = "tabset_dates", selected = "by_range")
       }
     }) %>%
       bindEvent(selected_tab())
@@ -180,8 +180,8 @@ mod_sidebar_server <- function(id, selected_tab){
         depth_n = reactive({ input$select_depth_n }),
         depth_all = reactive({ input$select_depth_all }),
         year = reactive({ input$select_year }),
-        date_range = reactive({ input$select_date_range }),
-        month = reactive({ input$select_month }),
+        year_range = reactive({ input$select_year_range }),
+        month_range = reactive({ input$select_month }),
         df_score_f = reactive({ df_score_filter() })
       )
     )
