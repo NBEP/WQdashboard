@@ -12,7 +12,6 @@ app_ui <- function(request) {
     # Leave this function for adding external resources
     golem_add_external_resources(),
     # Your application UI logic
-    shinya11y::use_tota11y(),
     bslib::page_navbar(
       theme = bslib::bs_theme(version = 5),
       useBusyIndicators(),

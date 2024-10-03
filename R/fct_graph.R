@@ -1,3 +1,97 @@
+#' Graph Trends
+#'
+#' @description Creates a scatterplot using `plotly` that includes thresholds
+#'   and trendlines.
+#'
+#' @param df Dataframe.
+#' @param fig_title Title of graph.
+#' @param thresholds Boolean. If TRUE, adds red bar to indicate values outside
+#'  acceptable range. Default FALSE.
+#'
+#' @return Scatterplot.
+#'
+#' @noRd
+
+graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
+                         show_trend = TRUE) {
+
+  if (nrow(df) == 0) { return(NULL) }
+
+  # Set variables ----
+  min_val <- min(df$Result) * .8
+  if (min_val > 0) { min_val <- 0 }
+  max_val <- max(df$Result) * 1.2
+  if (max_val == min_val) { max_val <- min_val + 1 }
+
+  min_date <- min(df$Date)
+  max_date <- max(df$Date)
+
+  df_new <- add_line_breaks(df)
+
+  # Create plot ----
+  if (is.null(thresholds)) {
+    fig <- plotly::plot_ly(
+      data = df_new,
+      x = ~Date,
+      y = ~Result,
+      type = "scatter",
+      mode = "lines+markers",
+      inherit = FALSE,
+      name = ~Site_Name,
+      marker = list(
+        color = "#6CE0F1",
+        line = list(
+          color = "#2daebe",
+          width = 2),
+        size = 5),
+      line = list(color = "#2daebe"),
+      hoverinfo = "text",
+      hovertext = ~Description
+      )
+  } else {
+    # Add thresholds ----
+    fig <- add_thresholds(
+        thresh = thresholds,
+        visible = show_thresh,
+        date_range = c(min_date, max_date),
+        y_range = c(min_val, max_val),
+        unit = df$Unit[1]) %>%
+      plotly::add_trace(
+        data = df_new,
+        x = ~Date,
+        y = ~Result,
+        type = "scatter",
+        mode = "lines+markers",
+        inherit = FALSE,
+        name = ~Site_Name,
+        marker = list(
+          color = "#6CE0F1",
+          line = list(
+            color = "#2daebe",
+            width = 2),
+          size = 5),
+        line = list(color = "#2daebe"),
+        hoverinfo = "text",
+        hovertext = ~Description
+      )
+  }
+
+  # Add trendlines ----
+  fig <- add_gam(fig, df, show_trend)
+
+  # Style plot ----
+  years <- difftime(max_date, min_date, units = "days")
+  years <- as.numeric(years)/365
+
+  fig <- graph_style(fig,
+    fig_title = fig_title,
+    y_title = paste(df$Parameter[1], param_unit(df$Parameter[1])),
+    y_range = list(min_val, max_val),
+    years = years)
+
+  return(fig)
+}
+
 #' graph_one_var
 #'
 #' @description Creates a scatterplot using `plotly`.
@@ -10,8 +104,9 @@
 #'
 #' @noRd
 
-graph_one_var <- function(df, fig_title, group = "Site_Name",
-    thresholds = NULL, show_fit = "hide", visible = TRUE, df_fit = NA) {
+graph_one_var <- function(df, fig_title, group = "Site_Name", thresholds = NULL,
+                          show_thresh = TRUE, trend_line = "hide", show_trend = TRUE) {
+
   if (nrow(df) == 0) { return(NULL) }
 
   # Set variables ----
@@ -33,73 +128,53 @@ graph_one_var <- function(df, fig_title, group = "Site_Name",
   shapes <- c("circle", "square", "diamond", "triangle-up", "x")
   shapes <- shapes[1:group_len]
 
-  # Add data ----
-  fig <- plotly::plot_ly(
-    data = df_new,
-    x = ~Date,
-    y = ~Result,
-    type = "scatter",
-    mode = "lines+markers",
-    color = ~Group,
-    colors = pal,
-    symbol = ~Group,
-    symbols = shapes,
-    marker = list(size = 7),
-    hoverinfo = "text",
-    hovertext = ~Description
-  )
-
-  # Add trendlines ----
-  if (show_fit == "show") {
-    df_trend <- df_fit$df
-    p <- df_fit$p
-
-    if (p < 0.1) {
-      fig <- fig %>%
-        plotly::add_trace(
-          data = df_trend,
-          x = ~Date,
-          y = ~Result_fit,
-          type = "scatter",
-          mode = "lines",
-          line = list(
-            color = "#2c2c2c",
-            width = 2,
-            dash = "dash"),
-          visible = visible,
-          inherit = FALSE,
-          name = "Trend Line")
-    }
-
-    fig <- fig %>%
-      plotly::add_trace(
-        data = df_trend,
-        x = ~Date,
-        y = ~Result_avg,
-        type = "scatter",
-        mode = "markers",
-        marker = list(
-          size = 10,
-          color = "#cccccc",
-          line = list(
-            color = "#2c2c2c",
-            width = 2),
-          symbol = "diamond"),
-        hoverinfo = "text",
-        hovertext = ~Description,
-        visible = visible,
-        inherit = FALSE,
-        name = "Yearly Average")
-  }
-
-  # Add thresholds ----
-  if (!is.null(thresholds)) {
+  # Create plot ----
+  if (is.null(thresholds)) {
+    fig <- plotly::plot_ly(
+      data = df_new,
+      x = ~Date,
+      y = ~Result,
+      type = "scatter",
+      mode = "lines+markers",
+      color = ~Group,
+      colors = pal,
+      symbol = ~Group,
+      symbols = shapes,
+      marker = list(size = 7),
+      hoverinfo = "text",
+      hovertext = ~Description
+    )
+  } else {
+    # Add thresholds ----
     fig <- add_thresholds(
-      fig = fig,
       thresh = thresholds,
+      visible = show_thresh,
       date_range = c(min_date, max_date),
       y_range = c(min_val, max_val),
-      unit = df$Unit[1])
+      unit = df$Unit[1]) %>%
+      plotly::add_trace(
+        data = df_new,
+        x = ~Date,
+        y = ~Result,
+        type = "scatter",
+        mode = "lines+markers",
+        inherit = FALSE,
+        name = ~Group,
+        marker = list(
+          color = "#6CE0F1",
+          line = list(
+            color = "#2daebe",
+            width = 2),
+          size = 5),
+        line = list(color = "#2daebe"),
+        hoverinfo = "text",
+        hovertext = ~Description
+      )
+  }
+
+  # Add trendlines ----
+  if (trend_line == "show") {
+    fig <- add_gam(fig, df, show_trend)
   }
 
   # Style plot ----
@@ -107,10 +182,10 @@ graph_one_var <- function(df, fig_title, group = "Site_Name",
   years <- as.numeric(years)/365
 
   fig <- graph_style(fig,
-    fig_title = fig_title,
-    y_title = paste(df$Parameter[1], param_unit(df$Parameter[1])),
-    y_range = list(min_val, max_val),
-    years = years)
+                     fig_title = fig_title,
+                     y_title = paste(df$Parameter[1], param_unit(df$Parameter[1])),
+                     y_range = list(min_val, max_val),
+                     years = years)
 
   return(fig)
 }

@@ -132,7 +132,8 @@ add_line_breaks <- function(df) {
 #' @return Updated graph.
 #'
 #' @noRd
-add_thresholds <- function(fig, thresh, date_range, y_range, unit) {
+add_thresholds <- function(thresh, visible = TRUE, date_range, y_range,
+                           unit) {
   min_date <- date_range[1] - lubridate::years(1)
   max_date <- date_range[2] + lubridate::years(1)
   min_val <- y_range[1]
@@ -144,113 +145,125 @@ add_thresholds <- function(fig, thresh, date_range, y_range, unit) {
   # thresh_excellent <- convert_threshold_unit(thresh$Excellent, old_unit, unit)
   # thresh_good <- convert_threshold_unit(thresh$Good, old_unit, unit)
 
+  fig <- plotly::plot_ly()
+
   if (thresh_min != -999999 & min_val < thresh_min) {
     fig <- fig %>%
-      plotly::layout(
-        shapes = list(
-          list(
-            type = "rect",
-            fillcolor = "#f7d0d0",
-            line = list(color = "#f7d0d0"),
-            y0 = thresh_min,
-            y1 = min_val,
-            x0 = min_date,
-            x1 = max_date,
-            layer = "below",
-            name = "Does Not Meet Criteria",
-            showlegend = TRUE)
-        )
-      )
+      plotly::add_polygons(
+        x=c(min_date, max_date, max_date, min_date),
+        y=c(thresh_min, thresh_min, min_val, min_val),
+        line=list(width=0),
+        fillcolor= "#f7d0d0",
+        visible = visible,
+        hoverinfo = "text",
+        hovertext = "Does Not Meet Criteria",
+        inherit = FALSE,
+        name = "Does Not Meet Criteria",
+        legendrank = 1004) %>%
+      plotly::add_trace(
+        x = c(min_date, max_date),
+        y = c(thresh_min, thresh_min),
+        type = "scatter",
+        mode = "lines",
+        line = list(color = "#ba4345"),
+        visible = visible,
+        hoverinfo = "text",
+        hovertext = "Lowest Acceptable Value",
+        inherit = FALSE,
+        name = "Lowest Acceptable Value",
+        legendrank = 1003)
   }
 
   if (thresh_max != -999999 & max_val > thresh_max) {
     fig <- fig %>%
-      plotly::layout(
-        shapes = list(
-          list(
-            type = "rect",
-            fillcolor = "#f7d0d0",
-            line = list(color = "#f7d0d0"),
-            y0 = thresh_max,
-            y1 = max_val,
-            x0 = min_date,
-            x1 = max_date,
-            layer = "below",
-            name = "Does Not Meet Criteria",
-            legendgroup = "group1",
-            showlegend = TRUE),
-          list(
-            type = "line",
-            line = list(color = "#ba4345"),
-            y0 = thresh_max,
-            y1 = thresh_max,
-            x0 = min_date,
-            x1 = max_date,
-            layer = "below",
-            name = "Does Not Meet Criteria",
-            legendgroup = "group1",
-            showlegend = TRUE)
-          )
-        ) %>%
-      plotly::add_annotations(
-        x = 1,
-        xref = "paper",
-        y = thresh_max,
-        yref = "y",
-        yanchor = "bottom",
-        showarrow = FALSE,
-        text = "does not meet criteria")
+      plotly::add_polygons(
+        x=c(min_date, max_date, max_date, min_date),
+        y=c(thresh_max, thresh_max, max_val, max_val),
+        line=list(width=0),
+        fillcolor= "#f7d0d0",
+        visible = visible,
+        hoverinfo = "text",
+        hovertext = "Does Not Meet Criteria",
+        inherit = FALSE,
+        name = "Does Not Meet Criteria",
+        legendrank = 1002) %>%
+      plotly::add_trace(
+        x = c(min_date, max_date),
+        y = c(thresh_max, thresh_max),
+        type = "scatter",
+        mode = "lines",
+        line = list(color = "#ba4345"),
+        visible = visible,
+        hoverinfo = "text",
+        hovertext = "Highest Acceptable Value",
+        inherit = FALSE,
+        name = "Highest Acceptable Value",
+        legendrank = 1001)
   }
 
   return(fig)
 }
 
-#' Trend Line
+#' Add Trend Line (GAM)
 #'
-#' @description Calculates linear regression.
+#' @description Calculates GAM and adds smooth trend line with 95% confidence
+#'   interval.
 #'
+#' @param fig Plotly graph.
 #' @param df Dataframe.
 #'
-#' @return Dataframe with values for linear regression; slope of linear
-#'   regression; p-value.
+#' @return Updated plotly graph.
 #'
 #' @noRd
-trend_line <- function(df) {
-  # Calc yearly average
-  df <- df %>%
-    dplyr::group_by_at(c("Site_Name", "Year", "Parameter", "Unit")) %>%
-    dplyr::summarise(
-      Date = mean(Date),
-      Result_avg = mean(Result),
-      .groups = "drop") %>%
-    dplyr::mutate(Description = paste0(
-      "<b>", Site_Name, "</b><br>",
-      Year, "<br>",
-      "Average ", Parameter, ": ", pretty_number(Result_avg))) %>%
-    dplyr::mutate(Description = dplyr::if_else(
-      !Unit %in% c(NA, "None"),
-      paste(Description, Unit),
-      Description)) %>%
-    dplyr::select(!c(Site_Name, Parameter, Unit))
+add_gam <- function(fig, df, visible = TRUE) {
 
-  # Run linear regression
-  df_lm <- lm(Result_avg ~ Year, data = df)
-  a <- broom::tidy(df_lm)$estimate[2]
-  b <- broom::tidy(df_lm)$estimate[1]
-  p <- broom::glance(df_lm)$p.value[1] %>% unname
+  df <- dplyr::mutate(df, Dec_Date = lubridate::decimal_date(Date))
 
-  # Add lm points to dataframe
-  df <- dplyr::mutate(df, Result_fit = {{a}} * Year + {{b}} )
+  # Code from Carmen Chan
+  # https://www.displayr.com/how-to-add-trend-lines-in-r-using-plotly/
 
-  # Tidy data
-  if (abs(a) < 1) {
-    a <- signif(a, 2)
-  } else {
-    a <- round(a, 2)
-  }
-  p <- signif(p, 2)
+  df_gam <- mgcv::gam(df$Result~s(df$Dec_Date))
+  df_pred <- predict(df_gam, type="response", se.fit=TRUE)
+  df_new <- data.frame(
+      x = df_gam$model[,2],
+      y = df_pred$fit,
+      lb = as.numeric(df_pred$fit - (1.96 * df_pred$se.fit)),
+      ub = as.numeric(df_pred$fit + (1.96 * df_pred$se.fit))) %>%
+    dplyr::mutate(x = lubridate::date_decimal(x))
+  df_new <- df_new[order(df_new$x),]
 
-  return(list(df = df, slope = a, p = p))
+  fig <- fig %>%
+    plotly::add_trace(
+      data = df_new,
+      x = ~x,
+      y = ~y,
+      type = "scatter",
+      mode = "lines",
+      line = list(
+        color = "#2c2c2c",
+        width = 2,
+        dash = "dash"),
+      visible = visible,
+      inherit = FALSE,
+      name = "Trend Line (GAM)") %>%
+    plotly::add_ribbons(
+      data = df_new,
+      x = ~x,
+      ymin = ~lb,
+      ymax = ~ub,
+      line=list(
+        color="#818181",
+        opacity=0.4,
+        width=0),
+      fillcolor = list(
+        color="#818181",
+        opacity=0.4),
+      visible = visible,
+      inherit = FALSE,
+      name = "95% Confidence Interval"
+    )
+
+  return(fig)
 }
 
 #' format_graph_table
