@@ -33,6 +33,7 @@ golem::add_module(name = "select_location", with_test = TRUE)
 golem::add_module(name = "map", with_test = TRUE)
 golem::add_module(name = "report_card", with_test = TRUE)
 golem::add_module(name = "graphs", with_test = TRUE)
+golem::add_module(name = "graphs_trend_graph", with_test = TRUE)
 golem::add_module(name = "graphs_graph", with_test = TRUE)
 golem::add_module(name = "download", with_test = TRUE)
 

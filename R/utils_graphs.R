@@ -10,7 +10,22 @@
 
 graph_style <- function(fig, fig_title, y_title, y_range, years) {
   fig <- fig %>%
-    plotly::config(displayModeBar = FALSE) %>%
+    plotly::config(
+      displaylogo = FALSE,
+      modeBarButtonsToRemove = c(
+        'sendDataToCloud',
+        'zoom2d',
+        'pan2d',
+        'select2d',
+        'lasso2d',
+        'autoScale2d',
+        'resetScale2d',
+        'zoomIn2d',
+        'zoomOut2d',
+        'hoverClosestCartesian',
+        'hoverCompareCartesian'),
+      toImageButtonOptions = list(height = 400, width = 800)
+      ) %>%
     plotly::layout(
       title = fig_title,
       yaxis = list(
@@ -113,7 +128,7 @@ add_line_breaks <- function(df) {
       Year = unique(df$Year)) %>%
     dplyr::mutate(Date = as.Date(paste0(Year, "-1-1")))
 
-  df <- bind_rows(df, df_null) %>%
+  df <- dplyr::bind_rows(df, df_null) %>%
     dplyr::arrange(Date)
 
   return(df)
@@ -142,8 +157,8 @@ add_thresholds <- function(thresh, visible = TRUE, date_range, y_range,
 
   thresh_min <- convert_threshold_unit(thresh$Threshold_Min, old_unit, unit)
   thresh_max <- convert_threshold_unit(thresh$Threshold_Max, old_unit, unit)
-  # thresh_excellent <- convert_threshold_unit(thresh$Excellent, old_unit, unit)
-  # thresh_good <- convert_threshold_unit(thresh$Good, old_unit, unit)
+  thresh_excellent <- convert_threshold_unit(thresh$Excellent, old_unit, unit)
+  thresh_good <- convert_threshold_unit(thresh$Good, old_unit, unit)
 
   fig <- plotly::plot_ly()
 
@@ -153,24 +168,12 @@ add_thresholds <- function(thresh, visible = TRUE, date_range, y_range,
         x=c(min_date, max_date, max_date, min_date),
         y=c(thresh_min, thresh_min, min_val, min_val),
         line=list(width=0),
-        fillcolor= "#f7d0d0",
+        fillcolor= "#f6c0c0",
         visible = visible,
         hoverinfo = "text",
         hovertext = "Does Not Meet Criteria",
         inherit = FALSE,
         name = "Does Not Meet Criteria",
-        legendrank = 1004) %>%
-      plotly::add_trace(
-        x = c(min_date, max_date),
-        y = c(thresh_min, thresh_min),
-        type = "scatter",
-        mode = "lines",
-        line = list(color = "#ba4345"),
-        visible = visible,
-        hoverinfo = "text",
-        hovertext = "Lowest Acceptable Value",
-        inherit = FALSE,
-        name = "Lowest Acceptable Value",
         legendrank = 1003)
   }
 
@@ -180,24 +183,42 @@ add_thresholds <- function(thresh, visible = TRUE, date_range, y_range,
         x=c(min_date, max_date, max_date, min_date),
         y=c(thresh_max, thresh_max, max_val, max_val),
         line=list(width=0),
-        fillcolor= "#f7d0d0",
+        fillcolor= "#f6c0c0",
         visible = visible,
         hoverinfo = "text",
         hovertext = "Does Not Meet Criteria",
         inherit = FALSE,
         name = "Does Not Meet Criteria",
-        legendrank = 1002) %>%
-      plotly::add_trace(
-        x = c(min_date, max_date),
-        y = c(thresh_max, thresh_max),
-        type = "scatter",
-        mode = "lines",
-        line = list(color = "#ba4345"),
+        legendrank = 1002)
+  }
+
+  if (thresh_excellent != -999999 & thresh_excellent < thresh_good &
+      thresh_excellent > min_val) {
+    fig <- fig %>%
+      plotly::add_polygons(
+        x=c(min_date, max_date, max_date, min_date),
+        y=c(thresh_excellent, thresh_excellent, min_val, min_val),
+        line=list(width=0),
+        fillcolor= "#dde8fe",
         visible = visible,
         hoverinfo = "text",
-        hovertext = "Highest Acceptable Value",
+        hovertext = "Excellent",
         inherit = FALSE,
-        name = "Highest Acceptable Value",
+        name = "Excellent",
+        legendrank = 1001)
+  } else if (thresh_good != -999999 & thresh_good < thresh_excellent &
+             thresh_excellent < max_val) {
+    fig <- fig %>%
+      plotly::add_polygons(
+        x=c(min_date, max_date, max_date, min_date),
+        y=c(thresh_excellent, thresh_excellent, max_val, max_val),
+        line=list(width=0),
+        fillcolor= "#dde8fe",
+        visible = visible,
+        hoverinfo = "text",
+        hovertext = "Excellent",
+        inherit = FALSE,
+        name = "Excellent",
         legendrank = 1001)
   }
 
@@ -303,54 +324,91 @@ format_graph_table <- function(df, group) {
   return(df_wide)
 }
 
-#' format_trend_table
+#' Caption Graph
 #'
-#' @description Format linear regression summary as table.
+#' @description Write caption for graph.
 #'
-#' @param p P-value.
-#' @param slope Slope.
+#' @param df Input dataframe.
+#' @param group How to group data. Options: Site_Name, Parameter, Depth.
 #'
 #' @return Updated dataframe.
 #'
 #' @noRd
-format_trend_table <- function(p, slope) {
-  if (p >= 0.1 | slope == 0) {
-    trend <- "No trend"
-  } else if (slope < 0) {
-    trend <- "🢃 Decreasing"
-  } else {
-    trend <- "🢁 Increasing"
+caption_graph <- function(df, group, thresh = NULL) {
+
+  site_list <- pretty_list(unique(df$Site_Name))
+  par_list <- pretty_list(unique(df$Parameter))
+
+  df$Unit[1]
+
+  fig_cap <- paste(par_list, "for", site_list)
+
+  if (group == "Depth") {
+    depths <- tolower(unique(df$Depth))
+    fig_cap <- paste(fig_cap, "at", pretty_list(depths), "depth")
+    if (length(depths) > 1) {
+      fig_cap <- paste0(fig_cap, "s")
+    }
   }
 
-  if (p >= 0.1) {
-    conf <- "Confident in no trend"
-    slope <- NA
-  } else if (p >= 0.05) {
-    conf <- "Somewhat confident in trend"
-  } else if (p >= 0.01) {
-    conf <- "Confident in trend"
-  } else {
-    conf <- "Very confident in trend"
+  fig_cap <- paste0(fig_cap, ".")
+
+  if (is.null(thresh)) {
+    return(fig_cap)
   }
 
-  df <- data.frame(
-    Trend=trend,
-    Slope=slope,
-    Confidence=conf,
-    P_value=p)
+  parameter <- df$Parameter[1]
+  unit <- df$Unit[1]
+  old_unit <- thresh$Unit
 
-  df <- reactable::reactable(
-    df,
-    fullWidth = FALSE,
-    bordered = TRUE,
-    defaultColDef = reactable::colDef(
-      minWidth = 120,
-      align = "left",
-      sortable = FALSE,
-      header = function(value) gsub("_", "-", value, fixed = TRUE),
-      headerStyle = list(background = "#f7f7f8")
-      )
-    )
+  thresh_min <- convert_threshold_unit(thresh$Threshold_Min, old_unit, unit)
+  thresh_max <- convert_threshold_unit(thresh$Threshold_Max, old_unit, unit)
+  thresh_excellent <- convert_threshold_unit(thresh$Excellent, old_unit, unit)
+  thresh_good <- convert_threshold_unit(thresh$Good, old_unit, unit)
 
-  return(df)
+  chk <- thresh_min == -999999 & thresh_max == -999999 &
+    (thresh_excellent == -999999 | thresh_good == -999999)
+  if (chk) {
+    return(fig_cap)
+  }
+
+  text_min <- NA
+  text_max <- "The maximum acceptable value is"
+  text_excellent <- "The"
+
+  if (unit %in% c(NA, "None")) { unit <- NULL }
+
+  if (thresh_min != -999999) {
+    text_min <- trimws(paste(
+      "The minimum acceptable value is", pretty_number(thresh_min), unit))
+    text_max <- "the maximum acceptable value is"
+    text_excellent <- "the"
+  }
+
+  if (thresh_max != -999999) {
+    text_max <- trimws(paste(text_max, pretty_number(thresh_max), unit))
+    text_excellent <- "the"
+  } else {
+    text_max <- NA
+  }
+
+  if (thresh_excellent != -999999 & thresh_excellent < thresh_good) {
+    text_excellent <- trimws(paste(
+      text_excellent, "maximum excellent value is",
+      pretty_number(thresh_excellent), unit))
+  } else if (thresh_good != -999999 & thresh_good < thresh_excellent) {
+    text_excellent <- trimws(paste(
+      text_excellent, "minimum excellent value is ",
+      pretty_number(thresh_excellent), unit))
+  } else {
+    text_excellent <- NA
+  }
+
+  thresh_list <- pretty_list(c(text_min, text_max, text_excellent))
+
+  if (!is.na(thresh_list)) {
+    fig_cap <- paste0(fig_cap, " ", thresh_list, ".")
+  }
+
+  return(fig_cap)
 }

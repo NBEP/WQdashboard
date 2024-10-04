@@ -7,7 +7,7 @@
 app_server <- function(input, output, session) {
 
   # Try to fix the dplyr problem....
-  library(dplyr)
+  library(magrittr)
 
   # Add module servers ----
   selected_var <- mod_sidebar_server(

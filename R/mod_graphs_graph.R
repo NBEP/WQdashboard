@@ -24,53 +24,13 @@ mod_graphs_graph_ui <- function(id){
           tabPanel(
             "Graph",
             plotly::plotlyOutput(outputId = ns("plot")),
-            tabsetPanel(
-              id = ns("tabset_trendline"),
-              type = "hidden",
-              tabPanelBody(
-                "show_btn",
-                div(
-                  style = "text-align:center;margin:1rem",
-                  div(
-                    style = "display:inline-block;",
-                    actionButton(
-                      ns("toggle_trends"),
-                      label = "Hide Trendline",
-                      width = "fit-content")
-                    ),
-                  div(
-                    style = "display:inline-block;",
-                    actionButton(
-                      ns("toggle_thresh"),
-                      label = "Hide Thresholds",
-                      width = "fit-content")
-                    )
-                  )
-                ),
-              tabPanelBody("hide_btn"))
+            textOutput(ns("caption"))
             ),
           tabPanel(
             "Table",
             htmlOutput(ns("fig_title")),
             reactable::reactableOutput(ns("table"))
             )
-          ),
-        # * Trend analysis ----
-        tabsetPanel(
-          id = ns("tabset_trends"),
-          type = "hidden",
-          tabPanelBody(
-            "trend_desc",
-            "Note: button doesn't do anything, is placeholder",
-            actionButton(
-              ns("btn_stats"),
-              label = "Show Additional Stats",
-              width = "fit-content")),
-          tabPanelBody(
-            "trend_error",
-            "Unable to calculate trend. At least ten years of data required."
-            ),
-          tabPanelBody("trend_blank")
           )
         ),
       # * No data message ----
@@ -84,8 +44,7 @@ mod_graphs_graph_ui <- function(id){
 #' graphs_graph Server Functions
 #'
 #' @noRd
-mod_graphs_graph_server <- function(id, df, thresholds = FALSE,
-    best_fit = FALSE, group = "Site_Name"){
+mod_graphs_graph_server <- function(id, df, group = "Site_Name"){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
@@ -104,7 +63,7 @@ mod_graphs_graph_server <- function(id, df, thresholds = FALSE,
     }) %>%
       bindEvent(hide_graph())
 
-    # Figure Title ----
+    # Figure Title, Caption ----
     fig_title <- reactive({
       df <- df()
 
@@ -119,137 +78,27 @@ mod_graphs_graph_server <- function(id, df, thresholds = FALSE,
       return(fig_title)
     })
 
-    # Graph options ----
-    val <- reactiveValues(
-      threshold = TRUE,
-      trendline = TRUE)
-
-    # Thresholds ----
-    # * Toggle visibility ----
-    observe({
-      if (val$threshold == TRUE) {
-        val$threshold <- FALSE
-        updateActionButton(
-          session, "toggle_thresh",
-          label = "Show Thresholds")
-        plotly::plotlyProxy("plot", session) %>%
-          plotly::plotlyProxyInvoke(
-            "restyle",
-            list(visible = FALSE),
-            c("Does Not Meet Criteria",
-              "Lowest Acceptable Value",
-              "Highest Acceptable Value"))
-      } else {
-        val$threshold <- TRUE
-        updateActionButton(
-          session, "toggle_thresh",
-          label = "Hide Thresholds")
-        plotly::plotlyProxy("plot", session) %>%
-          plotly::plotlyProxyInvoke(
-            "restyle",
-            list(visible = TRUE),
-            c("Does Not Meet Criteria",
-              "Lowest Acceptable Value",
-              "Highest Acceptable Value"))
-      }
-    }) %>%
-      bindEvent(input$toggle_thresh)
-
-    # * Calc thresholds ----
-    thresh <- reactive({
-      if (thresholds == FALSE & best_fit == FALSE) { return(NULL) }
-
-      thresh <- find_threshold(
-        site_id = df()$Site_ID[1],
-        parameter = df()$Parameter[1],
-        depth_cat = df()$Depth[1])
-
-      return(thresh)
-    })
-
-    # Trend line ----
-    # * Check if valid ----
-    len_years <- reactive({ length(unique(df()$Year)) })
-
-    show_fit <- reactive({
-      if (best_fit == FALSE) {
-        show_fit = "hide"
-      } else if (len_years() < 10) {
-        show_fit = "error"
-      } else {
-        show_fit = "show"
-      }
-
-      return(show_fit)
-    })
-
-    shinyjs::disable("toggle_trends")
-
-    observe({
-      if (show_fit() == "show") {
-        updateTabsetPanel(inputId = "tabset_trends", selected = "trend_desc")
-        updateTabsetPanel(inputId = "tabset_trendline", selected = "show_btn")
-        shinyjs::enable("toggle_trends")
-      } else if (show_fit() == "error") {
-        updateTabsetPanel(inputId = "tabset_trends", selected = "trend_error")
-        updateTabsetPanel(inputId = "tabset_trendline", selected = "show_btn")
-        shinyjs::disable("toggle_trends")
-      } else {
-        updateTabsetPanel(inputId = "tabset_trends", selected = "trend_blank")
-        updateTabsetPanel(inputId = "tabset_trendline", selected = "hide_btn")
-        shinyjs::disable("toggle_trends")
-      }
-    }) %>%
-      bindEvent(show_fit())
-
-    # * Toggle visibility ----
-    observe({
-      if (val$trendline == TRUE) {
-        val$trendline <- FALSE
-        updateActionButton(
-          session, "toggle_trends",
-          label = "Show Trendline")
-        plotly::plotlyProxy("plot", session) %>%
-          plotly::plotlyProxyInvoke(
-            "restyle",
-            list(visible = FALSE),
-            c("Trend Line",
-              "Yearly Average"))
-      } else {
-        val$trendline <- TRUE
-        updateActionButton(
-          session, "toggle_trends",
-          label = "Hide Trendline")
-        plotly::plotlyProxy("plot", session) %>%
-          plotly::plotlyProxyInvoke(
-            "restyle",
-            list(visible = TRUE),
-            c("Trend Line",
-              "Yearly Average"))
-      }
-    }) %>%
-      bindEvent(input$toggle_trends)
+    fig_caption <- reactive({ caption_graph(df(), group) })
 
     # Graph ----
     output$plot <- plotly::renderPlotly({
       if (group == "Parameter") {
         graph_two_var(df(), fig_title())
       } else {
-        if (thresholds) { thresh = thresh() } else { thresh = NULL}
-
         graph_one_var(
           df = df(),
           fig_title = fig_title(),
-          group = group,
-          thresholds = thresh,
-          show_thresh = val$threshold,
-          trend_line = show_fit(),
-          show_trend = val$trendline)
+          group = group)
       }
     })
 
+    # Caption ----
+    output$caption <- renderText({ fig_caption() })
+
     # Table ----
-    output$fig_title <- renderUI({ h2(fig_title()) })
+    output$fig_title <- renderUI({
+      HTML(paste( h2(fig_title()), fig_caption() ))
+    })
 
     output$table <- reactable::renderReactable({
       format_graph_table(df(), group)

@@ -6,7 +6,7 @@
 #' @noRd
 app_ui <- function(request) {
   # Try to fix the dplyr problem....
-  library(dplyr)
+  library(magrittr)
 
   tagList(
     # Leave this function for adding external resources

@@ -17,7 +17,7 @@ mod_graphs_ui <- function(id){
       # Trends -----
       bslib::nav_panel(
         "Long Term Trends",
-        mod_graphs_graph_ui(ns("graph_trends"))),
+        mod_graphs_trends_ui(ns("graph_trends"))),
       # Depth ----
       if (length(unique(df_data$Depth)) > 1) {
         bslib::nav_panel(
@@ -97,10 +97,7 @@ mod_graphs_server <- function(id, selected_var){
       return(df)
     })
 
-    mod_graphs_graph_server("graph_trends",
-      df = reactive({ df_trends()}),
-      thresholds = TRUE,
-      best_fit = TRUE)
+    mod_graphs_trends_server("graph_trends", df = reactive({ df_trends() }) )
 
     # Graph: Compare Sites ----
     df_comp_sites <- reactive({
@@ -120,7 +117,7 @@ mod_graphs_server <- function(id, selected_var){
       return(df)
     })
 
-    mod_graphs_graph_server("graph_sites", df = reactive({ df_comp_sites()}))
+    mod_graphs_graph_server("graph_sites", df = reactive({ df_comp_sites()}) )
 
     # Graph: Compare Depths ----
     df_comp_depth <- reactive({

@@ -32,3 +32,46 @@ pretty_number <- function(x){
     )
   return(y)
 }
+
+#' Pretty Unit
+#'
+#' @description Convert parameter and unit to string in format "Parameter (Unit).
+#'   If Unit is NA or None, format string as "Parameter".
+#'
+#' @param par Parameter.
+#' @param par_unit Unit.
+#'
+#' @return String.
+#' @noRd
+pretty_unit <- function(par, par_unit){
+  if (par_unit %in% c(NA, "None")) {
+    return(par)
+  }
+  par <- paste0(par, " (", par_unit, ")")
+  return(par)
+}
+
+#' Pretty List
+#'
+#' @description Convert list to string with appropriate placement of commas and
+#'   use of "and".
+#'
+#' @param x List.
+#'
+#' @return String.
+#' @noRd
+pretty_list <- function(x){
+  if (all(is.na(x))) {
+    return(NA)
+  }
+
+  x <- x[!is.na(x)]
+
+  if (length(x) > 2) {
+    x <- paste0(paste(x[-length(x)], collapse = ", "), ", and ", x[length(x)])
+  } else if (length(x) == 2) {
+    x <- paste(x[1], "and", x[2])
+  }
+
+  return(x)
+}

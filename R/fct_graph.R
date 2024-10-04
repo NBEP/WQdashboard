@@ -13,7 +13,7 @@
 #' @noRd
 
 graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
-                         show_trend = TRUE) {
+                         create_trend = TRUE, show_trend = TRUE) {
 
   if (nrow(df) == 0) { return(NULL) }
 
@@ -36,14 +36,8 @@ graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
       y = ~Result,
       type = "scatter",
       mode = "lines+markers",
-      inherit = FALSE,
       name = ~Site_Name,
-      marker = list(
-        color = "#6CE0F1",
-        line = list(
-          color = "#2daebe",
-          width = 2),
-        size = 5),
+      marker = list(size = 7, color = "#2daebe"),
       line = list(color = "#2daebe"),
       hoverinfo = "text",
       hovertext = ~Description
@@ -64,12 +58,7 @@ graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
         mode = "lines+markers",
         inherit = FALSE,
         name = ~Site_Name,
-        marker = list(
-          color = "#6CE0F1",
-          line = list(
-            color = "#2daebe",
-            width = 2),
-          size = 5),
+        marker = list(size = 7, color = "#2daebe"),
         line = list(color = "#2daebe"),
         hoverinfo = "text",
         hovertext = ~Description
@@ -77,7 +66,9 @@ graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
   }
 
   # Add trendlines ----
-  fig <- add_gam(fig, df, show_trend)
+  if (create_trend) {
+    fig <- add_gam(fig, df, show_trend)
+  }
 
   # Style plot ----
   years <- difftime(max_date, min_date, units = "days")
@@ -104,8 +95,7 @@ graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
 #'
 #' @noRd
 
-graph_one_var <- function(df, fig_title, group = "Site_Name", thresholds = NULL,
-                          show_thresh = TRUE, trend_line = "hide", show_trend = TRUE) {
+graph_one_var <- function(df, fig_title, group = "Site_Name") {
 
   if (nrow(df) == 0) { return(NULL) }
 
@@ -129,53 +119,20 @@ graph_one_var <- function(df, fig_title, group = "Site_Name", thresholds = NULL,
   shapes <- shapes[1:group_len]
 
   # Create plot ----
-  if (is.null(thresholds)) {
-    fig <- plotly::plot_ly(
-      data = df_new,
-      x = ~Date,
-      y = ~Result,
-      type = "scatter",
-      mode = "lines+markers",
-      color = ~Group,
-      colors = pal,
-      symbol = ~Group,
-      symbols = shapes,
-      marker = list(size = 7),
-      hoverinfo = "text",
-      hovertext = ~Description
-    )
-  } else {
-    # Add thresholds ----
-    fig <- add_thresholds(
-      thresh = thresholds,
-      visible = show_thresh,
-      date_range = c(min_date, max_date),
-      y_range = c(min_val, max_val),
-      unit = df$Unit[1]) %>%
-      plotly::add_trace(
-        data = df_new,
-        x = ~Date,
-        y = ~Result,
-        type = "scatter",
-        mode = "lines+markers",
-        inherit = FALSE,
-        name = ~Group,
-        marker = list(
-          color = "#6CE0F1",
-          line = list(
-            color = "#2daebe",
-            width = 2),
-          size = 5),
-        line = list(color = "#2daebe"),
-        hoverinfo = "text",
-        hovertext = ~Description
-      )
-  }
-
-  # Add trendlines ----
-  if (trend_line == "show") {
-    fig <- add_gam(fig, df, show_trend)
-  }
+  fig <- plotly::plot_ly(
+    data = df_new,
+    x = ~Date,
+    y = ~Result,
+    type = "scatter",
+    mode = "lines+markers",
+    color = ~Group,
+    colors = pal,
+    symbol = ~Group,
+    symbols = shapes,
+    marker = list(size = 7),
+    hoverinfo = "text",
+    hovertext = ~Description
+  )
 
   # Style plot ----
   years <- difftime(max_date, min_date, units = "days")
