@@ -1,14 +1,41 @@
-#' column_styles
+#' Reactable Table
 #'
-#' @description Helper function that sets column styles for `reactable_table`.
+#' @description Creates `reactable` table with nicely styled columns.
 #'
 #' @param df Input dataframe.
 #' @param hide_cols List of columns to hide.
 #'
+#' @return Reactable table.
+#'
+#' @noRd
+reactable_table <- function(df, graph_table = FALSE, show_score = TRUE,
+                            par_type = "Average", par_unit = "") {
+  reactable::reactable(
+    df,
+    highlight = TRUE,
+    defaultColDef = reactable::colDef(
+      header = function(value) gsub("_", " ", value, fixed = TRUE),
+      headerStyle = list(background = "#f7f7f8")
+    ),
+    columns = column_styles(df, graph_table, show_score),
+    meta = list(
+      par_type = par_type,
+      par_unit = par_unit
+    ),
+  )
+}
+
+#' Column Styles
+#'
+#' @description Helper function that sets column styles for `reactable_table`.
+#'
+#' @param df Input dataframe.
+#' @param show_score Boolean. Whether to show or hide "score_str" column.
+#'
 #' @return Formatted list of column styles.
 #'
 #' @noRd
-column_styles <- function(df, graph_table, hide_cols = NA) {
+column_styles <- function(df, graph_table, show_score = TRUE) {
   if (graph_table) {
     col_style <- list(
       Date = reactable::colDef(
@@ -32,15 +59,24 @@ column_styles <- function(df, graph_table, hide_cols = NA) {
     )
   }
 
-  if ("score_num" %in% colnames(df) & !"score_num" %in% hide_cols) {
-    col_style[["score_num"]] <- reactable::colDef(na = "-")
+  if ("score_num" %in% colnames(df)) {
+    col_style[["score_num"]] <- reactable::colDef(
+      name = "Value",
+      na = "-",
+      header = htmlwidgets::JS(
+        "function(column, state) {
+          const { par_type, par_unit } = state.meta
+          return par_type + par_unit
+        }")
+      )
   }
 
   if ("score_str" %in% colnames(df)) {
     col_style[["score_str"]] <- reactable::colDef(
-        name = "Score",
-        style = htmlwidgets::JS(
-          "function(rowInfo) {
+      name = "Score",
+      show = show_score,
+      style = htmlwidgets::JS(
+        "function(rowInfo) {
             if (rowInfo.values['score_str'] == 'Excellent') {
               return { backgroundColor: '#afccec' }
             } else if (rowInfo.values['score_str'] == 'Good' |
@@ -55,35 +91,24 @@ column_styles <- function(df, graph_table, hide_cols = NA) {
                 rowInfo.values['score_str'] == 'No Threshold Established') {
               return { fontStyle: 'italic' }
             }
-          }"))
-  }
-
-  if (all(is.na(hide_cols))) { return (col_style) }
-
-  for (col in hide_cols) {
-    col_style[[col]] <- reactable::colDef(show = FALSE)
+          }"
+      )
+    )
   }
 
   return (col_style)
 }
 
-#' reactable_table
+
+#' Hide Table Columns
 #'
-#' @description Creates `reactable` table with nicely styled columns.
+#' @description Use javascript to dynamically hide columns in `reactable`
+#'   table. Code by dleopold https://github.com/glin/reactable/issues/192
 #'
-#' @param df Input dataframe.
-#' @param hide_cols List of columns to hide.
-#'
-#' @return Reactable table.
+#' @param id Reactable table ID.
+#' @param cols List of columns.
 #'
 #' @noRd
-reactable_table <- function(df, graph_table = FALSE, hide_cols = NA) {
-  reactable::reactable(
-    df,
-    highlight = TRUE,
-    defaultColDef = reactable::colDef(
-      header = function(value) gsub("_", " ", value, fixed = TRUE),
-      headerStyle = list(background = "#f7f7f8")
-    ),
-    columns = column_styles(df, graph_table, hide_cols))
+hideCols <- function(id, cols, session = getDefaultReactiveDomain()) {
+  session$sendCustomMessage("hideCols", list(id = id, cols = cols))
 }

@@ -119,12 +119,13 @@ mod_sidebar_ui <- function(id){
 #' @param selected_tab String, selected tab ID
 #'
 #' @noRd
-mod_sidebar_server <- function(id, selected_tab){
+mod_sidebar_server <- function(id, selected_tab, selected_site){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
     # Modules ----------------------------------------------------------------
-    loc_server <- mod_select_location_server("select_location", selected_tab)
+    loc_server <- mod_select_location_server("select_location",
+       selected_tab, selected_site)
 
     # Show/hide secret tabs ---------------------------------------------------
     observe({

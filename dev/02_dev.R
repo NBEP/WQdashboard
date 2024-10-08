@@ -52,6 +52,7 @@ golem::add_fct("calculate_score", with_test = TRUE)
 golem::add_utils("add_popup_text", with_test = TRUE)
 golem::add_fct("select_dropdown", with_test = TRUE)
 golem::add_fct("table", with_test = TRUE)
+golem::add_utils("table", with_test = TRUE)
 golem::add_fct("graph", with_test = TRUE)
 
 ## External resources

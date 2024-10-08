@@ -101,7 +101,6 @@ mod_graphs_server <- function(id, selected_var){
 
     # Graph: Compare Sites ----
     df_comp_sites <- reactive({
-      req(input$extra_sites)
       req(selected_var$param_n())
 
       sites <- input$extra_sites
@@ -123,7 +122,6 @@ mod_graphs_server <- function(id, selected_var){
     df_comp_depth <- reactive({
       req(selected_var$sites_n())
       req(selected_var$param_n())
-      req(input$extra_depth)
 
       sites <- selected_var$sites_n()
       param <- selected_var$param_n()
@@ -146,7 +144,6 @@ mod_graphs_server <- function(id, selected_var){
     # Graph: Compare Parameters ----
     df_comp_par <- reactive({
       req(selected_var$sites_n())
-      req(input$extra_param)
 
       sites <- selected_var$sites_n()
       param <- input$extra_param

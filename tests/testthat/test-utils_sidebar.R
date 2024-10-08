@@ -56,8 +56,16 @@ test_that("create_site_list generates alphabetical site list", {
 })
 
 test_that("update_site_list filters sites by selected col, variables", {
+  df <- data.frame(Site_ID = c("001", "002"),
+                   Site_Name = c("NBEP", "Blackstone"),
+                   Town_Code = c("Providence, RI", "Worcester, MA"),
+                   State = c("RI", "MA"),
+                   Watershed = c("Woonasquatucker River-Moshassuck River",
+                                 "Upper Blackstone River"))
+
   chk <- c("002")
   names(chk) <- c("Blackstone")
+
   expect_equal(
     update_site_list(
       df = df,
@@ -84,6 +92,14 @@ test_that("update_site_list filters sites by selected col, variables", {
 })
 
 test_that("sort_months sorts months chronologically", {
-  chk <- c("December", "January", "March", "January")
-  expect_equal(sort_months(chk), c("January", "March", "December"))
+  expect_equal(
+    list_months(c("April", "January", "March", "January")),
+    c("January", "February", "March", "April"))
+  expect_equal(list_months("April"), "April")
+})
+
+test_that("sort_depth works", {
+  expect_equal(
+    sort_depth(c("Midwater", "Bottom", "Surface", "Midwater")),
+    c("Surface", "Midwater", "Bottom"))
 })

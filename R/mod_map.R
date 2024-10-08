@@ -12,6 +12,7 @@ mod_map_ui <- function(id){
   tagList(
     bslib::navset_card_tab(
       id = ns("tabset"),
+      title = h2(textOutput(ns("title"))),
       full_screen = TRUE,
       bslib::nav_panel(
         "Map",
@@ -32,9 +33,20 @@ mod_map_server <- function(id, selected_var){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
-    df_default <- df_score %>%
-      dplyr::filter(Year == max(Year))
+    # Set title ----
+    output$title <- renderText({
+      paste0(selected_var$param_n(), " (", selected_var$year(), ")")
+    })
 
+    # Static variables ----
+    drop_col <- c("Year", "Site_ID", "Parameter", "Unit", "score_typ",
+                  "Latitude", "Longitude", "popup_loc", "popup_score", "alt")
+
+    df_default <- df_score %>%
+      dplyr::filter(Year == max(Year)) %>%
+      dplyr::select(!any_of(drop_col))
+
+    # Reactive variables ----
     df_param <- reactive({
       req(selected_var$param_n())
 
@@ -100,6 +112,7 @@ mod_map_server <- function(id, selected_var){
             data = df_map(),
             lng = ~Longitude,
             lat = ~Latitude,
+            layerId = ~Site_ID,
             # Icons
             icon = ~leaflet::icons(
               iconUrl = num_symbols(df_param(), df_map()),
@@ -111,8 +124,16 @@ mod_map_server <- function(id, selected_var){
             # Popup
             popup = ~paste0(
               popup_loc,
-              "<br/><br/><b>", selected_var$param_n(), "</b>",
-              popup_score),
+              "<br><br><b>", selected_var$param_n(), "</b>",
+              popup_score, "<br>",
+              actionLink(
+                ns("graph_link"),
+                label = "View Trends",
+                onclick = paste0(
+                  'Shiny.setInputValue("', ns("graph_link"),
+                  '", (Math.random() * 1000) + 1);')
+                )
+            ),
             # Accessibility
             options = leaflet::markerOptions(alt = ~alt))
       } else {
@@ -122,6 +143,7 @@ mod_map_server <- function(id, selected_var){
             data = df_map(),
             lng = ~Longitude,
             lat = ~Latitude,
+            layerId = ~Site_ID,
             # Icons
             icon = ~leaflet::icons(
               iconUrl = cat_pal(df_param())[score_str],
@@ -133,8 +155,16 @@ mod_map_server <- function(id, selected_var){
             # Popup
             popup = ~paste0(
               popup_loc,
-              "<br/><br/><b>", selected_var$param_n(), "</b>",
-              popup_score),
+              "<br><br><b>", selected_var$param_n(), "</b>",
+              popup_score, "<br>",
+              actionLink(
+                ns("graph_link2"),
+                label = "View Trends",
+                onclick = paste0(
+                  'Shiny.setInputValue("', ns("graph_link"),
+                  '", (Math.random() * 1000) + 1);')
+              )
+            ),
             # Accessibility
             options = leaflet::markerOptions(alt = ~alt))
       }
@@ -182,28 +212,85 @@ mod_map_server <- function(id, selected_var){
     # Table ------------------------------------------------------------------
     val <- reactiveValues(
       df = df_default,
+      show_score = TRUE,
+      par_type = "Average",
+      par_unit = "",
       count = 0)
+
+    par_type <- reactive({
+      par_type <- unique(df_param()$score_typ)
+      if (!all(is.na(par_type))) {
+        par_type <- par_type[!is.na(par_type)]
+        par_type <- par_type[1]
+      } else {
+        par_type <- "Average"
+      }
+
+      return(par_type)
+    })
+
+    par_unit <- reactive({
+      par_unit <- unique(df_map()$Unit)
+      if (!all(par_unit %in% c(NA, "None"))) {
+        par_unit <- par_unit[!par_unit %in% c(NA, "None")]
+        par_unit <- paste0(" (", par_unit[1], ")")
+      } else {
+        par_unit <- ""
+      }
+
+      return(par_unit)
+    })
+
 
     observe({
       if (val$count < 2) {
         val$count <- val$count + 1
-        val$df <- df_map()
+        val$df <- dplyr::select(df_map(), !dplyr::any_of(drop_col))
+        val$par_type <- par_type()
+        val$par_unit <- par_unit()
+        if (map_type() == "score_str") {
+          val$show_score <- TRUE
+        } else {
+          val$show_score <- FALSE
+        }
       }
     }) %>%
       bindEvent(input$tabset)
 
     output$table <- reactable::renderReactable({
-      reactable_table(val$df,
-        hide_cols = c("Year", "Site_ID", "Parameter", "Unit", "score_typ",
-                      "Latitude", "Longitude", "popup_loc", "popup_score",
-                      "alt"))
+      reactable_table(
+        val$df,
+        show_score = val$show_score,
+        par_type = val$par_type,
+        par_unit = val$par_unit)
     })
 
-    # Update table
-    observe({ reactable::updateReactable("table", data = df_map()) }) %>%
+    # * Update table ----
+    observe({reactable::updateReactable("table",
+        data = dplyr::select(df_map(), !dplyr::any_of(drop_col)),
+        meta = list(par_type = par_type(), par_unit = par_unit())
+      )
+    }) %>%
       bindEvent(df_map())
 
-    # To update score_num name --- have to use "meta" attribute
+    observe({
+      if (map_type() == "score_str") {
+        hideCols(ns("table"), as.list(""))
+      } else {
+        hideCols(ns("table"), as.list("score_str"))
+      }
+    }) %>% bindEvent(map_type())
+
+    # Return data -------------------------------------------------------------
+    selected_site <- reactive({ input$map_marker_click$id }) %>%
+      bindEvent(input$graph_link)
+
+    return(
+      list(
+        graph_link = reactive({ input$graph_link }),
+        site = reactive({ selected_site() })
+      )
+    )
 
   })
 }

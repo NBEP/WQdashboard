@@ -135,11 +135,12 @@ update_site_list <- function(df = df_sites, filter_col, filter_list) {
 #'
 #' @noRd
 list_months <- function(month_list) {
-  min_month <- min(month_list)
-  max_month <- max(month_list)
+  if (length(month_list) == 1) { return(month_list) }
 
-  month_range <- seq(as.integer(factor(min_month, levels=month.name)),
-                     as.integer(factor(max_month, levels=month.name)))
+  month_list <- month_list[month_list %in% month.name]
+  month_list <- as.integer(factor(month_list, levels=month.name))
+
+  month_range <- seq(min(month_list), max(month_list))
   month_range <- month.name[month_range]
 
   return(month_range)
@@ -157,7 +158,7 @@ list_months <- function(month_list) {
 sort_depth <- function(depth_list) {
   depth_list <- unique(depth_list)
   all_depths <- c("Surface", "Midwater", "Near Bottom", "Bottom")
-
   all_depths <- all_depths[all_depths %in% depth_list]
+
   return(all_depths)
 }

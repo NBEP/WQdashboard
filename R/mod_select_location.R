@@ -83,7 +83,7 @@ mod_select_location_ui <- function(id){
 #' select_location Server Functions
 #'
 #' @noRd
-mod_select_location_server <- function(id, selected_tab){
+mod_select_location_server <- function(id, selected_tab, selected_site){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -165,6 +165,16 @@ mod_select_location_server <- function(id, selected_tab){
         selected = choices[1])
     }) %>%
       bindEvent(c(locval$town_sites, locval$watershed_sites, input$loc_type))
+
+    # Update sites_n on map click ------
+    observe({
+      shinyWidgets::updatePickerInput(
+        session = session,
+        inputId = "select_sites_n",
+        selected = selected_site()
+      )
+    }) %>%
+      bindEvent( selected_site() )
 
     return(
       list(
