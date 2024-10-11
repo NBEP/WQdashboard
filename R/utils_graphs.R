@@ -8,7 +8,7 @@
 #'
 #' @noRd
 
-graph_style <- function(fig, fig_title, y_title, y_range, years) {
+graph_style <- function(fig, fig_title, y_title, y_range) {
   fig <- fig %>%
     plotly::config(
       displaylogo = FALSE,
@@ -41,72 +41,19 @@ graph_style <- function(fig, fig_title, y_title, y_range, years) {
       xaxis = list(
         title = "Date",
         rangemode = "tozero",
-        # fixedrange = TRUE,
-        rangeslider = list(type = "date"),
+        fixedrange = TRUE,
         titlefont = list(size = 16),
         tickfont = list(size = 16),
         linecolor = "black",
         showgrid = FALSE,
         tickcolor = "black"),
+      showlegend = TRUE,
       hoverlabel = list(bgcolor = "white"),
       margin = list(
         l = 50, r = 20,
         b = 20, t = 55,
-        pad = 0))
-
-  if (years > 5) {
-    fig <- fig %>%
-      plotly::layout(
-        xaxis = list(
-          rangeselector = list(
-            buttons = list(
-              list(
-                count = 1,
-                label = "1 yr",
-                step = "year"),
-              list(
-                count = 2,
-                label = "2 yr",
-                step = "year"),
-              list(
-                count = 5,
-                label = "5 yr",
-                step = "year"),
-              list(step = "all")))))
-  } else if (years > 2) {
-    fig <- fig %>%
-      plotly::layout(
-        xaxis = list(
-          rangeselector = list(
-            buttons = list(
-              list(
-                count = 1,
-                label = "1 yr",
-                step = "year"),
-              list(
-                count = 2,
-                label = "2 yr",
-                step = "year"),
-              list(step = "all")))))
-  } else if (years > 1) {
-    fig <- fig %>%
-      plotly::layout(
-        xaxis = list(
-          rangeselector = list(
-            buttons = list(
-              list(
-                count = 1,
-                label = "1 yr",
-                step = "year"),
-              list(step = "all")))))
-  } else {
-    fig <- fig %>%
-      plotly::layout(
-        xaxis = list(
-          rangeselector = list(
-            buttons = list(
-              list(step = "all")))))
-  }
+        pad = 0)
+      )
 
   return(fig)
 }
@@ -149,8 +96,8 @@ add_line_breaks <- function(df) {
 #' @noRd
 add_thresholds <- function(thresh, visible = TRUE, date_range, y_range,
                            unit) {
-  min_date <- date_range[1] - lubridate::years(1)
-  max_date <- date_range[2] + lubridate::years(1)
+  min_date <- date_range[1]
+  max_date <- date_range[2]
   min_val <- y_range[1]
   max_val <- y_range[2]
   old_unit <- thresh$Unit
@@ -173,7 +120,7 @@ add_thresholds <- function(thresh, visible = TRUE, date_range, y_range,
         hoverinfo = "text",
         hovertext = "Does Not Meet Criteria",
         inherit = FALSE,
-        name = "Does Not Meet Criteria",
+        name = "Does Not Meet\nCriteria",
         legendrank = 1003)
   }
 
@@ -188,7 +135,7 @@ add_thresholds <- function(thresh, visible = TRUE, date_range, y_range,
         hoverinfo = "text",
         hovertext = "Does Not Meet Criteria",
         inherit = FALSE,
-        name = "Does Not Meet Criteria",
+        name = "Does Not\nMeet Criteria",
         legendrank = 1002)
   }
 
@@ -281,134 +228,75 @@ add_gam <- function(fig, df, visible = TRUE) {
         opacity=0.4),
       visible = visible,
       inherit = FALSE,
-      name = "95% Confidence Interval"
+      name = "95% Confidence\nInterval"
     )
 
   return(fig)
 }
 
-#' format_graph_table
-#'
-#' @description Format graph data as table.
-#'
-#' @param df Input dataframe.
-#' @param group How to group data. Options: Site_Name, Parameter, Depth.
-#'
-#' @return Updated dataframe.
-#'
-#' @noRd
-format_graph_table <- function(df, group) {
-  col_select <- c("Date", "Result", group)
-
-  df <- df %>%
-    dplyr::mutate(Result = dplyr::if_else(
-      Unit %in% c(NA, "None"),
-      as.character(Result),
-      paste(Result, Unit))) %>%
-    dplyr::select(dplyr::all_of(col_select))
-
-  var_count <- length(unique(df[[group]]))
-
-  if (var_count == 1) {
-    var_name <- df[[group]][1]
-
-    df_wide <- df %>%
-      dplyr::select(Date, Result) %>%
-      dplyr::rename({{var_name}} := Result)
-  } else {
-    df_wide <- tidyr::spread(df, {{group}}, Result)
-  }
-
-  df_wide <- reactable_table(df_wide, graph_table = TRUE)
-
-  return(df_wide)
-}
-
 #' Caption Graph
 #'
-#' @description Write caption for graph.
+#' @description Generate list of threshold values.
 #'
 #' @param df Input dataframe.
-#' @param group How to group data. Options: Site_Name, Parameter, Depth.
+#' @param thresh Dataframe with threshold values.
 #'
-#' @return Updated dataframe.
+#' @return List of threshold values.
 #'
 #' @noRd
-caption_graph <- function(df, group, thresh = NULL) {
-
-  site_list <- pretty_list(unique(df$Site_Name))
-  par_list <- pretty_list(unique(df$Parameter))
-
-  df$Unit[1]
-
-  fig_cap <- paste(par_list, "for", site_list)
-
-  if (group == "Depth") {
-    depths <- tolower(unique(df$Depth))
-    fig_cap <- paste(fig_cap, "at", pretty_list(depths), "depth")
-    if (length(depths) > 1) {
-      fig_cap <- paste0(fig_cap, "s")
-    }
-  }
-
-  fig_cap <- paste0(fig_cap, ".")
-
+caption_graph <- function(df, thresh = NULL) {
   if (is.null(thresh)) {
-    return(fig_cap)
+    return("")
   }
 
   parameter <- df$Parameter[1]
-  unit <- df$Unit[1]
   old_unit <- thresh$Unit
+  new_unit <- df$Unit[1]
 
-  thresh_min <- convert_threshold_unit(thresh$Threshold_Min, old_unit, unit)
-  thresh_max <- convert_threshold_unit(thresh$Threshold_Max, old_unit, unit)
-  thresh_excellent <- convert_threshold_unit(thresh$Excellent, old_unit, unit)
-  thresh_good <- convert_threshold_unit(thresh$Good, old_unit, unit)
+  thresh_min <- convert_threshold_unit(thresh$Threshold_Min, old_unit, new_unit)
+  thresh_max <- convert_threshold_unit(thresh$Threshold_Max, old_unit, new_unit)
+  thresh_excellent <- convert_threshold_unit(thresh$Excellent, old_unit, new_unit)
+  thresh_good <- convert_threshold_unit(thresh$Good, old_unit, new_unit)
 
   chk <- thresh_min == -999999 & thresh_max == -999999 &
     (thresh_excellent == -999999 | thresh_good == -999999)
   if (chk) {
-    return(fig_cap)
+    return("")
   }
 
-  text_min <- NA
-  text_max <- "The maximum acceptable value is"
-  text_excellent <- "The"
+  thresh_text <- "<h3>Thresholds</h3>"
 
-  if (unit %in% c(NA, "None")) { unit <- NULL }
+  if (new_unit %in% c(NA, "None")) { new_unit <- NULL }
 
-  if (thresh_min != -999999) {
-    text_min <- trimws(paste(
-      "The minimum acceptable value is", pretty_number(thresh_min), unit))
-    text_max <- "the maximum acceptable value is"
-    text_excellent <- "the"
+  if (thresh_min != -999999 & thresh_max != -999999) {
+    thresh_text <- paste0(
+      thresh_text, "<b>Acceptable:</b> ", pretty_number(thresh_min), " - ",
+      pretty_number(thresh_max), " ", new_unit)
+  } else if (thresh_min != -999999) {
+    thresh_text <- paste0(
+      thresh_text, "<b>Acceptable:</b> &gt; ", pretty_number(thresh_min),
+      " ", new_unit)
+  } else if (thresh_max != -999999) {
+    thresh_text <- paste0(
+      thresh_text, "<b>Acceptable:</b> &lt; ", pretty_number(thresh_max),
+      " ", new_unit)
   }
 
-  if (thresh_max != -999999) {
-    text_max <- trimws(paste(text_max, pretty_number(thresh_max), unit))
-    text_excellent <- "the"
-  } else {
-    text_max <- NA
+  if (nchar(thresh_text) > 19) {
+    thresh_text <- paste0(trimws(thresh_text), "<br>")
   }
 
   if (thresh_excellent != -999999 & thresh_excellent < thresh_good) {
-    text_excellent <- trimws(paste(
-      text_excellent, "maximum excellent value is",
-      pretty_number(thresh_excellent), unit))
+    thresh_text <- paste0(
+      thresh_text, "<b>Excellent:</b> &lt; ", pretty_number(thresh_excellent),
+      " ", new_unit)
   } else if (thresh_good != -999999 & thresh_good < thresh_excellent) {
-    text_excellent <- trimws(paste(
-      text_excellent, "minimum excellent value is ",
-      pretty_number(thresh_excellent), unit))
-  } else {
-    text_excellent <- NA
+    thresh_text <- paste0(
+      thresh_text, "<b>Excellent:</b> &gt; ", pretty_number(thresh_excellent),
+      " ", new_unit)
   }
 
-  thresh_list <- pretty_list(c(text_min, text_max, text_excellent))
+  thresh_text <- trimws(thresh_text)
 
-  if (!is.na(thresh_list)) {
-    fig_cap <- paste0(fig_cap, " ", thresh_list, ".")
-  }
-
-  return(fig_cap)
+  return(thresh_text)
 }

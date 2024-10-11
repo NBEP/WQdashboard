@@ -1,14 +1,13 @@
-#' wrap_text
-#' NOT USED IN PACKAGE - remove?
+#' Wrap Text
 #'
-#' @description Wrap long strings in list.
+#' @description Wrap long strings of text.
 #'
 #' @param old_list Input list.
 #' @param str_len Length of string.
 #' @param linebreak Linebreak symbol.
 #'
 #' @return Updated list.
-wrap_text <- function(old_list, str_len, linebreak = NULL){
+wrap_text <- function(old_list, str_len=20, linebreak = NULL){
   new_list <- stringr::str_wrap(old_list, width = str_len)
   if(!is.null(linebreak)){
     new_list <- gsub("\n", linebreak, new_list)
@@ -31,6 +30,27 @@ pretty_number <- function(x){
     round(x, 2)
     )
   return(y)
+}
+
+#' Find Unit
+#'
+#' Finds unit for parameter.
+#'
+#' @param param Paramter.
+#'
+#' @returns Icon code.
+#'
+#' @noRd
+find_unit <- function(param) {
+  df <- df_score %>%
+    dplyr::filter(!Unit %in% c(NA, "None") & Parameter == param)
+  unit <- ""
+
+  if (nrow(df) > 0) {
+    unit <- paste0("(", df$Unit[1], ")")
+  }
+
+  return(unit)
 }
 
 #' Pretty Unit

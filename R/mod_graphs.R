@@ -100,6 +100,18 @@ mod_graphs_server <- function(id, selected_var){
     mod_graphs_trends_server("graph_trends", df = reactive({ df_trends() }) )
 
     # Graph: Compare Sites ----
+    # * Update picker input ----
+    observe({
+      shinyWidgets::updatePickerInput(
+        session = session,
+        inputId = "extra_sites",
+        choices = selected_var$site_list(),
+        selected = selected_var$site_list()[1])
+    }) %>%
+      bindEvent(selected_var$site_list())
+
+
+    # * Create graph ----
     df_comp_sites <- reactive({
       req(selected_var$param_n())
 

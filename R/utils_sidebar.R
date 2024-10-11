@@ -130,17 +130,24 @@ update_site_list <- function(df = df_sites, filter_col, filter_list) {
 #' @description Creates ordered list of months in range.
 #'
 #' @param month_list Unsorted list of months.
+#' @param as_range Boolean. If TRUE, only lists first and last month in range.
+#'   Default FALSE.
 #'
 #' @return Sorted list of months.
 #'
 #' @noRd
-list_months <- function(month_list) {
+list_months <- function(month_list, as_range = FALSE) {
   if (length(month_list) == 1) { return(month_list) }
 
   month_list <- month_list[month_list %in% month.name]
   month_list <- as.integer(factor(month_list, levels=month.name))
 
-  month_range <- seq(min(month_list), max(month_list))
+  if (as_range) {
+    month_range <- c(min(month_list), max(month_list))
+  } else {
+    month_range <- seq(min(month_list), max(month_list))
+  }
+
   month_range <- month.name[month_range]
 
   return(month_range)

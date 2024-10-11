@@ -23,8 +23,7 @@ mod_graphs_graph_ui <- function(id){
           id = ns("graph_table"),
           tabPanel(
             "Graph",
-            plotly::plotlyOutput(outputId = ns("plot")),
-            textOutput(ns("caption"))
+            plotly::plotlyOutput(outputId = ns("plot"))
             ),
           tabPanel(
             "Table",
@@ -63,45 +62,46 @@ mod_graphs_graph_server <- function(id, df, group = "Site_Name"){
     }) %>%
       bindEvent(hide_graph())
 
-    # Figure Title, Caption ----
+    # Figure Title ----
     fig_title <- reactive({
       df <- df()
 
       if (group == "Site_Name") {
-        fig_title <- df$Parameter[1]
+        graph_title <- df$Parameter[1]
+        table_title <- pretty_unit(df$Parameter[1], df$Unit[1])
       } else if (group == "Depth") {
-        fig_title <- paste(df$Parameter[1], "at", df$Site_Name[1])
+        graph_title <- paste(df$Parameter[1], "at", df$Site_Name[1])
+        table_title <- paste(
+          pretty_unit(df$Parameter[1], df$Unit[1]), "at", df$Site_Name[1])
       } else {
-        fig_title <- df$Site_Name[1]
+        graph_title <- df$Site_Name[1]
+        table_title <- graph_title
       }
 
-      return(fig_title)
+      return(
+        list(
+          graph_title = graph_title,
+          table_title = table_title)
+      )
     })
-
-    fig_caption <- reactive({ caption_graph(df(), group) })
 
     # Graph ----
     output$plot <- plotly::renderPlotly({
       if (group == "Parameter") {
-        graph_two_var(df(), fig_title())
+        graph_two_var(df(), fig_title()$graph_title)
       } else {
         graph_one_var(
           df = df(),
-          fig_title = fig_title(),
+          fig_title = fig_title()$graph_title,
           group = group)
       }
     })
 
-    # Caption ----
-    output$caption <- renderText({ fig_caption() })
-
     # Table ----
-    output$fig_title <- renderUI({
-      HTML(paste( h2(fig_title()), fig_caption() ))
-    })
+    output$fig_title <- renderUI({ h2(fig_title()$table_title) })
 
     output$table <- reactable::renderReactable({
-      format_graph_table(df(), group)
+      graph_table(df(), group)
     })
 
   })

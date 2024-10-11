@@ -65,27 +65,6 @@ add_popup_text <- function(df) {
   return(df)
 }
 
-#' param_unit
-#'
-#' Finds unit for parameter.
-#'
-#' @param param Paramter.
-#'
-#' @returns Icon code.
-#'
-#' @noRd
-param_unit <- function(param) {
-  df <- df_score %>%
-    dplyr::filter(!Unit %in% c(NA, "None") & Parameter == param)
-  unit <- ""
-
-  if (nrow(df) > 0) {
-    unit <- paste0("(", df$Unit[1], ")")
-  }
-
-  return(unit)
-}
-
 #' num_pal
 #'
 #' Creates palette for continuous data.

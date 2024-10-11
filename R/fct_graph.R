@@ -25,6 +25,15 @@ graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
 
   min_date <- min(df$Date)
   max_date <- max(df$Date)
+  if (min_date == max_date) {
+    date_diff <- lubridate::dmonths(1)
+  } else {
+    date_diff <- lubridate::interval(min_date, max_date) %>%
+      lubridate::as.duration()
+    date_diff <- date_diff * 0.06
+  }
+  min_date <- min_date - date_diff
+  max_date <- max_date + date_diff
 
   df_new <- add_line_breaks(df)
 
@@ -36,7 +45,7 @@ graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
       y = ~Result,
       type = "scatter",
       mode = "lines+markers",
-      name = ~Site_Name,
+      name = ~wrap_text(Site_Name),
       marker = list(size = 7, color = "#2daebe"),
       line = list(color = "#2daebe"),
       hoverinfo = "text",
@@ -57,7 +66,7 @@ graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
         type = "scatter",
         mode = "lines+markers",
         inherit = FALSE,
-        name = ~Site_Name,
+        name = ~wrap_text(Site_Name),
         marker = list(size = 7, color = "#2daebe"),
         line = list(color = "#2daebe"),
         hoverinfo = "text",
@@ -71,14 +80,13 @@ graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
   }
 
   # Style plot ----
-  years <- difftime(max_date, min_date, units = "days")
-  years <- as.numeric(years)/365
-
   fig <- graph_style(fig,
-    fig_title = fig_title,
-    y_title = paste(df$Parameter[1], param_unit(df$Parameter[1])),
-    y_range = list(min_val, max_val),
-    years = years)
+      fig_title = fig_title,
+      y_title = pretty_unit(df$Parameter[1], df$Unit[1]),
+      y_range = list(min_val, max_val)) %>%
+    plotly::layout(
+      xaxis = list(range = c(min_date, max_date))
+    )
 
   return(fig)
 }
@@ -105,9 +113,6 @@ graph_one_var <- function(df, fig_title, group = "Site_Name") {
   max_val <- max(df$Result) * 1.2
   if (max_val == min_val) { max_val <- min_val + 1 }
 
-  min_date <- min(df$Date)
-  max_date <- max(df$Date)
-
   df_new <- add_line_breaks(df)
   df_new["Group"] <- df_new[[group]]
 
@@ -121,6 +126,7 @@ graph_one_var <- function(df, fig_title, group = "Site_Name") {
   # Create plot ----
   fig <- plotly::plot_ly(
     data = df_new,
+    name = ~wrap_text(Group),
     x = ~Date,
     y = ~Result,
     type = "scatter",
@@ -135,14 +141,10 @@ graph_one_var <- function(df, fig_title, group = "Site_Name") {
   )
 
   # Style plot ----
-  years <- difftime(max_date, min_date, units = "days")
-  years <- as.numeric(years)/365
-
   fig <- graph_style(fig,
                      fig_title = fig_title,
-                     y_title = paste(df$Parameter[1], param_unit(df$Parameter[1])),
-                     y_range = list(min_val, max_val),
-                     years = years)
+                     y_title = pretty_unit(df$Parameter[1], df$Unit[1]),
+                     y_range = list(min_val, max_val))
 
   return(fig)
 }
@@ -161,6 +163,7 @@ graph_one_var <- function(df, fig_title, group = "Site_Name") {
 graph_two_var <- function(df, fig_title) {
   if (nrow(df) == 0) { return(NULL) }
   par1 <- df$Parameter[1]
+  unit1 <- df$Unit[1]
 
   df_new <- add_line_breaks(df)
   df1 <- dplyr::filter(df_new, Parameter == par1)
@@ -173,6 +176,7 @@ graph_two_var <- function(df, fig_title) {
   # Create graph with first parameter
   fig <- plotly::plot_ly(
     data = df1,
+    name = wrap_text(par1),
     type = "scatter",
     mode = "lines+markers",
     x = ~Date,
@@ -188,10 +192,12 @@ graph_two_var <- function(df, fig_title) {
   # Add second parameter
   if (nrow(df2) > 0) {
     par2 <- df2$Parameter[1]
+    unit2 <- df2$Unit[1]
 
     fig <- fig %>%
       plotly::add_trace(
         data = df2,
+        name = wrap_text(par2),
         type = "scatter",
         mode = "lines+markers",
         yaxis = "y2",
@@ -206,7 +212,7 @@ graph_two_var <- function(df, fig_title) {
         hovertext = ~Description) %>%
       plotly::layout(
         yaxis2 = list(
-          title = paste(par2, param_unit(par2)),
+          title = pretty_unit(par2, unit2),
           overlaying = "y",
           side = "right",
           rangemode = "tozero",
@@ -217,19 +223,17 @@ graph_two_var <- function(df, fig_title) {
           showgrid = FALSE,
           tickcolor = "black"),
         legend = list(
-          x = 1.05))
+          xanchor = "left",
+          x = 1.15)
+        )
   }
 
   # Calculate axes, style plot
-  years <- difftime(max(df$Date), min(df$Date), units = "days")
-  years <- as.numeric(years)/365
-
   fig <- graph_style(
     fig,
     fig_title = fig_title,
-    y_title = paste(par1, param_unit(par1)),
-    y_range = NA,
-    years = years)
+    y_title = pretty_unit(par1, unit1),
+    y_range = NA)
 
   return(fig)
 }

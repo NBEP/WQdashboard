@@ -106,7 +106,8 @@ mod_sidebar_ui <- function(id){
               ns("select_month"),
               label = h3("Select Months"),
               choices = list_months(df_data$Month),
-              selected = c(min(df_data$Month), max(df_data$Month)))
+              selected = list_months(df_data$Month, as_range = TRUE)
+            )
           )
         )
       )
@@ -174,6 +175,7 @@ mod_sidebar_server <- function(id, selected_tab, selected_site){
       list(
         sites_all = reactive({ loc_server$sites_all() }),
         sites_n = reactive({ loc_server$sites_n() }),
+        site_list = reactive({ loc_server$site_list() }),
         param_all = reactive({ input$select_param_all }),
         param_n = reactive({ input$select_param_n }),
         param_short = reactive({ input$select_param_short }),

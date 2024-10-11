@@ -181,7 +181,7 @@ mod_map_server <- function(id, selected_var){
             values = df_param()$score_num,
             title = htmltools::tags$div(
               paste(selected_var$param_n(),
-                param_unit(selected_var$param_n())),
+                find_unit(selected_var$param_n())),
               style = 'font-size: 18px'),
             shape = "rect",
             orientation = "vertical",
@@ -213,41 +213,28 @@ mod_map_server <- function(id, selected_var){
     val <- reactiveValues(
       df = df_default,
       show_score = TRUE,
-      par_type = "Average",
-      par_unit = "",
+      col_title = "Average",
       count = 0)
 
-    par_type <- reactive({
-      par_type <- unique(df_param()$score_typ)
-      if (!all(is.na(par_type))) {
-        par_type <- par_type[!is.na(par_type)]
-        par_type <- par_type[1]
-      } else {
-        par_type <- "Average"
-      }
+    col_title <- reactive({
+      df <- df_param() %>%
+        dplyr::filter(!is.na(score_num))
 
-      return(par_type)
+      if (nrow(df) == 0) { return("Average") }
+
+      par_type <- df$score_typ[1]
+      par_unit <- df$Unit[1]
+
+      col_title <- pretty_unit(par_type, par_unit)
+
+      return(col_title)
     })
-
-    par_unit <- reactive({
-      par_unit <- unique(df_map()$Unit)
-      if (!all(par_unit %in% c(NA, "None"))) {
-        par_unit <- par_unit[!par_unit %in% c(NA, "None")]
-        par_unit <- paste0(" (", par_unit[1], ")")
-      } else {
-        par_unit <- ""
-      }
-
-      return(par_unit)
-    })
-
 
     observe({
       if (val$count < 2) {
         val$count <- val$count + 1
         val$df <- dplyr::select(df_map(), !dplyr::any_of(drop_col))
-        val$par_type <- par_type()
-        val$par_unit <- par_unit()
+        val$col_title <- col_title()
         if (map_type() == "score_str") {
           val$show_score <- TRUE
         } else {
@@ -261,14 +248,13 @@ mod_map_server <- function(id, selected_var){
       reactable_table(
         val$df,
         show_score = val$show_score,
-        par_type = val$par_type,
-        par_unit = val$par_unit)
+        col_title = val$col_title)
     })
 
     # * Update table ----
     observe({reactable::updateReactable("table",
         data = dplyr::select(df_map(), !dplyr::any_of(drop_col)),
-        meta = list(par_type = par_type(), par_unit = par_unit())
+        meta = list(col_title = col_title())
       )
     }) %>%
       bindEvent(df_map())

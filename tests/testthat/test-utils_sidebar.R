@@ -96,6 +96,9 @@ test_that("sort_months sorts months chronologically", {
     list_months(c("April", "January", "March", "January")),
     c("January", "February", "March", "April"))
   expect_equal(list_months("April"), "April")
+  expect_equal(
+    list_months(c("April", "January", "March", "January"), as_range = TRUE),
+    c("January", "April"))
 })
 
 test_that("sort_depth works", {

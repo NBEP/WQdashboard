@@ -146,25 +146,29 @@ mod_select_location_server <- function(id, selected_tab, selected_site){
     }) %>%
       bindEvent(input$select_watershed)
 
-    # Update select_sites_all and select_sites_n
-    observe({
+    # Update select_sites_all and select_sites_n ----
+    site_list <- reactive({
       if (input$loc_type == "town") {
-        choices = locval$town_sites
+        return(locval$town_sites)
       } else {
-        choices = locval$watershed_sites
+        return(locval$watershed_sites)
       }
+    }) %>%
+      bindEvent(c(locval$town_sites, locval$watershed_sites, input$loc_type))
+
+    observe({
       shinyWidgets::updatePickerInput(
         session = session,
         inputId = "select_sites_all",
-        choices = choices,
-        selected = choices)
+        choices = site_list(),
+        selected = site_list())
       shinyWidgets::updatePickerInput(
         session = session,
         inputId = "select_sites_n",
-        choices = choices,
-        selected = choices[1])
+        choices = site_list(),
+        selected = site_list()[1])
     }) %>%
-      bindEvent(c(locval$town_sites, locval$watershed_sites, input$loc_type))
+      bindEvent(site_list())
 
     # Update sites_n on map click ------
     observe({
@@ -179,7 +183,8 @@ mod_select_location_server <- function(id, selected_tab, selected_site){
     return(
       list(
         sites_all = reactive({ input$select_sites_all }),
-        sites_n = reactive({ input$select_sites_n })
+        sites_n = reactive({ input$select_sites_n }),
+        site_list = reactive({ site_list() })
       )
     )
 

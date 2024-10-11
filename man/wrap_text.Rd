@@ -2,10 +2,9 @@
 % Please edit documentation in R/utils_helpers.R
 \name{wrap_text}
 \alias{wrap_text}
-\title{wrap_text
-NOT USED IN PACKAGE - remove?}
+\title{Wrap Text}
 \usage{
-wrap_text(old_list, str_len, linebreak = NULL)
+wrap_text(old_list, str_len = 20, linebreak = NULL)
 }
 \arguments{
 \item{old_list}{Input list.}
@@ -18,5 +17,5 @@ wrap_text(old_list, str_len, linebreak = NULL)
 Updated list.
 }
 \description{
-Wrap long strings in list.
+Wrap long strings of text.
 }

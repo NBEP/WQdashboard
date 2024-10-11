@@ -1,27 +1,26 @@
 #' Reactable Table
 #'
-#' @description Creates `reactable` table with nicely styled columns.
+#' @description Formats data as a `reactable` table.
 #'
 #' @param df Input dataframe.
-#' @param hide_cols List of columns to hide.
+#' @param show_score Boolean. If TRUE, shows the "score_str" column. If FALSE,
+#'  hides the "score_str" column. Default TRUE.
+#' @param col_title Title for the "score_num" column. Default value "Average."
 #'
 #' @return Reactable table.
 #'
 #' @noRd
-reactable_table <- function(df, graph_table = FALSE, show_score = TRUE,
-                            par_type = "Average", par_unit = "") {
+reactable_table <- function(df, show_score = TRUE, col_title = "Average") {
   reactable::reactable(
     df,
     highlight = TRUE,
     defaultColDef = reactable::colDef(
       header = function(value) gsub("_", " ", value, fixed = TRUE),
-      headerStyle = list(background = "#f7f7f8")
+      headerStyle = list(background = "#f7f7f8"),
+      na = "-"
     ),
-    columns = column_styles(df, graph_table, show_score),
-    meta = list(
-      par_type = par_type,
-      par_unit = par_unit
-    ),
+    columns = column_styles(df, show_score),
+    meta = list(col_title = col_title)
   )
 }
 
@@ -35,20 +34,14 @@ reactable_table <- function(df, graph_table = FALSE, show_score = TRUE,
 #' @return Formatted list of column styles.
 #'
 #' @noRd
-column_styles <- function(df, graph_table, show_score = TRUE) {
-  if (graph_table) {
-    col_style <- list(
-      Date = reactable::colDef(
-        rowHeader = TRUE,
-        sticky = "left",
-        style = list(borderRight = "1px solid #eee")))
-  } else {
-    col_style <- list(
-      Site_Name = reactable::colDef(
-        rowHeader = TRUE,
-        sticky = "left",
-        style = list(borderRight = "1px solid #eee")))
-  }
+column_styles <- function(df, show_score = TRUE) {
+  col_style <- list(
+    Site_Name = reactable::colDef(
+      rowHeader = TRUE,
+      sticky = "left",
+      style = list(borderRight = "1px solid #eee")
+      )
+    )
 
   col_loc <- c("Town", "County", "State", "Watershed", "Group")
   col_loc <- intersect(colnames(df), col_loc)
@@ -65,10 +58,10 @@ column_styles <- function(df, graph_table, show_score = TRUE) {
       na = "-",
       header = htmlwidgets::JS(
         "function(column, state) {
-          const { par_type, par_unit } = state.meta
-          return par_type + par_unit
+          const { col_title  } = state.meta
+          return col_title
         }")
-      )
+    )
   }
 
   if ("score_str" %in% colnames(df)) {
@@ -99,6 +92,67 @@ column_styles <- function(df, graph_table, show_score = TRUE) {
   return (col_style)
 }
 
+#' Graph Table
+#'
+#' @description Formats graph data as a `reactable` table.
+#'
+#' @param df Input dataframe.
+#' @param group How to group the data.
+#'
+#' @return Reactable table.
+#'
+#' @noRd
+graph_table <- function(df, group) {
+  col_select <- c("Date", "Result", group)
+  df <- dplyr::select(df, dplyr::all_of(col_select))
+
+  var_count <- length(unique(df[[group]]))
+
+  if (var_count == 1) {
+    var_name <- df[[group]][1]
+
+    df_wide <- df %>%
+      dplyr::select(Date, Result) %>%
+      dplyr::rename({{var_name}} := Result)
+  } else {
+    df_wide <- tidyr::spread(df, {{group}}, Result)
+  }
+
+  if (group == "Parameter") {
+    param <- colnames(df_wide)[2]
+    par_unit <- find_unit(param)
+    if (par_unit != "") {
+      colnames(df_wide)[2] <- paste(param, par_unit)
+    }
+    if (length(df_wide) > 2) {
+      param <- colnames(df_wide)[3]
+      par_unit <- find_unit(param)
+      if (par_unit != "") {
+        colnames(df_wide)[3] <- paste(param, par_unit)
+      }
+    }
+  }
+
+  fig <- reactable::reactable(
+    df_wide,
+    highlight = TRUE,
+    defaultColDef = reactable::colDef(
+      header = function(value) gsub("_", " ", value, fixed = TRUE),
+      headerStyle = list(background = "#f7f7f8"),
+      na = "-"
+      ),
+    columns = list(
+      Date = reactable::colDef(
+        rowHeader = TRUE,
+        sticky = "left",
+        style = list(borderRight = "1px solid #eee"),
+        minWidth = 120
+        )
+      )
+    )
+
+  return(fig)
+}
 
 #' Hide Table Columns
 #'

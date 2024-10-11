@@ -24,7 +24,6 @@ mod_graphs_trends_ui <- function(id){
           tabPanel(
             "Graph",
             plotly::plotlyOutput(outputId = ns("plot")),
-            textOutput(ns("caption")),
             div(
               style = "text-align:center;margin:1rem",
               div(
@@ -41,7 +40,12 @@ mod_graphs_trends_ui <- function(id){
                   label = "Hide Thresholds",
                   width = "fit-content")
               )
-            )
+            ),
+            conditionalPanel(
+              condition = paste0('output["', ns("hide_error"), '"] == "FALSE"'),
+              style = "text-align:center; font-style:italic",
+              "Unable to calculate trend. At least ten years of data required."
+              )
           ),
           tabPanel(
             "Table",
@@ -49,20 +53,14 @@ mod_graphs_trends_ui <- function(id){
             reactable::reactableOutput(ns("table"))
           )
         ),
-        # * Trend analysis ----
-        tabsetPanel(
-          id = ns("tabset_trends"),
-          type = "hidden",
-          tabPanelBody("trend_desc"),
-          tabPanelBody(
-            "trend_error",
-            "Unable to calculate trend. At least ten years of data required.")
-        )
+        # * Thresholds ----
+        htmlOutput(ns("caption"), inline = TRUE)
       ),
       # * No data message ----
       tabPanelBody(
         "hide_graph",
-        "No data found. Please change selection.")
+        "No data found. Please change selection."
+      )
     )
   )
 }
@@ -88,9 +86,6 @@ mod_graphs_trends_server <- function(id, df){
       }
     }) %>%
       bindEvent(hide_graph())
-
-    # Figure Title ----
-    fig_title <- reactive({ df()$Parameter[1] })
 
     # Graph options ----
     val <- reactiveValues(
@@ -142,6 +137,8 @@ mod_graphs_trends_server <- function(id, df){
     # * Check if valid ----
     len_years <- reactive({ length(unique(df()$Year)) })
     show_fit <- reactive({ if (len_years() < 10) { FALSE } else { TRUE } })
+    output$hide_error <- renderText({ paste(show_fit()) })
+    outputOptions(output, "hide_error", suspendWhenHidden = FALSE)
 
     shinyjs::disable("toggle_trends")
 
@@ -185,13 +182,13 @@ mod_graphs_trends_server <- function(id, df){
       bindEvent(input$toggle_trends)
 
     # Caption ----
-    fig_caption <- reactive({ caption_graph(df(), "Site_Name", thresh()) })
+    fig_caption <- reactive({ caption_graph(df(), thresh()) })
 
     # Graph ----
     output$plot <- plotly::renderPlotly({
       graph_trends(
         df = df(),
-        fig_title = fig_title(),
+        fig_title = df()$Parameter[1],
         thresholds = thresh(),
         show_thresh = val$threshold,
         create_trend = show_fit(),
@@ -199,15 +196,15 @@ mod_graphs_trends_server <- function(id, df){
     })
 
     # Caption ----
-    output$caption <- renderText({ fig_caption() })
+    output$caption <- renderUI({ HTML(caption_graph(df(), thresh())) })
 
     # Table ----
     output$fig_title <- renderUI({
-      HTML(paste( h2(fig_title()), fig_caption() ))
+      HTML(paste( h2(pretty_unit( df()$Parameter[1], df()$Unit[1] )) ))
     })
 
     output$table <- reactable::renderReactable({
-      format_graph_table(df(), "Site_Name")
+      graph_table(df(), "Site_Name")
     })
 
   })

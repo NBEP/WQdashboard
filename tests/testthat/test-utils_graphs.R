@@ -21,28 +21,12 @@ test_that("caption_graph works", {
     dplyr::mutate(Threshold_Max = NA) %>%
     dplyr::mutate(Good = NA)
 
-  # Run tests - no thresholds
+  # Run tests
   expect_equal(
-    caption_graph(df, "Site_Name"),
-    "Nitrate, Orthophosphate, and Temperature, Water for foo, bar, and foofy.")
-  expect_equal(
-    caption_graph(df, "Depth"),
-    "Nitrate, Orthophosphate, and Temperature, Water for foo, bar, and foofy at surface, midwater, and bottom depths.")
-  expect_equal(
-    caption_graph(head(df, 2), "Depth"),
-    "Nitrate and Orthophosphate for foo and bar at surface and midwater depths.")
-  expect_equal(
-    caption_graph(head(df, 1), "Depth"),
-    "Nitrate for foo at surface depth.")
-
-  # Run tests - thresholds
-  expect_equal(
-    caption_graph(head(df, 1), "Site_Name", df_thresh),
-    "Nitrate for foo. The maximum acceptable value is 0.6 mg/L and the maximum excellent value is 0.3 mg/L."
+    caption_graph(df[1,], df_thresh),
+    "<h3>Thresholds</h3><b>Acceptable:</b> &lt; 0.6 mg/L<br><b>Excellent:</b> &lt; 0.3 mg/L"
   )
-  expect_equal(
-    caption_graph(head(df, 1), "Site_Name", df_thresh_null),
-    "Nitrate for foo."
-  )
-
+  expect_equal(caption_graph(df, NULL), "")
+  expect_equal(caption_graph(df, df_thresh_null), "")
+  expect_equal(caption_graph(df[3,], df_thresh), "")
 })
