@@ -264,7 +264,7 @@ caption_graph <- function(df, thresh = NULL) {
     return("")
   }
 
-  thresh_text <- "<h3>Thresholds</h3>"
+  thresh_text <- "<hr><h3>Thresholds</h3>"
 
   if (new_unit %in% c(NA, "None")) { new_unit <- NULL }
 

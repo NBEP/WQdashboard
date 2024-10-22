@@ -15,7 +15,7 @@ app_ui <- function(request) {
     bslib::page_navbar(
       theme = bslib::bs_theme(version = 5),
       useBusyIndicators(),
-      title = h1(paste(org_name, "Water Quality")),
+      title = h1(paste(org_info$name, "Water Quality Data")),
       id = "tabset",
       sidebar = mod_sidebar_ui("sidebar_1"),
       bslib::nav_panel("Map",
@@ -33,7 +33,7 @@ app_ui <- function(request) {
       bslib::nav_panel("Download Data",
         value="download",
         class = "bslib-page-dashboard",
-        "Download")
+        mod_download_ui("download_1"))
     )
   )
 }

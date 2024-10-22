@@ -178,7 +178,7 @@ mod_sidebar_server <- function(id, selected_tab, selected_site){
         site_list = reactive({ loc_server$site_list() }),
         param_all = reactive({ input$select_param_all }),
         param_n = reactive({ input$select_param_n }),
-        param_short = reactive({ input$select_param_short }),
+        param_short = reactive({ input$select_param_short }),  # used for report card
         score = reactive({ input$chk_nascore }),
         depth_n = reactive({ input$select_depth_n }),
         depth_all = reactive({ input$select_depth_all }),

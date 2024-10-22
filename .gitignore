@@ -11,3 +11,6 @@ data/epa_thresholds.rda
 data-raw/epa_thresholds.csv
 inst/doc
 /rsconnect
+data/shp_river.rda
+data/shp_watershed.rda
+TinyTeX.zip

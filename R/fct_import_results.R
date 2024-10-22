@@ -48,6 +48,7 @@ qaqc_results <- function(df, date_format=NULL){
   # Check column format
   check_val_numeric(df, field = "Result", exceptions="BDL")
   df <- format_date_col(df, date_format)
+  df <- dplyr::mutate(df, Year = lubridate::year(Date))  # Add "Year" column
 
   # Check parameters, units
   df <- df %>%
@@ -81,7 +82,7 @@ format_df_data <- function(df){
   message("\nFormatting df_data...\n")
 
   # Drop extra columns
-  field_all <- colnames_results$WQdashboard
+  field_all <- c(colnames_results$WQdashboard, "Year")
   field_drop <- c("Depth", "Depth_Unit")
   field_keep <- intersect(field_all, colnames(df))
   field_keep <- field_keep[!field_keep %in% field_drop]
@@ -123,14 +124,12 @@ format_df_data <- function(df){
   df$Result[df$Result == "BDL"] <- 0
   df$Result <- as.numeric(df$Result)
 
-  # Add columns for Month, Year
-  df <- df %>%
-    dplyr::mutate(Year = lubridate::year(Date)) %>%
-    dplyr::mutate(Month = strftime(Date, "%B"))
+  # Add column for Month
+  df <- dplyr::mutate(df, Month = strftime(Date, "%B"))
 
   # Add Site_Name, Description
   field_keep <- c(colnames(df), "Site_Name")
-  df <- left_join(df, df_sites, by = "Site_ID") %>%
+  df <- dplyr::left_join(df, df_sites, by = "Site_ID") %>%
     dplyr::select(dplyr::all_of(field_keep)) %>%
     dplyr::mutate(Description = paste0(
       "<b>", Site_Name, "</b><br>",

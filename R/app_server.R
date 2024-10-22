@@ -20,6 +20,7 @@ app_server <- function(input, output, session) {
     selected_var,
     selected_tab = reactive({ input$tabset }))
   mod_graphs_server("graphs_1", selected_var)
+  mod_download_server("download_1", selected_var)
 
   #Update tabs ----
   observe({

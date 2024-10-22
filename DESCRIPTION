@@ -5,12 +5,12 @@ Authors@R: person('Mariel', 'Sorlien', email = 'msorlien@nbep.org', role = c('cr
 Description: A water quality dashboard template.
 License: MIT + file LICENSE
 Imports: 
-    broom,
     bslib,
     config (>= 0.3.2),
     dplyr,
     golem (>= 0.4.1),
     htmlwidgets,
+    kableExtra,
     knitr,
     leaflegend,
     leaflet,
@@ -32,8 +32,10 @@ RoxygenNote: 7.3.2
 URL: https://github.com/NBEP/WQdashboard
 BugReports: https://github.com/NBEP/WQdashboard/issues
 Suggests: 
+    sf,
     spelling,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    tinytex
 Config/testthat/edition: 3
 Language: en-US
 Depends: 

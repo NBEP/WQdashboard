@@ -88,16 +88,82 @@ mod_map_server <- function(id, selected_var){
 
     # Map --------------------------------------------------------------------
     output$map <- leaflet::renderLeaflet({
-      leaflet::leaflet() %>%
+      layer_list <- NA
+
+      map <- leaflet::leaflet() %>%
         leaflet::fitBounds(
           min(df_sites$Longitude), # Lon min
           min(df_sites$Latitude), # Lat min
           max(df_sites$Longitude), # Lon max
           max(df_sites$Latitude) # Lat max
-          ) %>%
-        leaflet::addProviderTiles(
-          leaflet::providers$Esri.WorldTopoMap) %>%
-        leaflet::addScaleBar(position='bottomleft')
+        ) %>%
+        leaflet::addProviderTiles(leaflet::providers$Esri.WorldTopoMap) %>%
+        leaflet::addScaleBar(position="bottomleft")
+
+      # * Add watershed ----
+      if (exists("shp_watershed")) {
+        map <- map %>%
+          leaflet::addPolygons(
+            data = shp_watershed,
+            layerId = shp_watershed,
+            # Label
+            label = ~Name,
+            labelOptions = leaflet::labelOptions(textsize = "15px"),
+            # Stroke
+            color = '#6B8091',
+            weight = 0.5,
+            smoothFactor = 0.5,
+            opacity = 0.9,
+            # Fill
+            fillOpacity = 0.4,
+            fillColor = '#C6D9EC',
+            # Highlight
+            highlightOptions = leaflet::highlightOptions(
+              fillColor = '#EEF4F9',
+              weight = 1.2,
+              bringToFront = FALSE),
+            # misc
+            group = 'Watersheds')
+        layer_list <- "Watersheds"
+      }
+
+      # * Add rivers ----
+      if (exists("shp_river")) {
+        map <- map %>%
+          leaflet::addMapPane("river_pane", zIndex = 420) %>%
+          leaflet::addPolylines(
+            data = shp_river,
+            layerId = shp_river,
+            # Label
+            label = ~Label,
+            labelOptions = leaflet::labelOptions(textsize = "15px"),
+            popup = ~Popup,
+            # Stroke
+            color = "#6B8091",
+            weight = 2,
+            smoothFactor = 1,
+            opacity = 1,
+            # Highlight
+            highlightOptions = leaflet::highlightOptions(
+              color = "#3e576c",
+              weight = 3,
+              bringToFront = TRUE),
+            # misc
+            options = leaflet::pathOptions(pane = "river_pane"),
+            group = "Rivers")
+        layer_list <- c(layer_list, "Rivers")
+        layer_list <- layer_list[!is.na(layer_list)]
+      }
+
+      # * Add layer toggle ----
+      if (!all(is.na(layer_list))) {
+        map <- map %>%
+          leaflet::addLayersControl(
+            overlayGroups = layer_list,
+            position='topleft')
+      }
+
+      return(map)
     })
 
     # * Add sites ----
@@ -135,7 +201,10 @@ mod_map_server <- function(id, selected_var){
                 )
             ),
             # Accessibility
-            options = leaflet::markerOptions(alt = ~alt))
+            options = leaflet::markerOptions(
+              alt = ~alt,
+              riseOnHover = TRUE)
+          )
       } else {
         leaflet::leafletProxy("map") %>%
           leaflet::clearMarkers() %>%
@@ -166,7 +235,10 @@ mod_map_server <- function(id, selected_var){
               )
             ),
             # Accessibility
-            options = leaflet::markerOptions(alt = ~alt))
+            options = leaflet::markerOptions(
+              alt = ~alt,
+              riseOnHover = TRUE)
+          )
       }
     }) %>%
       bindEvent(df_map())
@@ -188,7 +260,8 @@ mod_map_server <- function(id, selected_var){
             bins = 5,
             naLabel = "No Data Available",
             labelStyle = 'font-size: 14px;',
-            position = 'topright'
+            position = 'topright',
+            group = "Legend"
           )
       } else {
         leaflet::leafletProxy("map") %>%
@@ -203,7 +276,8 @@ mod_map_server <- function(id, selected_var){
               selected_var$param_n(),
               style = 'font-size: 18px'),
             labelStyle = 'font-size: 14px;',
-            position = 'topright'
+            position = 'topright',
+            group = "Legend"
           )
       }
     }) %>%

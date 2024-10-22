@@ -25,21 +25,15 @@ mod_graphs_trends_ui <- function(id){
             "Graph",
             plotly::plotlyOutput(outputId = ns("plot")),
             div(
-              style = "text-align:center;margin:1rem",
-              div(
-                style = "display:inline-block;",
-                actionButton(
-                  ns("toggle_trends"),
-                  label = "Hide Trendline",
-                  width = "fit-content")
-              ),
-              div(
-                style = "display:inline-block;",
-                actionButton(
-                  ns("toggle_thresh"),
-                  label = "Hide Thresholds",
-                  width = "fit-content")
-              )
+              style = "text-align:center;margin:1rem;display:inline-block;",
+              actionButton(
+                ns("toggle_trends"),
+                label = "Hide Trendline",
+                width = "fit-content"),
+              actionButton(
+                ns("toggle_thresh"),
+                label = "Hide Thresholds",
+                width = "fit-content")
             ),
             conditionalPanel(
               condition = paste0('output["', ns("hide_error"), '"] == "FALSE"'),
