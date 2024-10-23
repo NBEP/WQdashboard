@@ -12,17 +12,19 @@
 #' @param date_format Date format as string.
 #'
 #' @return Updated dataframe.
-qaqc_results <- function(df, date_format=NULL){
+qaqc_results <- function(df, df_colnames = colnames_results, in_format = NA,
+                         date_format=NULL){
+
   # Define variables ----------------------------------------------------------
-  field_all <- colnames_results$WQdashboard
-  field_need <- colnames_results$WQdashboard_short
+  field_all <- df_colnames$WQdashboard
+  field_need <- df_colnames$WQdashboard_short
   field_need <- field_need[!field_need == ""]
   field_optional <- dplyr::setdiff(field_all, field_need)
   field_skip <- c("Qualifier", "Depth", "Depth_Unit", "Depth_Category")
 
   # QAQC columns --------------------------------------------------------------
   message("Checking data...\n")
-  df <- update_column_names(df, colnames_results)
+  df <- update_column_names(df, df_colnames, in_format)
   check_column_missing(df, field_need)
 
   # QAQC column values ---------------------------------------------------------
@@ -70,7 +72,7 @@ qaqc_results <- function(df, date_format=NULL){
   return(df)
 }
 
-#' format_df_data
+#' Format df_data
 #'
 #' @description Formats water quality data for use in app. Must run
 #'   `QAQC_results` first.

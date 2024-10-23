@@ -27,7 +27,7 @@ df <- read.csv(paste0("data-raw/", wq_data),
   dplyr::mutate_if(is.character, trimws)
 
 # Check results
-df <- qaqc_results(df, date_format)
+df <- qaqc_results(df, date_format = date_format)
 
 # Import results
 df_data_all <- df

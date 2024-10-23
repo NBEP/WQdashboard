@@ -1,13 +1,16 @@
-# Add Shapefiles
+# Add About Page
 #
 # README: todo
-# All shapefiles must be projected to WGS 1984.
 
-# Watershed Boundaries
+# Organization Name:
+org_name <- "Blackstone River Coalition"
+suggested_citation <- "Blackstone River Coalition, YEAR, Blackstone River Watershed-wide Volunteer Water Quality Monitoring Program data available on the world wide web, accessed [DATE], at URL [https://zaptheblackstone.org]."
+
+# SHAPEFILE - Watershed Boundaries
 watershed_shp <- "test_watershed_brc"
 watershed_name_col <- "HUC12_Name"
 
-# Rivers
+# SHAPEFILE - Rivers
 river_shp <- "test_rivers_brc"
 river_name_col <- "gnis_name"
 river_group_col <- "Group"
@@ -18,6 +21,13 @@ library(dplyr)
 library(stringr)
 library(tidyr)
 
+# Import org info ----
+org_info <- list(
+  "name" = org_name,
+  "citation" = suggested_citation)
+usethis::use_data(org_info, overwrite = TRUE)
+
+# Import shapefiles ----
 if (!is.na(watershed_shp)) {
   shp_watershed <- read_sf(dsn = "data-raw", layer = watershed_shp) %>%
     dplyr::select(dplyr::all_of(watershed_name_col))

@@ -12,11 +12,6 @@
 #' @noRd
 detect_column_format <- function(df, df_colnames){
   msg <- paste("\tDetecting format...")
-  ok_colnames <- c(colnames_sites, colnames_results)
-  if(!all(df_colnames %in% ok_colnames)){
-    stop("Invalid df_colnames. Acceptable inputs: colnames_sites,
-         colnames_results")
-  }
 
   # Iterate through formats
   for (x in colnames(df_colnames)) {
@@ -41,23 +36,27 @@ detect_column_format <- function(df, df_colnames){
 #' @param df Input dataframe.
 #' @param df_colnames Dataframe with column name substitutions. Acceptable
 #'  entries are `colnames_sites`, `colnames_results`.
+#' @param in_format Input format. If none provided, will try to detect format
+#'   from those listed in update_column_names. Default value NA.
 #'
 #' @returns Updated dataframe.
 #'
 #' @noRd
-update_column_names <- function(df, df_colnames){
+update_column_names <- function(df, df_colnames, in_format = NA){
 
-  current_format <- detect_column_format(df, df_colnames)
+  if (is.na(in_format) | !in_format %in% colnames(df_colnames)) {
+    in_format <- detect_column_format(df, df_colnames)
+  }
 
-  if (current_format %in% c("WQdashboard", "WQdashboard_short")) {
+  if (in_format %in% c("WQdashboard", "WQdashboard_short")) {
     return(df)
   }
 
   df_format <- df_colnames %>%
-    dplyr::select("WQdashboard", dplyr::all_of(current_format)) %>%
-    dplyr::filter_at(current_format, dplyr::all_vars(!is.na(.) & . != ""))
+    dplyr::select("WQdashboard", dplyr::all_of(in_format)) %>%
+    dplyr::filter_at(in_format, dplyr::all_vars(!is.na(.) & . != ""))
 
-  old_field <- unlist(df_format[current_format])
+  old_field <- unlist(df_format[in_format])
   new_field <- unlist(df_format$WQdashboard)
   names(new_field) <- old_field
   field_subs <- new_field[intersect(colnames(df), names(new_field))]
@@ -260,6 +259,8 @@ check_val_numeric <- function(df, field, exceptions = NULL, ignore_dq = TRUE,
 #'
 #' @noRd
 format_date_col <- function(df, date_format, ignore_dq = TRUE) {
+  if (!"Qualifier" %in% colnames(df)) { ignore_dq = FALSE }
+
   chk <- mapply(lubridate::is.Date, df$Date)
   if (ignore_dq) {
     df_temp <- dplyr::filter(df, !Qualifier %in% qaqc_fail)
@@ -272,8 +273,8 @@ format_date_col <- function(df, date_format, ignore_dq = TRUE) {
     stop("Date format is missing", call. = FALSE)
   }
 
-  date_var <- c("a", "A", "b", "B", "d", "H", "I", "j", "q", "m", "M", "p", "S",
-    "OS", "U", "w", "W", "y", "Y", "z", "Om", "Op", "r", "R", "T")
+  date_var <- c("Om", "Op", "OS", "a", "A", "b", "B", "d", "H", "I", "j", "m",
+    "M", "p", "q", "r", "R", "S", "T", "U", "w", "W", "y", "Y", "z")
   chk <- gsub("[^a-zA-Z]", "", date_format)
   chk <- gsub(paste(unlist(date_var), collapse = "|"), "", chk)
 
@@ -284,7 +285,7 @@ format_date_col <- function(df, date_format, ignore_dq = TRUE) {
 
   df <- dplyr::mutate(df,
     Date = as.Date(lubridate::parse_date_time(as.character(Date), date_format,
-                                   quiet = TRUE)))
+                                              quiet = TRUE)))
 
   chk <- !is.na(df$Date)
   chk2 <- chk

@@ -38,16 +38,23 @@ mod_download_server <- function(id, selected_var){
 
     # Citation ----
     output$citation <- renderText({
-        paste0(
-          org_info$name, ", ", format(Sys.time(), "%Y"), ", ",
-          org_info$program_name,
-          " data available on the world wide web, accessed [",
-          format(Sys.time(), "%B %d, %Y"), "], at URL [", org_info$url, "]."
-        )
+      cit <- org_info$citation
+      cit <- gsub("YEAR", format(Sys.time(), "%Y"), cit)
+      cit <- gsub("DATE", format(Sys.time(), "%B %d, %Y"), cit)
+
+      return(cit)
     })
 
     # Format data ----
     # * Site data ----
+    site_col <- c("Site_ID", "Site_Name", "Latitude", "Longitude", "County",
+      "State", "Location_Type")
+    names(site_col) <- c("Monitoring Location ID", "Monitoring Location Name",
+      "Monitoring Location Latitude (DD.DDDD)",
+      "Monitoring Location Longitude (-DDD.DDDD)",
+      "Monitoring Location County Code", "State Code",
+      "Monitoring Location Type")
+
     sites <- reactive({
       req(selected_var$sites_all)
 
@@ -55,22 +62,22 @@ mod_download_server <- function(id, selected_var){
         replace(is.na(.), -999999) %>%
         dplyr::filter(Site_ID %in% selected_var$sites_all)
 
-      old_colnames <- c("Site_ID", "Site_Name", "Latitude", "Longitude",
-        "County", "State", "Location_Type")
-      new_colnames <- c("Monitoring Location ID", "Monitoring Location Name",
-        "Monitoring Location Latitude (DD.DDDD)",
-        "Monitoring Location Longitude (-DDD.DDDD)",
-        "Monitoring Location County Code", "State Code",
-        "Monitoring Location Type")
-      names(new_colnames) <- old_colnames
-      field_subs <- new_colnames[intersect(colnames(df), names(new_colnames))]
-
+      field_subs <- site_col[intersect(colnames(df), names(site_col))]
       df <- dplyr::rename_with(df, ~ field_subs, names(field_subs))
 
       return(df)
     })
 
-    # * Numeric data ----
+    # * Data ----
+    data_col <- c("Site_ID", "Site_Name", "Activity_Type", "Date", "Depth",
+      "Depth_Unit", "Depth_Category", "Parameter", "Result", "Result_Unit",
+      "Qualifier")
+    names(data_col) <- c("Monitoring Location ID", "Monitoring Location Name",
+      "Activity Type", "Activity Start Date", "Activity Depth/Height Measure",
+      "Activity Depth/Height Unit", "Activity Relative Depth Name",
+      "Characteristic Name", "Result Value", "Result Unit",
+      "Result Measure Qualifier")
+
     data_num <- reactive({
       req(selected_var$year_range())
       req(selected_var$param_all())
@@ -91,16 +98,40 @@ mod_download_server <- function(id, selected_var){
       # Merge data
       df_merge <- merge(df, df2, by="Site_ID")
 
+      # Rename columns
+      field_subs <- data_col[intersect(colnames(df_merge), names(data_col))]
+      df_merge <- dplyr::rename_with(df_merge, ~ field_subs, names(field_subs))
+
       return(df_merge)
     })
 
     data_text <- reactive({
-      if (exists("df_cat_data")) {
-        df <- df_cat_data
-      } else {
-        df <- NULL
+      req(selected_var$year_range())
+      req(selected_var$param_all())
+
+      if (!exists("df_data_extra")) { return(NULL) }
+
+      df <- df_data_extra %>%
+        dplyr::filter(
+          Year >= selected_var$year_range()[1] &
+            Year <= selected_var$year_range()[2]) %>%
+        dplyr::filter(Parameter %in% selected_var$param_all)
+
+      if ("Depth" %in% colnames(df_data_all)) {
+        df <- dplyr::filter(df, Depth %in% selected_var$depth_all())
       }
-      return(df)
+
+      df2 <- sites() %>%
+        dplyr::select("Site_ID", "Site_Name")
+
+      # Merge data
+      df_merge <- merge(df, df2, by="Site_ID")
+
+      # Rename columns
+      field_subs <- data_col[intersect(colnames(df_merge), names(data_col))]
+      df_merge <- dplyr::rename_with(df_merge, ~ field_subs, names(field_subs))
+
+      return(df_merge)
     })
 
     # List data

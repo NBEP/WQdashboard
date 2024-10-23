@@ -5,29 +5,37 @@
 
 devtools::load_all()
 
-colnames_sites <- read.csv("data-raw/colnames_sites.csv") %>%
-  dplyr::mutate_if(is.character, trimws) %>%
+colnames_sites <- readr::read_csv(
+    "data-raw/colnames_sites.csv",
+    show_col_types = FALSE) %>%
   dplyr::relocate(WQdashboard) %>%
   dplyr::relocate(WQdashboard_short, .after = last_col())
 usethis::use_data(colnames_sites, overwrite = TRUE)
 
-colnames_results <- read.csv("data-raw/colnames_results.csv") %>%
-  dplyr::mutate_if(is.character, trimws) %>%
+colnames_results <- readr::read_csv(
+    "data-raw/colnames_results.csv",
+    show_col_types = FALSE) %>%
   dplyr::relocate(WQdashboard) %>%
   dplyr::relocate(WQdashboard_short, .after = last_col())
 usethis::use_data(colnames_results, overwrite = TRUE)
 
-df_param_names <- read.csv("data-raw/param_names.csv")
+df_param_names <- readr::read_csv(
+    "data-raw/param_names.csv",
+    show_col_types = FALSE)
 param_names <- df_param_names$Param_WQX
 names(param_names) <- df_param_names$Param_Other
 usethis::use_data(param_names, overwrite = TRUE)
 
-df_unit_names <- read.csv("data-raw/unit_names.csv")
+df_unit_names <- readr::read_csv(
+    "data-raw/unit_names.csv",
+    show_col_types = FALSE)
 unit_names <- df_unit_names$Unit_WQX
 names(unit_names) <- df_unit_names$Unit_Other
 usethis::use_data(unit_names, overwrite = TRUE)
 
-unit_conversion <- read.csv("data-raw/unit_conversion.csv")
+unit_conversion <- readr::read_csv(
+    "data-raw/unit_conversion.csv",
+    show_col_types = FALSE)
 usethis::use_data(unit_conversion, overwrite = TRUE)
 
 qaqc_fail <- c("$", "A", "AR", "BVER", "C", "CAN", "CBC", "CSR", "DE", "EER",
@@ -40,14 +48,14 @@ qaqc_fail <- c("$", "A", "AR", "BVER", "C", "CAN", "CBC", "CSR", "DE", "EER",
   "SCP", "SCX", "SSR", "SUS", "UNC")
 usethis::use_data(qaqc_fail, overwrite = TRUE)
 
-state_thresholds <- read.csv("data-raw/state_thresholds.csv",
-                             na.strings=c("","NA")) %>%
-  dplyr::mutate_if(is.character, trimws)
+state_thresholds <- readr::read_csv(
+    "data-raw/state_thresholds.csv",
+    show_col_types = FALSE)
 state_thresholds <- qaqc_thresholds(state_thresholds)
 usethis::use_data(state_thresholds, overwrite = TRUE)
 
-epa_thresholds <- read.csv("data-raw/epa_thresholds.csv",
-                           na.strings=c("","NA")) %>%
-  dplyr::mutate_if(is.character, trimws)
+epa_thresholds <- readr::read_csv(
+    "data-raw/epa_thresholds.csv",
+    show_col_types = FALSE)
 epa_thresholds <- qaqc_thresholds(epa_thresholds)
 usethis::use_data(epa_thresholds, overwrite = TRUE)
