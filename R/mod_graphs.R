@@ -137,7 +137,7 @@ mod_graphs_server <- function(id, selected_var){
 
       sites <- selected_var$sites_n()
       param <- selected_var$param_n()
-      depth <- input$extra_depth
+      depth <- c(NA, input$extra_depth)
 
       df <- df_filter() %>%
         dplyr::filter(

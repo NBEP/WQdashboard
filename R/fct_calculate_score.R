@@ -7,8 +7,6 @@
 #' @param parameter Parameter.
 #' @param unit Parameter unit.
 #' @param depth Depth category. Default value NA.
-#' @param default_state Which state thresholds to use. Overrides state listed
-#'   for Site_ID. Default value NA.
 #' @param score_max Maximum score.
 #' @param score_min Minimum score.
 #' @param score_mean Average score.
@@ -19,9 +17,9 @@
 #'
 #' @noRd
 calculate_score <- function(site_id, parameter, unit, depth = NA,
-    default_state = NA, score_max, score_min, score_mean, score_median) {
+    score_max, score_min, score_mean, score_median) {
   # Find thresholds
-  df <- find_threshold(site_id, parameter, depth, default_state)
+  df <- find_threshold(site_id, parameter, "Depth", depth)
   if (is.null(df)) {
     return(list(score_typ = "Average", score_num = score_mean, score_str = NA))
   }
@@ -72,8 +70,7 @@ calculate_score <- function(site_id, parameter, unit, depth = NA,
       }
       return(list(score_typ = typ, score_num = score, score_str = score2))
     }
-  }
-  if (!is.na(df$Threshold_Min) | !is.na(df$Threshold_Max)) {
+  } else if (!is.na(df$Threshold_Min) | !is.na(df$Threshold_Max)) {
     if (!is.na(df$Threshold_Min) & new_score < df$Threshold_Min) {
       score2 <- "Does Not Meet Criteria"
     } else if (!is.na(df$Threshold_Max) & new_score > df$Threshold_Max) {

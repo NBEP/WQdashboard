@@ -192,7 +192,8 @@ graph_two_var <- function(df, fig_title) {
   # Add second parameter
   if (nrow(df2) > 0) {
     par2 <- df2$Parameter[1]
-    unit2 <- df2$Unit[1]
+    unit2 <- unique(df2$Unit)
+    unit2 <- unit2[!is.na(unit2)]
 
     fig <- fig %>%
       plotly::add_trace(

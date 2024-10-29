@@ -88,8 +88,9 @@ mod_download_server <- function(id, selected_var){
             Year <= selected_var$year_range()[2]) %>%
         dplyr::filter(Parameter %in% selected_var$param_all)
 
-      if ("Depth" %in% colnames(df_data_all)) {
-        df <- dplyr::filter(df, Depth %in% selected_var$depth_all())
+      if ("Depth Category" %in% colnames(df_data_all)) {
+        depth_list <- c(NA, selected_var$depth_all())
+        df <- dplyr::filter(df, "Depth Category" %in% depth_list)
       }
 
       df2 <- sites() %>%
@@ -117,8 +118,9 @@ mod_download_server <- function(id, selected_var){
             Year <= selected_var$year_range()[2]) %>%
         dplyr::filter(Parameter %in% selected_var$param_all)
 
-      if ("Depth" %in% colnames(df_data_all)) {
-        df <- dplyr::filter(df, Depth %in% selected_var$depth_all())
+      if ("Depth Category" %in% colnames(df_data_all)) {
+        depth_list <- c(NA, selected_var$depth_all())
+        df <- dplyr::filter(df, "Depth Category" %in% depth_list)
       }
 
       df2 <- sites() %>%

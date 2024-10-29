@@ -1,52 +1,14 @@
 # Dev script.
 #
 # README: This script defines a series of universal variables necessary for the
-#  app to run. DOES NOT NEED TO BE RERUN UNLESS VARIABLES CHANGE, DO NOT EDIT.
+#  app to run. DOES NOT NEED TO BE RUN UNLESS VARIABLES CHANGE.
 
 devtools::load_all()
 
-colnames_sites <- readr::read_csv(
-    "data-raw/colnames_sites.csv",
-    show_col_types = FALSE) %>%
-  dplyr::relocate(WQdashboard) %>%
-  dplyr::relocate(WQdashboard_short, .after = last_col())
-usethis::use_data(colnames_sites, overwrite = TRUE)
-
-colnames_results <- readr::read_csv(
-    "data-raw/colnames_results.csv",
-    show_col_types = FALSE) %>%
-  dplyr::relocate(WQdashboard) %>%
-  dplyr::relocate(WQdashboard_short, .after = last_col())
-usethis::use_data(colnames_results, overwrite = TRUE)
-
-df_param_names <- readr::read_csv(
-    "data-raw/param_names.csv",
-    show_col_types = FALSE)
-param_names <- df_param_names$Param_WQX
-names(param_names) <- df_param_names$Param_Other
-usethis::use_data(param_names, overwrite = TRUE)
-
-df_unit_names <- readr::read_csv(
-    "data-raw/unit_names.csv",
-    show_col_types = FALSE)
-unit_names <- df_unit_names$Unit_WQX
-names(unit_names) <- df_unit_names$Unit_Other
-usethis::use_data(unit_names, overwrite = TRUE)
-
-unit_conversion <- readr::read_csv(
-    "data-raw/unit_conversion.csv",
-    show_col_types = FALSE)
-usethis::use_data(unit_conversion, overwrite = TRUE)
-
-qaqc_fail <- c("$", "A", "AR", "BVER", "C", "CAN", "CBC", "CSR", "DE", "EER",
-  "EFAI", "FDB", "FDC", "FDL", "FEQ", "FFB", "FFD", "FFS", "FFT", "FH", "FIS",
-  "FL", "FLC", "FLD", "FLS", "FMD", "FMS", "FPC", "FPP", "FPR", "FQC", "FRS",
-  "FSD", "FSL", "FSP", "FUB", "H", "H2", "H3", "HIB", "IQCOL", "IS", "ISAC",
-  "ISP", "ISR", "ISR**", "ITNA", "ITNM", "JCW", "KCF", "KCX", "KK", "LAC",
-  "LBF", "LL", "LLS", "NAI", "NLBL", "NLRO", "NN", "NPNF", "NRO", "NRR", "NRS",
-  "NSQ", "PNQ", "PP", "PPD", "Q", "QC", "QCI", "R", "RNON", "S2", "SCA", "SCF",
-  "SCP", "SCX", "SSR", "SUS", "UNC")
-usethis::use_data(qaqc_fail, overwrite = TRUE)
+varnames_units <- readr::read_csv(
+  "data-raw/varnames_units.csv",
+  show_col_types = FALSE)
+usethis::use_data(varnames_units, overwrite = TRUE)
 
 state_thresholds <- readr::read_csv(
     "data-raw/state_thresholds.csv",
@@ -59,3 +21,27 @@ epa_thresholds <- readr::read_csv(
     show_col_types = FALSE)
 epa_thresholds <- qaqc_thresholds(epa_thresholds)
 usethis::use_data(epa_thresholds, overwrite = TRUE)
+
+
+# Use data from EPATADA
+if(!"remotes" %in% installed.packages()){ install.packages("remotes") }
+remotes::install_github("USEPA/EPATADA", ref = "develop")
+
+tada_qual_flags <- system.file(
+  "extdata",
+  "WQXMeasureQualifierCodeRef.csv",
+  package = "EPATADA"
+)
+
+tada_qual_flags <- readr::read_csv(
+  tada_qual_flags,
+  show_col_types = FALSE
+) %>%
+  dplyr::select(Code, "TADA.MeasureQualifierCode.Flag") %>%
+  dplyr::rename(Flag = "TADA.MeasureQualifierCode.Flag")
+
+qaqc_suspect <- dplyr::filter(tada_qual_flags, Flag == "Suspect")$Code
+qaqc_nondetect <- dplyr::filter(tada_qual_flags, Flag == "Non-Detect")$Code
+
+qaqc_flag <- list(suspect = qaqc_suspect, nondetect = qaqc_nondetect)
+usethis::use_data(qaqc_flag, overwrite = TRUE)

@@ -2,9 +2,9 @@
 #
 # README: todo
 
-# Organization Name:
-org_name <- "Blackstone River Coalition"
-suggested_citation <- "Blackstone River Coalition, YEAR, Blackstone River Watershed-wide Volunteer Water Quality Monitoring Program data available on the world wide web, accessed [DATE], at URL [https://zaptheblackstone.org]."
+# Organization Info
+org_name <- "Watershed Watch"
+suggested_citation <- NA
 
 # SHAPEFILE - Watershed Boundaries
 watershed_shp <- "test_watershed_brc"

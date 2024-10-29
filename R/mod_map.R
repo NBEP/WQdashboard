@@ -58,7 +58,11 @@ mod_map_server <- function(id, selected_var){
       df <- dplyr::filter(df, Parameter %in% param)
 
       if ("Depth" %in% colnames(df_score)) {
-        df <- dplyr::filter(df, Depth == selected_var$depth_n())
+        df <- df %>%
+          dplyr::filter(
+            Depth == selected_var$depth_n() |
+              stringr::str_detect(df$Parameter, "Depth")
+            )
       }
 
       return(df)

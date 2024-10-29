@@ -69,10 +69,20 @@ graph_style <- function(fig, fig_title, y_title, y_range) {
 #'
 #' @noRd
 add_line_breaks <- function(df) {
-  df_null <- expand.grid(
+  if ("Depth" %in% colnames(df)) {
+    df_null <- expand.grid(
       Site_Name = unique(df$Site_Name),
       Parameter = unique(df$Parameter),
-      Year = unique(df$Year)) %>%
+      Year = unique(df$Year),
+      Depth = unique(df$Depth))
+  } else {
+    df_null <- expand.grid(
+      Site_Name = unique(df$Site_Name),
+      Parameter = unique(df$Parameter),
+      Year = unique(df$Year))
+  }
+
+  df_null <- df_null %>%
     dplyr::mutate(Date = as.Date(paste0(Year, "-1-1")))
 
   df <- dplyr::bind_rows(df, df_null) %>%

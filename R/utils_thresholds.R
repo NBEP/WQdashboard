@@ -10,22 +10,27 @@
 #' @return Updated dataframe.
 #'
 #' @noRd
-filter_threshold_depth <- function(df, depth_category) {
+filter_threshold_depth <- function(df, depth_category,
+    depth_column = "Depth_Category") {
+
   if (nrow(df) == 0 | is.null(df)) {
     return(NULL)
-  } else if (is.null(df$Depth_Category)) {
+  } else if (!depth_column %in% colnames(df)) {
     return(df)
   }
-  chk <- depth_category %in% df$Depth_Category
+
+  chk <- depth_category %in% df[[depth_column]]
   if (any(chk)){
-    df <- dplyr::filter(df, Depth_Category == depth_category)
+    df <- dplyr::filter(df, .data[[depth_column]] == depth_category)
     return(df)
   }
-  chk <- is.na(df$Depth_Category)
+
+  chk <- is.na(df[[depth_column]])
   if (any(chk)) {
-    df <- dplyr::filter(df, is.na(Depth_Category))
+    df <- dplyr::filter(df, is.na(.data[[depth_column]]))
     return(df)
   }
+
   return(NULL)
 }
 
@@ -36,9 +41,11 @@ filter_threshold_depth <- function(df, depth_category) {
 #'   criteria. Returns NULL if no match found.
 #'
 #' @param threshold_table Input dataframe with threshold values. (Acceptable
-#'   entries: df_thresholds, state_thresholds, epa_thresholds.)
+#'   entries: custom_thresholds, state_thresholds, epa_thresholds.)
 #' @param site_id Site ID.
 #' @param depth_category Depth category. (Shallow, Deep, NA) Default value NA.
+#' @param depth_column Column where depth category is stored. Default value
+#'    "Depth_Category"
 #' @param group Group. Default value NA.
 #' @param state State. Default value NA.
 #' @param param Parameter
@@ -48,13 +55,13 @@ filter_threshold_depth <- function(df, depth_category) {
 #'
 #' @noRd
 filter_threshold <- function(threshold_table, site_id, depth_category = NA,
-    group = NA, state = NA, parameter) {
+    depth_column = "Depth_Category", group = NA, state = NA, parameter) {
   # Filter table
   df <- threshold_table
-  if (is.na(depth_category) & !is.null(df$Depth_Category)) {
+  if (is.na(depth_category) & !is.null(df[[depth_column]])) {
     df <- df %>%
-      dplyr::filter(is.na(Depth_Category)) %>%
-      dplyr::select(!Depth_Category)
+      dplyr::filter(is.na(.data[[depth_column]])) %>%
+      dplyr::select(!any_of(depth_column))
   }
   if ("State" %in% colnames(df)) {
     df <- dplyr::filter(df, State == state)
@@ -66,7 +73,7 @@ filter_threshold <- function(threshold_table, site_id, depth_category = NA,
     chk <- site_id %in% df$Site_ID
     if (any(chk)) {
       df <- dplyr::filter(df, Site_ID == site_id)
-      chk <- filter_threshold_depth(df, depth_category)
+      chk <- filter_threshold_depth(df, depth_category, depth_column)
       if (!is.null(chk)) { return(chk) }
     }
     df <- dplyr::filter(df, is.na(Site_ID))
@@ -75,11 +82,11 @@ filter_threshold <- function(threshold_table, site_id, depth_category = NA,
     chk <- group %in% df$Group
     if (any(chk) & !is.na(group)) {
       df <- dplyr::filter(df, Group == group)
-      chk <- filter_threshold_depth(df, depth_category)
+      chk <- filter_threshold_depth(df, depth_category, depth_column)
       if (!is.null(chk)) { return(chk) }
     }
     df <- dplyr::filter(df, is.na(Group))
-    chk <- filter_threshold_depth(df, depth_category)
+    chk <- filter_threshold_depth(df, depth_category, depth_column)
     if (!is.null(chk)) { return(chk) }
   }
   if (nrow(df) > 0) {
@@ -91,7 +98,7 @@ filter_threshold <- function(threshold_table, site_id, depth_category = NA,
 
 #' find_threshold
 #'
-#' @description Iterates through df_thresholds, state_thresholds, and
+#' @description Iterates through custom_thresholds, state_thresholds, and
 #'   epa_thresholds to find appropriate threshold values for given site,
 #'   parameter. If no match found, returns NULL.
 #'
@@ -103,48 +110,52 @@ filter_threshold <- function(threshold_table, site_id, depth_category = NA,
 #'   If no available thresholds, returns NULL.
 #'
 #' @noRd
-find_threshold <- function(site_id, parameter, depth_cat = NA, state = NA) {
+find_threshold <- function(site_id, parameter, depth_column = "Depth_Category",
+    depth_cat = NA) {
+
   # Define vars
   group <- NA
+  state <- NA
   if ("Group" %in% colnames(df_sites)) {
     df <- dplyr::filter(df_sites, Site_ID == site_id)
     group <- df$Group[1]
   }
-  if (is.na(state) & "State" %in% colnames(df_sites_all)) {
+  if ("State" %in% colnames(df_sites_all)) {
     df <- dplyr::filter(df_sites_all, Site_ID == site_id)
     state <- df$State[1]
   }
-  if (exists("df_thresholds")) {
+
+  if (exists("custom_thresholds")) {
     df <- filter_threshold(
-      threshold_table = df_thresholds,
+      threshold_table = custom_thresholds,
       site_id = site_id,
       depth_category = depth_cat,
+      depth_column = depth_column,
       group = group,
       state = state,
       parameter = parameter)
     if (!is.null(df)) { return(df) }
   }
-  if (exists("state_thresholds")) {
-    df <- filter_threshold(
-      threshold_table = state_thresholds,
-      site_id = site_id,
-      depth_category = depth_cat,
-      group = group,
-      state = state,
-      parameter = parameter)
-    if (!is.null(df)) { return(df) }
-  }
-  if (exists("epa_thresholds")) {
-    df <- filter_threshold(
-      threshold_table = epa_thresholds,
-      site_id = site_id,
-      depth_category = depth_cat,
-      group = group,
-      state = state,
-      parameter = parameter)
-    if (!is.null(df)) { return(df) }
-  }
-  return(NULL)
+
+  df <- filter_threshold(
+    threshold_table = state_thresholds,
+    site_id = site_id,
+    depth_category = depth_cat,
+    depth_column = depth_column,
+    group = group,
+    state = state,
+    parameter = parameter)
+  if (!is.null(df)) { return(df) }
+
+  df <- filter_threshold(
+    threshold_table = epa_thresholds,
+    site_id = site_id,
+    depth_category = depth_cat,
+    depth_column = depth_column,
+    group = group,
+    state = state,
+    parameter = parameter)
+  return(df)
 }
 
 #' convert_threshold_unit

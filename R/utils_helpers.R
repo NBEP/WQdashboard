@@ -25,7 +25,7 @@ wrap_text <- function(old_list, str_len=20, linebreak = NULL){
 #' @noRd
 pretty_number <- function(x){
   y <- dplyr::if_else(
-    x < 1,
+    abs(x) < 1,
     signif(x, 2),
     round(x, 2)
     )

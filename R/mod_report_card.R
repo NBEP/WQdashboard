@@ -65,13 +65,16 @@ mod_report_card_server <- function(id, selected_var, selected_tab){
         dplyr::select(!dplyr::all_of(drop_rows))
 
       if ("Depth" %in% colnames(df_score)) {
-        df <- dplyr::filter(df, Depth %in% selected_var$depth_all())
+        depth_list <- c(NA, selected_var$depth_all())
+        df <- dplyr::filter(df, Depth %in% depth_list)
       }
 
       if(!selected_var$score()){
         df <- dplyr::filter(df,
           !(score_str %in% c("No Data Available", "No Threshold Established")))
       }
+
+      df <- df %>% replace(is.na(.), "-")  # necessary for PDF
 
       return(df)
     })
@@ -110,7 +113,7 @@ mod_report_card_server <- function(id, selected_var, selected_tab){
         # Set up parameters to pass to Rmd document
         params <- list(
           df_report = df_filter(),
-          report_title = paste0(org_name, " Report Card (",
+          report_title = paste0(org_info$name, " Report Card (",
                                 selected_var$year(), ")"))
 
         rmarkdown::render(tempReport, output_file = file,

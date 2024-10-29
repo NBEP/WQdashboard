@@ -17,36 +17,42 @@ add_popup_text <- function(df) {
 
   if ("Town" %in% colnames(df)) {
     df <- dplyr::mutate(df,
-      popup_loc = paste(popup_loc, "<br/>Town:", Town))
+      popup_loc = paste(popup_loc, "<br>Town:", Town))
   } else if ("County" %in% colnames (df)) {
     df <- dplyr::mutate(df,
-      popup_loc = paste(popup_loc, "<br/>County:", County))
+      popup_loc = paste(popup_loc, "<br>County:", County))
   } else if ("State" %in% colnames (df)) {
     df <- dplyr::mutate(df,
-      popup_loc = paste(popup_loc, "<br/>State:", State))
+      popup_loc = paste(popup_loc, "<br>State:", State))
   }
 
   if ("Watershed" %in% colnames(df)) {
     df <- dplyr::mutate(df,
-      popup_loc = paste(popup_loc, "<br/>Watershed:", Watershed))
+      popup_loc = paste(popup_loc, "<br>Watershed:", Watershed))
   }
 
   if ("Group" %in% colnames(df)) {
     df <- dplyr::mutate(df,
-      popup_loc = paste(popup_loc, "<br/>Group:", Group))
+      popup_loc = dplyr::if_else(
+        is.na(Group),
+        paste(popup_loc, "<br>Group: Other"),
+        paste(popup_loc, "<br>Group:", Group)
+        )
+      )
   }
 
   if ("Depth" %in% colnames(df)) {
     df <- dplyr::mutate(df,
-      popup_score = paste(popup_score, "<br/>Depth:", Depth))
+      popup_score = paste(popup_score, "<br>Depth:", Depth)
+      )
   }
 
   df <- df %>%
     dplyr::mutate(popup_score = dplyr::if_else(
       is.na(score_num),
-      paste(popup_score, "<br/><i>No data</i>"),
+      paste(popup_score, "<br><i>No data</i>"),
       paste0(popup_score,
-        "<br/>", score_typ, ": ", score_num))) %>%
+        "<br>", score_typ, ": ", score_num))) %>%
     dplyr::mutate(popup_score = dplyr::if_else(
       is.na(score_num) | Unit %in% c(NA, "None"),
       popup_score,
@@ -54,7 +60,7 @@ add_popup_text <- function(df) {
     dplyr::mutate(popup_score = dplyr::if_else(
       is.na(score_num) | score_str == "No Threshold Established",
       popup_score,
-      paste(popup_score, "<br/>Score:", score_str))) %>%
+      paste(popup_score, "<br>Score:", score_str))) %>%
     dplyr::mutate(alt = dplyr::case_when(
       is.na(score_num) ~ paste(alt, "No data"),
       score_str == "No Threshold Established" ~ paste(alt, score_num, Unit),

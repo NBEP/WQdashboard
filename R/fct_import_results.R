@@ -1,64 +1,136 @@
-#' QAQC_results
+#' Pre-format Results
+#'
+#' @description Formats result data for WQdashboard by renaming columns,
+#'   parameters, and qualifiers.
+#'
+#' @param df Input dataframe.
+#'
+#' @return Updated dataframe.
+preformat_results <- function(df, in_format){
+
+  # Update columns --------------------------------------------------------------
+  message("Formatting data...\n")
+
+  df_colnames <- readr::read_csv(
+    "data-raw/colnames_results.csv",
+    show_col_types = FALSE
+  ) %>%
+    dplyr::select_if(function(x) !(all(is.na(x))))  # drop empty columns
+
+  var_sub <- find_var_names(df_colnames, in_format, "WQdashboard")
+  df <- rename_col(df, var_sub$old_names, var_sub$new_names)
+  message("\t", length(var_sub$old_names), " columns renamed")
+
+  rm(df_colnames)  # clean environment
+
+  check_column_missing(df, "Parameter")
+
+  # Update values ---------------------------------------------------------
+  if (in_format == "WQX") { return(df) }
+
+  df_param <- readr::read_csv(
+    "data-raw/varnames_parameters.csv",
+    show_col_types = FALSE
+  ) %>%
+    dplyr::select_if(function(x) !(all(is.na(x))))  # drop empty columns
+
+  var_sub <- find_var_names(df_param, in_format, "WQX")
+  df <- rename_all_var(df, "Parameter", var_sub$old_names, var_sub$new_names)
+
+  rm(df_param) # clean environment
+
+  if ("Qualifier" %in% colnames(df)) {
+    df_qual <- readr::read_csv(
+      "data-raw/varnames_qualifiers.csv",
+      show_col_types = FALSE
+    ) %>%
+      dplyr::select_if(function(x) !(all(is.na(x))))  # drop empty columns
+
+    var_sub <- find_var_names(df_qual, in_format, "WQX")
+    df <- rename_all_var(df, "Qualifier", var_sub$old_names, var_sub$new_names)
+
+    rm(df_qual)  # Clean environment
+  }
+
+  return(df)
+}
+
+#' QAQC Results
 #'
 #' @description Run quick quality control check on water quality data. Runs the
 #'   following checks:
-#'   * Checks column names, renames columns as needed
-#'   * Checks all mandatory columns are present
+#'   * Checks all mandatory columns present
 #'   * Checks for missing values
-#'   * Ensures date column in properly formatted
-#'   * Renames parameters to match WQX standard
+#'   * Formats dates
+#'   * Formats units
 #'
 #' @param df Input dataframe.
 #' @param date_format Date format as string.
 #'
 #' @return Updated dataframe.
-qaqc_results <- function(df, df_colnames = colnames_results, in_format = NA,
-                         date_format=NULL){
+qaqc_results <- function(df, date_format = NULL){
 
   # Define variables ----------------------------------------------------------
-  field_all <- df_colnames$WQdashboard
-  field_need <- df_colnames$WQdashboard_short
-  field_need <- field_need[!field_need == ""]
-  field_optional <- dplyr::setdiff(field_all, field_need)
+  field_need <- c("Site_ID", "Date", "Parameter", "Result", "Result_Unit")
+  field_optional <- c("Activity_Type", "Depth", "Depth_Unit", "Depth_Category",
+    "Detection Limit", "Detection_Limit_Unit", "Qualifier")
+  field_all <- c(field_need, field_optional)
   field_skip <- c("Qualifier", "Depth", "Depth_Unit", "Depth_Category")
 
   # QAQC columns --------------------------------------------------------------
   message("Checking data...\n")
-  df <- update_column_names(df, df_colnames, in_format)
   check_column_missing(df, field_need)
+
+  # Adjust nondetect values -------------------------------------------------------
+  df <- set_nondetect_values(df)
 
   # QAQC column values ---------------------------------------------------------
   # Check missing data
-  for (field in field_need) {
-    check_val_missing(df, field = field)
+  for (field in c(field_need)) {
+    check_val_missing(df, field)
   }
+
   field_check <- intersect(field_optional, colnames(df))
   field_check <- field_check[!field_check %in% field_skip]
   for (field in field_check) {
     check_val_missing(df, field = field, is_stop = FALSE)
   }
-  # Check if all sites valid
-  site_sites <- list_sites(df_sites)
-  data_sites <- list_sites(df)
 
-  chk <- data_sites %in% site_sites
+  # Check if all sites valid
+  chk <- skip_rows(df)
+  data_sites <- df[!chk,]
+  data_sites <- unique(data_sites$Site_ID)
+
+  chk <- data_sites %in% unique(df_sites$Site_ID)
   if(any(!chk)){
     extra_sites <- data_sites[!chk]
     stop("Site not in df_sites: ",
          paste(data_sites[!chk], collapse = ", "), call. = FALSE)
   }
+
   # Check column format
-  check_val_numeric(df, field = "Result", exceptions="BDL")
-  df <- format_date_col(df, date_format)
+  check_val_numeric(df, field = "Result")
+  df$Result <- as.numeric(df$Result)
+  if ("Depth" %in% colnames(df)) {
+    check_val_numeric(df, "Depth")
+  }
+
+  df <- format_date(df, "Date", date_format)
   df <- dplyr::mutate(df, Year = lubridate::year(Date))  # Add "Year" column
 
-  # Check parameters, units
-  df <- df %>%
-    dplyr::mutate(
-      Parameter = sapply(Parameter, function(x) rename_param(x))) %>%
-    dplyr::mutate(
-      Result_Unit = sapply(Result_Unit, function(x) rename_unit(x)))
-  check_units(df)
+  # Check units
+  var_sub <- find_var_names(varnames_units, "Other", "WQX")
+  df <- rename_all_var(df, "Result_Unit", var_sub$old_names, var_sub$new_names)
+  if ("Detection_Limit_Unit" %in% colnames(df)) {
+    df <- rename_all_var(
+      df,
+      "Detection_Limit_Unit",
+      var_sub$old_names,
+      var_sub$new_names
+    )
+  }
+
+  df <- standardize_units(df)
 
   if("Depth" %in% colnames(df)) {
     df <- depth_to_m(df)
@@ -72,7 +144,7 @@ qaqc_results <- function(df, df_colnames = colnames_results, in_format = NA,
   return(df)
 }
 
-#' Format df_data
+#' Format Results
 #'
 #' @description Formats water quality data for use in app. Must run
 #'   `QAQC_results` first.
@@ -80,65 +152,49 @@ qaqc_results <- function(df, df_colnames = colnames_results, in_format = NA,
 #' @param df Input dataframe.
 #'
 #' @return Updated dataframe.
-format_df_data <- function(df){
+format_results <- function(df){
   message("\nFormatting df_data...\n")
 
-  # Drop extra columns
-  field_all <- c(colnames_results$WQdashboard, "Year")
-  field_drop <- c("Depth", "Depth_Unit")
-  field_keep <- intersect(field_all, colnames(df))
-  field_keep <- field_keep[!field_keep %in% field_drop]
+  # Set Variables
+  field_keep <- c("Site_ID", "Date", "Year", "Parameter", "Result",
+    "Result_Unit", "Depth_Category")
+  field_keep <- intersect(field_keep, colnames(df))
 
+  # Drop extra rows
+  chk <- skip_rows(df)
+
+  if (any(chk)) {
+    df <- df[-which(chk),]
+    message("\tDropped flagged data in ", sum(chk), " rows")
+  }
+
+  # Drop extra columns
   chk <- length(df) - length(field_keep)
   if (chk > 0) {
-    df <- dplyr::select(df, dplyr::all_of(field_keep))
+    df <- dplyr::select(df, dplyr::any_of(field_keep))
     message("\t", toString(chk), " columns removed")
   }
 
-  # Drop extra rows
-  if("Qualifier" %in% colnames(df)) {
-    chk <- df$Qualifier %in% qaqc_fail
-
-    if(any(chk)){
-      df <- dplyr::filter(df, !Qualifier %in% qaqc_fail)
-      message("\tDropped flagged data")
-    }
-    df <- dplyr::select(df, !Qualifier)
-  }
-  if("Activity_Type" %in% colnames(df)) {
-    chk <- stringr::str_detect(df$Activity_Type, "Quality Control")
-
-    if(any(chk)){
-      df <- df %>%
-        dplyr::filter(!stringr::str_detect(Activity_Type, "Quality Control"))
-      message("\tDropped replicate, blank data")
-    }
-    df <- dplyr::select(df, !Activity_Type)
-  }
-
-  # Tweak columns
+  # Rename columns
   df <- dplyr::rename(df, Unit = Result_Unit)
   if ("Depth_Category" %in% colnames(df)) {
     df <- dplyr::rename(df, Depth = Depth_Category)
   } else {
     df <- dplyr::mutate(df, Depth = NA)
   }
-  df$Result[df$Result == "BDL"] <- 0
-  df$Result <- as.numeric(df$Result)
 
   # Add column for Month
   df <- dplyr::mutate(df, Month = strftime(Date, "%B"))
 
   # Add Site_Name, Description
-  field_keep <- c(colnames(df), "Site_Name")
-  df <- dplyr::left_join(df, df_sites, by = "Site_ID") %>%
-    dplyr::select(dplyr::all_of(field_keep)) %>%
+  sites <- dplyr::select(df_sites, c("Site_ID", "Site_Name"))
+  df <- dplyr::left_join(df, sites, by = "Site_ID") %>%
     dplyr::mutate(Description = paste0(
       "<b>", Site_Name, "</b><br>",
       format(Date, format = "%B %d, %Y"), "<br>")) %>%
     dplyr::mutate(Description = dplyr::if_else(
       !is.na(Depth),
-      paste0(Description, "Depth: ", pretty_number(Depth), "<br>"),
+      paste0(Description, "Depth: ", Depth, "<br>"),
       Description)) %>%
     dplyr::mutate(Description = paste0(
       Description,
@@ -151,25 +207,15 @@ format_df_data <- function(df){
   return(df)
 }
 
-#' format_results
+#' Format df_score
 #'
 #' @description Formats water quality data for use in app. Must run
-#'   `format_df_data` first.
+#'   `format_results` first.
 #'
 #' @param df Input dataframe.
-#' @param default_state Which state to use when calculating score, thresholds.
 #'
 #' @return Updated dataframe.
-format_df_score <- function(df, default_state = NA){
-  # Check if default_state is valid
-  chk <- is.na(default_state) | default_state %in% c(state.name, state.abb)
-  if (!chk) {
-    stop(default_state, " is not a valid state", call. = FALSE)
-  }
-  if (default_state %in% state.name) {
-    default_state <- state.abb[match(default_state, state.name)]
-  }
-
+format_score <- function(df){
   # Calculate scores, etc
   message("\nFormatting df_score...\n")
   field_group <- c("Site_ID", "Depth", "Parameter", "Unit", "Year")
@@ -185,16 +231,15 @@ format_df_score <- function(df, default_state = NA){
   message("\tGrouped data by year\n\tCalculating scores...")
 
   df <- df %>%
-    dplyr::mutate(temp_state = default_state) %>%
     dplyr::mutate(
       score_temp = mapply(
-        function(id, par, unit, depth, state, a, b, c, d)
-          calculate_score(id, par, unit, depth, state, a, b, c, d),
-        Site_ID, Parameter, Unit, Depth, temp_state,
+        function(id, par, unit, depth, a, b, c, d)
+          calculate_score(id, par, unit, depth, a, b, c, d),
+        Site_ID, Parameter, Unit, Depth,
         score_max, score_min, score_mean, score_median,
         SIMPLIFY = FALSE)) %>%
     tidyr::unnest_wider(score_temp) %>%
-    dplyr::select(!c(score_max:score_median, temp_state)) %>%
+    dplyr::select(!score_max:score_median) %>%
     dplyr::mutate(score_num = pretty_number(score_num))
   df <- suppressMessages(check_val_count(df, "Depth"))
   message("\t... ok")

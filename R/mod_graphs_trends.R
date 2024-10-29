@@ -122,7 +122,9 @@ mod_graphs_trends_server <- function(id, df){
       thresh <- find_threshold(
         site_id = df()$Site_ID[1],
         parameter = df()$Parameter[1],
-        depth_cat = df()$Depth[1])
+        depth_column = "Depth",
+        depth_cat = df()$Depth[1]
+      )
 
       return(thresh)
     })

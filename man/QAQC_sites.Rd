@@ -2,7 +2,7 @@
 % Please edit documentation in R/fct_import_sites.R
 \name{qaqc_sites}
 \alias{qaqc_sites}
-\title{qaqc_sites}
+\title{QAQC Sites}
 \usage{
 qaqc_sites(df)
 }

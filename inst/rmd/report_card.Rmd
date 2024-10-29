@@ -32,8 +32,10 @@ row_count <- nrow(df_report)
 col_count <- length(df_report)
 
 col_width <- "8em"
-if (col_count > 5) {
+if (col_count == 6) {
   col_width <- "7em"
+} else if (col_count > 6) {
+  col_width <- "5em"
 }
 
 # Create kable

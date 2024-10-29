@@ -2,7 +2,7 @@
 % Please edit documentation in R/fct_import_results.R
 \name{qaqc_results}
 \alias{qaqc_results}
-\title{QAQC_results}
+\title{QAQC Results}
 \usage{
 qaqc_results(df, date_format = NULL)
 }
@@ -17,9 +17,8 @@ Updated dataframe.
 \description{
 Run quick quality control check on water quality data. Runs the
   following checks:
-  * Checks column names, renames columns as needed
-  * Checks all mandatory columns are present
+  * Checks all mandatory columns present
   * Checks for missing values
-  * Ensures date column in properly formatted
-  * Renames parameters to match WQX standard
+  * Formats dates
+  * Formats units
 }
