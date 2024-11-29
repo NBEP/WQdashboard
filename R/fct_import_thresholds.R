@@ -62,6 +62,15 @@ qaqc_thresholds <- function(df){
     }
   }
 
+  if (all(c("State", "Site_ID") %in% colnames(df))) {
+    chk <- (!is.na(df$Site_ID) & !is.na(df$State))
+    if (any(chk)) {
+      rws <- which(chk)
+      stop("State and site thresholds must be on seperate rows. Check rows:",
+           paste(rws, collapse = ", "), call. = FALSE)
+    }
+  }
+
   col_id <- c("State", "Group", "Site_ID", "Parameter")
   col_id <- intersect(col_id, colnames(df))
   check_val_duplicate(df, field = col_id)
@@ -99,6 +108,11 @@ qaqc_thresholds <- function(df){
   # Check units
   var_sub <- find_var_names(varnames_units, "Other", "WQX")
   df <- rename_all_var(df, "Unit", var_sub$old_names, var_sub$new_names)
+
+  # Sort data -----
+  field_sort <- c("Site_ID", "State", "Group", "Depth_Category")
+  field_sort <- intersect(field_sort, colnames(df))
+  df <- dplyr::arrange_at(df, field_sort)
 
   message("\nQAQC complete")
   return(df)

@@ -4,14 +4,14 @@
 
 # Organization Info
 org_name <- "Watershed Watch"
-suggested_citation <- NA
+suggested_citation <- "Watershed Watch, YEAR, Watershed Watch Water Quality Monitoring Program data available on the world wide web, accessed [DATE]."
 
 # SHAPEFILE - Watershed Boundaries
-watershed_shp <- "test_watershed_brc"
+watershed_shp <- NA
 watershed_name_col <- "HUC12_Name"
 
 # SHAPEFILE - Rivers
-river_shp <- "test_rivers_brc"
+river_shp <- NA
 river_name_col <- "gnis_name"
 river_group_col <- "Group"
 

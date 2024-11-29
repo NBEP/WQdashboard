@@ -10,7 +10,7 @@
 # TO USE CUSTOM FORMAT, add a column to data-raw/colnames_sites.csv
 
 # Site data:
-sites_csv <- "test_sites_ww.csv"
+sites_csv <- "test_sites_ww_saltponds.csv"
 in_format <- "RI_WW"
 
 # CODE ------------------------------------------------------------------------

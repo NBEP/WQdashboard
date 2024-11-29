@@ -5,25 +5,27 @@
 
 devtools::load_all()
 
+# Set unit conversions
 varnames_units <- readr::read_csv(
   "data-raw/varnames_units.csv",
   show_col_types = FALSE)
 usethis::use_data(varnames_units, overwrite = TRUE)
 
+# Set thresholds
 state_thresholds <- readr::read_csv(
     "data-raw/state_thresholds.csv",
     show_col_types = FALSE)
 state_thresholds <- qaqc_thresholds(state_thresholds)
-usethis::use_data(state_thresholds, overwrite = TRUE)
 
 epa_thresholds <- readr::read_csv(
     "data-raw/epa_thresholds.csv",
     show_col_types = FALSE)
 epa_thresholds <- qaqc_thresholds(epa_thresholds)
-usethis::use_data(epa_thresholds, overwrite = TRUE)
 
+official_thresholds <- dplyr::bind_rows(state_thresholds, epa_thresholds)
+usethis::use_data(official_thresholds, overwrite = TRUE)
 
-# Use data from EPATADA
+# Set QAQC fails -- use data from EPATADA
 if(!"remotes" %in% installed.packages()){ install.packages("remotes") }
 remotes::install_github("USEPA/EPATADA", ref = "develop")
 

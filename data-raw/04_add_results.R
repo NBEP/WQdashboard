@@ -3,8 +3,8 @@
 # README: Run this script to add or update water quality data.
 #
 # Date abbreviations:
-#  b Abbreviated month name
-#  B Full month name
+#  b Abbreviated month name (eg Feb)
+#  B Full month name (eg February)
 #  d Day of the month
 #  y Year without century (eg 24)
 #  Y Year with century (eg 2024)
@@ -46,6 +46,13 @@ if (!overwrite_existing) {
   df2 <- dplyr::select(df_data_all, dplyr::all_of(keep_cols))
   df <- rbind(df, df2) %>% unique()
   df <- standardize_units(df)
+}
+
+if (nrow(df) > 250000) {
+  warning(
+    "Dataset contains over 250,000 rows and website is likely to experience performance issues",
+    call. = FALSE
+  )
 }
 
 # Upload data (all)

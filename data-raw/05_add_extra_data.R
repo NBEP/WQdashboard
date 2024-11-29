@@ -15,7 +15,7 @@
 #  S Second
 #  z Timezone
 
-# Set variables:
+# Additional parameter data:
 wq_data <- "data-raw/test_cat_data_brc.csv"
 in_format <- "Blackstone_River_Coalition"
 date_format = "Y-m-d H:M"

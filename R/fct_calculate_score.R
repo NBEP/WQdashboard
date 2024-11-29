@@ -19,7 +19,7 @@
 calculate_score <- function(site_id, parameter, unit, depth = NA,
     score_max, score_min, score_mean, score_median) {
   # Find thresholds
-  df <- find_threshold(site_id, parameter, "Depth", depth)
+  df <- find_threshold(site_id, parameter, depth)
   if (is.null(df)) {
     return(list(score_typ = "Average", score_num = score_mean, score_str = NA))
   }

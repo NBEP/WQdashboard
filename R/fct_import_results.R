@@ -46,8 +46,13 @@ preformat_results <- function(df, in_format){
     ) %>%
       dplyr::select_if(function(x) !(all(is.na(x))))  # drop empty columns
 
-    var_sub <- find_var_names(df_qual, in_format, "WQX")
-    df <- rename_all_var(df, "Qualifier", var_sub$old_names, var_sub$new_names)
+    if (in_format %in% colnames(df_qual)) {
+      var_sub <- find_var_names(df_qual, in_format, "WQX")
+      df <- rename_all_var(df, "Qualifier", var_sub$old_names, var_sub$new_names)
+    } else {
+      warning("\tUnable to rename qualifiers due to unknown format",
+        call. = FALSE)
+    }
 
     rm(df_qual)  # Clean environment
   }
@@ -274,11 +279,11 @@ format_score <- function(df){
   sites_temp <- dplyr::select(df_sites, all_of(site_col))
   if ("Town_Code" %in% colnames(sites_temp)) {
     sites_temp <- sites_temp %>%
-      dplyr::select(!State) %>%
+      dplyr::select(!dplyr::any_of("State")) %>%
       dplyr::rename(Town = Town_Code)
   } else if ("County_Code" %in% colnames(sites_temp)) {
     sites_temp <- sites_temp %>%
-      dplyr::select(!State) %>%
+      dplyr::select(!dplyr::any_of("State")) %>%
       dplyr::rename(County = County_Code)
   }
 
