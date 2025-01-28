@@ -24,7 +24,7 @@ test_that("caption_graph works", {
   # Run tests
   expect_equal(
     caption_graph(df[1,], df_thresh),
-    "<h3>Thresholds</h3><b>Acceptable:</b> &lt; 0.6 mg/L<br><b>Excellent:</b> &lt; 0.3 mg/L"
+    "<hr><h3>Thresholds</h3><b>Acceptable:</b> &lt; 0.6 mg/L<br><b>Excellent:</b> &lt; 0.3 mg/L"
   )
   expect_equal(caption_graph(df, NULL), "")
   expect_equal(caption_graph(df, df_thresh_null), "")

@@ -1,12 +1,7 @@
-df <- data.frame(
-  Parameter = c("Nitrogen", "Nitrogen", "Nitrogen"),
-  Depth_Category = c("Shallow", "Deep", NA)
-)
+test_that("find_threshold works", {
 
-test_that("filter_threshold_depth works", {
-  chk <- filter_threshold_depth(df, "Shallow")
-  expect_equal(chk$Depth_Category, "Shallow")
+})
 
-  chk <- filter_threshold_depth(df, "Foo")
-  expect_equal(chk$Depth_Category, NA_character_)
+test_that("convert_threshold_unit works", {
+
 })

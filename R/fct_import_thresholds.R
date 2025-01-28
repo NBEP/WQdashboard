@@ -21,8 +21,7 @@ qaqc_thresholds <- function(df){
 
   chk <- intersect(field_tvalues, colnames(df))
   if (length(chk) < 1) {
-    stop("Must include at least one threshold column. (eg ",
-         paste(field_tvalues, collapse =", "), ")", call. = FALSE)
+    stop("Must include at least one threshold column", call. = FALSE)
   }
 
   # Drop extra columns
@@ -57,7 +56,7 @@ qaqc_thresholds <- function(df){
     chk <- (!is.na(df$Site_ID) & !is.na(df$Group))
     if (any(chk)) {
       rws <- which(chk)
-      stop("Group and site thresholds must be on seperate rows. Check rows:",
+      stop("Group and site thresholds must be on seperate rows. Check rows: ",
            paste(rws, collapse = ", "), call. = FALSE)
     }
   }
@@ -87,7 +86,7 @@ qaqc_thresholds <- function(df){
     if (any(!chk)) {
       rws <- which(!chk)
       stop("Invalid Depth_Category. Acceptable values: ",
-           paste(ok_cat, collapse = ", "), ". Check rows ",
+           paste(ok_cat, collapse = ", "), ". Check rows: ",
            paste(rws, collapse = ", "), call. = FALSE)
     }
   }

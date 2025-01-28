@@ -126,17 +126,17 @@ format_sites <- function(df){
   } else if ("County" %in% colnames(df)) {
     df <- df %>%
       dplyr::mutate(
-        County = dplyr::if_else(
+        County_Code = dplyr::if_else(
           grepl("County", County),
           County,
           paste(County, "County")
         )
       ) %>%
       dplyr::mutate(
-        County = dplyr::if_else(
+        County_Code = dplyr::if_else(
           is.na(State),
-          County,
-          paste0(County, ", ", State)
+          County_Code,
+          paste0(County_Code, ", ", State)
         )
       ) %>%
       dplyr::select(!County)
