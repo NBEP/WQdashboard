@@ -7,6 +7,8 @@
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![Codecov test
+coverage](https://codecov.io/gh/NBEP/WQdashboard/graph/badge.svg)](https://app.codecov.io/gh/NBEP/WQdashboard)
 <!-- badges: end -->
 
 WQdashboard is an open source dashboard template that displays water

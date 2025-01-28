@@ -1,1 +1,1 @@
-﻿Site_ID,Site_Name,Latitude,Longitude,Town,State,Watershed_Name,Group
+﻿Site_ID,Site_Name,Latitude,Longitude,Town,County,State,Watershed,Group,Location_Type,Max_Depth_Surface,Max_Depth_Midwater,Max_Depth_Near_Bottom
