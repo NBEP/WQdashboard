@@ -27,7 +27,7 @@ header-includes:
 df_report <- params$df_report
 col_names <- gsub("[_]", " ", names(df_report))
 col_names <- c(col_names[-length(col_names)], "Score")
-  
+
 row_count <- nrow(df_report)
 col_count <- length(df_report)
 
@@ -39,8 +39,8 @@ if (col_count == 6) {
 }
 
 # Create kable
-knitr::kable(df_report, "latex", 
-    col.names = col_names, 
+knitr::kable(df_report, "latex",
+    col.names = col_names,
     longtable = T,
     booktabs = T, 
     caption = params$report_title) %>%

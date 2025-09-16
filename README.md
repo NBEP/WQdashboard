@@ -9,6 +9,7 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![Codecov test
 coverage](https://codecov.io/gh/NBEP/WQdashboard/graph/badge.svg)](https://app.codecov.io/gh/NBEP/WQdashboard)
+[![R-CMD-check](https://github.com/NBEP/WQdashboard/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/NBEP/WQdashboard/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 WQdashboard is an open source dashboard template that displays water
@@ -18,6 +19,7 @@ quality data as maps, graphs, and report cards.
 facilitate collaboration.
 
 <!-- ## Accessibility -->
+
 <!-- List accessibility issues, planned fixes here... -->
 
 ## Disclaimer
