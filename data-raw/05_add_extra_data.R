@@ -18,13 +18,13 @@
 # Additional parameter data:
 wq_data <- "data-raw/test_cat_data_brc.csv"
 in_format <- "Blackstone_River_Coalition"
-date_format = "Y-m-d H:M"
+date_format <- "Y-m-d H:M"
 
 colnames_extra <- "data-raw/colnames_extra.csv"
 
 # CODE ------------------------------------------------------------------------
 devtools::load_all()
-library('readr')
+library("readr")
 
 df <- readr::read_csv(wq_data, show_col_types = FALSE)
 
@@ -37,4 +37,3 @@ df_data_extra <- qaqc_results(df, colnames_extra, in_format, date_format)
 
 usethis::use_data(df_data_extra, overwrite = TRUE)
 message("Saved df_data_extra")
-

@@ -7,12 +7,14 @@
 #' @return Updated dataframe.
 #'
 #' @noRd
-qaqc_thresholds <- function(df){
+qaqc_thresholds <- function(df) {
   # Define variables ----------------------------------------------------------
   field_need <- c("Parameter", "Unit")
   field_optional <- c("State", "Group", "Site_ID", "Depth_Category")
-  field_tvalues <- c("Threshold_Min", "Threshold_Max", "Excellent", "Good",
-    "Fair")
+  field_tvalues <- c(
+    "Threshold_Min", "Threshold_Max", "Excellent", "Good",
+    "Fair"
+  )
   field_all <- c(field_optional, field_need, "Min_Max_Mean", field_tvalues)
 
   # QAQC columns --------------------------------------------------------------
@@ -28,7 +30,7 @@ qaqc_thresholds <- function(df){
   field_keep <- intersect(field_all, colnames(df))
   chk <- length(df) - length(field_keep)
   if (chk > 0) {
-    df <- dplyr::select(df, all_of(field_keep))  # Drop extra columns
+    df <- dplyr::select(df, all_of(field_keep)) # Drop extra columns
     message("\t", toString(chk), " columns removed")
   }
 
@@ -36,8 +38,8 @@ qaqc_thresholds <- function(df){
   for (field in chk) {
     chk2 <- is.na(df[field])
     if (all(chk2)) {
-      df <- dplyr::select(df, !{{field}})
-      message("\tDropped empty column: ", field )
+      df <- dplyr::select(df, !{{ field }})
+      message("\tDropped empty column: ", field)
     }
   }
 
@@ -45,19 +47,25 @@ qaqc_thresholds <- function(df){
   field_missing <- setdiff(field_tvalues, colnames(df))
   if (length(field_missing) > 0) {
     warning("Adding blank columns: ",
-      paste(field_missing, collapse = ", "), call. = FALSE)
+      paste(field_missing, collapse = ", "),
+      call. = FALSE
+    )
     df[field_missing] <- NA
   }
 
   # QAQC values --------------------------------------------------------------
-  for (field in field_need) { check_val_missing(df, field = field) }
+  for (field in field_need) {
+    check_val_missing(df, field = field)
+  }
 
   if (all(c("Group", "Site_ID") %in% colnames(df))) {
     chk <- (!is.na(df$Site_ID) & !is.na(df$Group))
     if (any(chk)) {
       rws <- which(chk)
       stop("Group and site thresholds must be on seperate rows. Check rows: ",
-           paste(rws, collapse = ", "), call. = FALSE)
+        paste(rws, collapse = ", "),
+        call. = FALSE
+      )
     }
   }
 
@@ -66,7 +74,9 @@ qaqc_thresholds <- function(df){
     if (any(chk)) {
       rws <- which(chk)
       stop("State and site thresholds must be on seperate rows. Check rows:",
-           paste(rws, collapse = ", "), call. = FALSE)
+        paste(rws, collapse = ", "),
+        call. = FALSE
+      )
     }
   }
 
@@ -86,8 +96,10 @@ qaqc_thresholds <- function(df){
     if (any(!chk)) {
       rws <- which(!chk)
       stop("Invalid Depth_Category. Acceptable values: ",
-           paste(ok_cat, collapse = ", "), ". Check rows: ",
-           paste(rws, collapse = ", "), call. = FALSE)
+        paste(ok_cat, collapse = ", "), ". Check rows: ",
+        paste(rws, collapse = ", "),
+        call. = FALSE
+      )
     }
   }
 
@@ -101,7 +113,9 @@ qaqc_thresholds <- function(df){
   if (any(chk)) {
     rws <- which(chk)
     stop("Rows must contain at least one threshold value. Check rows ",
-         paste(rws, collapse = ", "), call. = FALSE)
+      paste(rws, collapse = ", "),
+      call. = FALSE
+    )
   }
 
   # Check units

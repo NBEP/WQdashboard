@@ -19,21 +19,25 @@ app_ui <- function(request) {
       id = "tabset",
       sidebar = mod_sidebar_ui("sidebar_1"),
       bslib::nav_panel("Map",
-        value="map",
+        value = "map",
         class = "bslib-page-dashboard",
-        mod_map_ui("map_1")),
+        mod_map_ui("map_1")
+      ),
       bslib::nav_panel("Report Card",
-        value="report_card",
+        value = "report_card",
         class = "bslib-page-dashboard",
-        mod_report_card_ui("report_card_1")),
+        mod_report_card_ui("report_card_1")
+      ),
       bslib::nav_panel("Graphs",
-        value="graphs",
+        value = "graphs",
         class = "bslib-page-dashboard",
-        mod_graphs_ui("graphs_1")),
+        mod_graphs_ui("graphs_1")
+      ),
       bslib::nav_panel("Download Data",
-        value="download",
+        value = "download",
         class = "bslib-page-dashboard",
-        mod_download_ui("download_1"))
+        mod_download_ui("download_1")
+      )
     )
   )
 }

@@ -24,7 +24,8 @@ library(tidyr)
 # Import org info ----
 org_info <- list(
   "name" = org_name,
-  "citation" = suggested_citation)
+  "citation" = suggested_citation
+)
 usethis::use_data(org_info, overwrite = TRUE)
 
 # Import shapefiles ----
@@ -55,7 +56,7 @@ if (!is.na(river_shp)) {
 
   shp_river <- shp_river %>%
     dplyr::select(dplyr::all_of(keep_field)) %>%
-    dplyr::rename_with(~ new_field, names(new_field)) %>%
+    dplyr::rename_with(~new_field, names(new_field)) %>%
     dplyr::mutate(Label = "Waterbody")
 
   if (all(c("Name", "Group") %in% colnames(shp_river))) {

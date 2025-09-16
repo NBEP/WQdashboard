@@ -13,9 +13,12 @@ library("readr")
 # Import data
 df <- readr::read_csv(
   paste0("data-raw/", thresholds_csv),
-  show_col_types = FALSE)
+  show_col_types = FALSE
+)
 
-if (nrow(df) == 0) { stop("Empty dataframe") }
+if (nrow(df) == 0) {
+  stop("Empty dataframe")
+}
 
 # Process data
 if (!parameter_format %in% c("WQX", "WQdashboard")) {
@@ -24,7 +27,7 @@ if (!parameter_format %in% c("WQX", "WQdashboard")) {
     show_col_types = FALSE
   ) %>%
     dplyr::filter(!is.na(WQX)) %>%
-    dplyr::select_if(function(x) !(all(is.na(x))))  # drop empty columns
+    dplyr::select_if(function(x) !(all(is.na(x)))) # drop empty columns
 
   message("Renaming parameters...\n")
   var_sub <- find_var_names(df_varnames, parameter_format, "WQX")

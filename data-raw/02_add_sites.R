@@ -26,7 +26,7 @@ if (in_format != "WQdashboard") {
     show_col_types = FALSE
   ) %>%
     dplyr::filter(!is.na(WQdashboard)) %>%
-    dplyr::select_if(function(x) !(all(is.na(x))))  # drop empty columns
+    dplyr::select_if(function(x) !(all(is.na(x)))) # drop empty columns
 
 
   message("Prepping site data...\n")

@@ -7,11 +7,13 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_sidebar_ui <- function(id){
+mod_sidebar_ui <- function(id) {
   ns <- NS(id)
 
-  param_short <- dplyr::filter(df_score,
-      !score_str %in% c("No Data Available", "No Threshold Established"))
+  param_short <- dplyr::filter(
+    df_score,
+    !score_str %in% c("No Data Available", "No Threshold Established")
+  )
 
   tagList(
     bslib::accordion(
@@ -20,7 +22,8 @@ mod_sidebar_ui <- function(id){
       bslib::accordion_panel(
         title = h2("1. Location"),
         value = "location",
-        mod_select_location_ui(ns("select_location"))),
+        mod_select_location_ui(ns("select_location"))
+      ),
       # Select data -----------------------------------------------------
       bslib::accordion_panel(
         title = h2("2. Data"),
@@ -34,19 +37,26 @@ mod_sidebar_ui <- function(id){
               ns("select_param_n"),
               label = h3("Select Indicator"),
               choices = unique(df_data$Parameter),
-              multiple = FALSE)),
+              multiple = FALSE
+            )
+          ),
           tabPanelBody(
             "param_short",
             select_dropdown(
               ns("select_param_short"),
               label = h3("Select Indicators"),
-              choices = unique(param_short$Parameter))),
+              choices = unique(param_short$Parameter)
+            )
+          ),
           tabPanelBody(
             "param_all",
             select_dropdown(
               ns("select_param_all"),
               label = h3("Select Indicators"),
-              choices = unique(df_data$Parameter)))),
+              choices = unique(df_data$Parameter)
+            )
+          )
+        ),
         tabsetPanel(
           id = ns("tabset_score"),
           type = "hidden",
@@ -55,8 +65,11 @@ mod_sidebar_ui <- function(id){
             checkboxInput(
               ns("chk_nascore"),
               label = "Include missing scores",
-              value = TRUE)),
-          tabPanelBody("hide_score")),
+              value = TRUE
+            )
+          ),
+          tabPanelBody("hide_score")
+        ),
         tabsetPanel(
           id = ns("tabset_depth"),
           type = "hidden",
@@ -67,17 +80,21 @@ mod_sidebar_ui <- function(id){
               label = h3("Select Depth"),
               choices = sort_depth(df_data$Depth),
               sort_choices = FALSE,
-              multiple = FALSE)),
+              multiple = FALSE
+            )
+          ),
           tabPanelBody(
             "depth_all",
             select_dropdown(
               ns("select_depth_all"),
               label = h3("Select Depths"),
               choices = sort_depth(df_data$Depth),
-              sort_choices = FALSE)),
+              sort_choices = FALSE
+            )
+          ),
           tabPanelBody("depth_null")
-          )
-        ),
+        )
+      ),
       # Select date -----------------------------------------------------------
       bslib::accordion_panel(
         title = h2("3. Date"),
@@ -92,7 +109,9 @@ mod_sidebar_ui <- function(id){
               label = h3("Select Year"),
               choices = df_score$Year,
               sort_decreasing = TRUE,
-              multiple = FALSE)),
+              multiple = FALSE
+            )
+          ),
           tabPanelBody(
             "by_range",
             sliderInput(
@@ -101,7 +120,8 @@ mod_sidebar_ui <- function(id){
               min = min(df_data$Year),
               max = max(df_data$Year),
               value = c(min(df_data$Year), max(df_data$Year)),
-              sep = ""),
+              sep = ""
+            ),
             shinyWidgets::sliderTextInput(
               ns("select_month"),
               label = h3("Select Months"),
@@ -120,13 +140,15 @@ mod_sidebar_ui <- function(id){
 #' @param selected_tab String, selected tab ID
 #'
 #' @noRd
-mod_sidebar_server <- function(id, selected_tab, selected_site){
-  moduleServer( id, function(input, output, session){
+mod_sidebar_server <- function(id, selected_tab, selected_site) {
+  moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     # Modules ----------------------------------------------------------------
-    loc_server <- mod_select_location_server("select_location",
-       selected_tab, selected_site)
+    loc_server <- mod_select_location_server(
+      "select_location",
+      selected_tab, selected_site
+    )
 
     # Show/hide secret tabs ---------------------------------------------------
     observe({
@@ -173,22 +195,47 @@ mod_sidebar_server <- function(id, selected_tab, selected_site){
     # Return data -------------------------------------------------------------
     return(
       list(
-        sites_all = reactive({ loc_server$sites_all() }),
-        sites_n = reactive({ loc_server$sites_n() }),
-        site_list = reactive({ loc_server$site_list() }),
-        param_all = reactive({ input$select_param_all }),
-        param_n = reactive({ input$select_param_n }),
-        param_short = reactive({ input$select_param_short }),  # used for report card
-        score = reactive({ input$chk_nascore }),
-        depth_n = reactive({ input$select_depth_n }),
-        depth_all = reactive({ input$select_depth_all }),
-        year = reactive({ input$select_year }),
-        year_range = reactive({ input$select_year_range }),
-        month_range = reactive({ input$select_month }),
-        df_score_f = reactive({ df_score_filter() })
+        sites_all = reactive({
+          loc_server$sites_all()
+        }),
+        sites_n = reactive({
+          loc_server$sites_n()
+        }),
+        site_list = reactive({
+          loc_server$site_list()
+        }),
+        param_all = reactive({
+          input$select_param_all
+        }),
+        param_n = reactive({
+          input$select_param_n
+        }),
+        param_short = reactive({
+          input$select_param_short
+        }), # used for report card
+        score = reactive({
+          input$chk_nascore
+        }),
+        depth_n = reactive({
+          input$select_depth_n
+        }),
+        depth_all = reactive({
+          input$select_depth_all
+        }),
+        year = reactive({
+          input$select_year
+        }),
+        year_range = reactive({
+          input$select_year_range
+        }),
+        month_range = reactive({
+          input$select_month
+        }),
+        df_score_f = reactive({
+          df_score_filter()
+        })
       )
     )
-
   })
 }
 

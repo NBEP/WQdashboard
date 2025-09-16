@@ -9,7 +9,6 @@
 #'
 #' @noRd
 add_popup_text <- function(df) {
-
   df <- df %>%
     dplyr::mutate(popup_loc = paste0("<b>", Site_Name, "</b>")) %>%
     dplyr::mutate(popup_score = "") %>%
@@ -17,18 +16,22 @@ add_popup_text <- function(df) {
 
   if ("Town" %in% colnames(df)) {
     df <- dplyr::mutate(df,
-      popup_loc = paste(popup_loc, "<br>Town:", Town))
-  } else if ("County" %in% colnames (df)) {
+      popup_loc = paste(popup_loc, "<br>Town:", Town)
+    )
+  } else if ("County" %in% colnames(df)) {
     df <- dplyr::mutate(df,
-      popup_loc = paste(popup_loc, "<br>County:", County))
-  } else if ("State" %in% colnames (df)) {
+      popup_loc = paste(popup_loc, "<br>County:", County)
+    )
+  } else if ("State" %in% colnames(df)) {
     df <- dplyr::mutate(df,
-      popup_loc = paste(popup_loc, "<br>State:", State))
+      popup_loc = paste(popup_loc, "<br>State:", State)
+    )
   }
 
   if ("Watershed" %in% colnames(df)) {
     df <- dplyr::mutate(df,
-      popup_loc = paste(popup_loc, "<br>Watershed:", Watershed))
+      popup_loc = paste(popup_loc, "<br>Watershed:", Watershed)
+    )
   }
 
   if ("Group" %in% colnames(df)) {
@@ -37,30 +40,35 @@ add_popup_text <- function(df) {
         is.na(Group),
         paste(popup_loc, "<br>Group: Other"),
         paste(popup_loc, "<br>Group:", Group)
-        )
       )
+    )
   }
 
   if ("Depth" %in% colnames(df)) {
     df <- dplyr::mutate(df,
       popup_score = paste(popup_score, "<br>Depth:", Depth)
-      )
+    )
   }
 
   df <- df %>%
     dplyr::mutate(popup_score = dplyr::if_else(
       is.na(score_num),
       paste(popup_score, "<br><i>No data</i>"),
-      paste0(popup_score,
-        "<br>", score_typ, ": ", score_num))) %>%
+      paste0(
+        popup_score,
+        "<br>", score_typ, ": ", score_num
+      )
+    )) %>%
     dplyr::mutate(popup_score = dplyr::if_else(
       is.na(score_num) | Unit %in% c(NA, "None"),
       popup_score,
-      paste(popup_score, Unit))) %>%
+      paste(popup_score, Unit)
+    )) %>%
     dplyr::mutate(popup_score = dplyr::if_else(
       is.na(score_num) | score_str == "No Threshold Established",
       popup_score,
-      paste(popup_score, "<br>Score:", score_str))) %>%
+      paste(popup_score, "<br>Score:", score_str)
+    )) %>%
     dplyr::mutate(alt = dplyr::case_when(
       is.na(score_num) ~ paste(alt, "No data"),
       score_str == "No Threshold Established" ~ paste(alt, score_num, Unit),
@@ -92,16 +100,21 @@ num_pal <- function(df_param) {
   }
 
   if (par_min == par_max) {
-    if (par_min > 1) { par_min <- par_min - 1 }
+    if (par_min > 1) {
+      par_min <- par_min - 1
+    }
     par_max <- par_max + 1
   }
 
   pal <- leaflet::colorNumeric(
-    palette = c("#b2fd99", "#97e39d", "#7dcaa1", "#63b1a5", "#4997a9",
-                "#417ea0", "#47638c", "#4e4876", "#55285d"),
+    palette = c(
+      "#b2fd99", "#97e39d", "#7dcaa1", "#63b1a5", "#4997a9",
+      "#417ea0", "#47638c", "#4e4876", "#55285d"
+    ),
     domain = c(par_min, par_max),
-    #bins = 5,
-    na.color = "#f4f4f4")
+    # bins = 5,
+    na.color = "#f4f4f4"
+  )
 
   return(pal)
 }
@@ -117,7 +130,11 @@ num_pal <- function(df_param) {
 #'
 #' @noRd
 num_shape <- function(x) {
-  if (is.na(x)) { "cross" } else { "circle" }
+  if (is.na(x)) {
+    "cross"
+  } else {
+    "circle"
+  }
 }
 
 #' num_symbols
@@ -133,13 +150,15 @@ num_shape <- function(x) {
 num_symbols <- function(df_param, df) {
   pal <- num_pal(df_param)
 
-  icon_symbols <- Map(f = leaflegend::makeSymbol,
-                      shape = lapply(df$score_num, num_shape),
-                      fillColor = pal(df$score_num),
-                      color = "#444444",
-                      opacity = 1,
-                      width = 24,
-                      "stroke-width" = 1.5)
+  icon_symbols <- Map(
+    f = leaflegend::makeSymbol,
+    shape = lapply(df$score_num, num_shape),
+    fillColor = pal(df$score_num),
+    color = "#444444",
+    opacity = 1,
+    width = 24,
+    "stroke-width" = 1.5
+  )
 
   return(icon_symbols)
 }
@@ -181,13 +200,15 @@ cat_pal <- function(df_param, is_legend = FALSE) {
     icon_shape <- unique(icon_shape)
   }
 
-  icon_symbols <- Map(f = leaflegend::makeSymbol,
-                      shape = icon_shape,
-                      fillColor= icon_color,
-                      color = "#444444",
-                      opacity = 1,
-                      width = 24,
-                      "stroke-width" = 1.5)
+  icon_symbols <- Map(
+    f = leaflegend::makeSymbol,
+    shape = icon_shape,
+    fillColor = icon_color,
+    color = "#444444",
+    opacity = 1,
+    width = 24,
+    "stroke-width" = 1.5
+  )
   if (!is_legend) {
     icon_symbols <- setNames(icon_symbols, nm = icon_names)
   }
@@ -212,8 +233,10 @@ cat_labels <- function(df_param) {
   label_list <- "No Data Available"
 
   if (any(param_score %in% x) & any(param_score %in% y)) {
-    label_list <- c("Excellent", "Good / Meets Criteria", "Fair",
-      "Poor / Does Not Meet Criteria", label_list)
+    label_list <- c(
+      "Excellent", "Good / Meets Criteria", "Fair",
+      "Poor / Does Not Meet Criteria", label_list
+    )
   } else if (any(param_score %in% x)) {
     label_list <- c(x, label_list)
   } else if (any(param_score %in% y)) {

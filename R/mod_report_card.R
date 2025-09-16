@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_report_card_ui <- function(id){
+mod_report_card_ui <- function(id) {
   ns <- NS(id)
   tagList(
     bslib::card(
@@ -20,7 +20,8 @@ mod_report_card_ui <- function(id){
         downloadButton(
           ns("download_pdf"),
           "Download as PDF",
-          style = "width: fit-content;")
+          style = "width: fit-content;"
+        )
       ),
     )
   )
@@ -29,19 +30,22 @@ mod_report_card_ui <- function(id){
 #' report_card Server Functions
 #'
 #' @noRd
-mod_report_card_server <- function(id, selected_var, selected_tab){
-  moduleServer( id, function(input, output, session){
+mod_report_card_server <- function(id, selected_var, selected_tab) {
+  moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     # Pass info to ui ----
     output$title <- renderUI({
       HTML(paste0(
-        "<h2>Report Card (", selected_var$year(), ")</h2>"))
+        "<h2>Report Card (", selected_var$year(), ")</h2>"
+      ))
     })
 
     # Define variables -----
-    drop_rows <- c("Year", "Site_ID", "Unit", "score_typ", "score_num",
-                   "Latitude", "Longitude", "popup_loc", "popup_score", "alt")
+    drop_rows <- c(
+      "Year", "Site_ID", "Unit", "score_typ", "score_num",
+      "Latitude", "Longitude", "popup_loc", "popup_score", "alt"
+    )
 
     df_default <- df_score %>%
       dplyr::filter(Year == max(Year)) %>%
@@ -49,14 +53,17 @@ mod_report_card_server <- function(id, selected_var, selected_tab){
 
     val <- reactiveValues(
       df = df_default,
-      count = 0)
+      count = 0
+    )
 
     df_filter <- reactive({
       # Define var
       df <- selected_var$df_score_f()
       param <- c(selected_var$param_short(), "-")
       sites <- selected_var$sites_all()
-      if (length(sites) == 0 | length(param) == 1) { return(df_default[0,]) }
+      if (length(sites) == 0 | length(param) == 1) {
+        return(df_default[0, ])
+      }
 
       # Update dataframe
       df <- df %>%
@@ -69,12 +76,14 @@ mod_report_card_server <- function(id, selected_var, selected_tab){
         df <- dplyr::filter(df, Depth %in% depth_list)
       }
 
-      if(!selected_var$score()){
-        df <- dplyr::filter(df,
-          !(score_str %in% c("No Data Available", "No Threshold Established")))
+      if (!selected_var$score()) {
+        df <- dplyr::filter(
+          df,
+          !(score_str %in% c("No Data Available", "No Threshold Established"))
+        )
       }
 
-      df <- df %>% replace(is.na(.), "-")  # necessary for PDF
+      df <- df %>% replace(is.na(.), "-") # necessary for PDF
 
       return(df)
     })
@@ -93,17 +102,20 @@ mod_report_card_server <- function(id, selected_var, selected_tab){
     })
 
     # Update table
-    observe({ reactable::updateReactable("table", data = df_filter()) }) %>%
+    observe({
+      reactable::updateReactable("table", data = df_filter())
+    }) %>%
       bindEvent(df_filter())
 
     # Download PDF ----
     output$download_pdf <- downloadHandler(
-      filename = function(){
+      filename = function() {
         paste0("report_card_", selected_var$year(), ".pdf")
       },
       content = function(file) {
         src <- normalizePath(system.file("rmd", "report_card.Rmd",
-                                         package = "WQdashboard"))
+          package = "WQdashboard"
+        ))
 
         # temporarily switch to the temp dir, in case you do not have write
         # permission to the current working directory
@@ -113,15 +125,19 @@ mod_report_card_server <- function(id, selected_var, selected_tab){
         # Set up parameters to pass to Rmd document
         params <- list(
           df_report = df_filter(),
-          report_title = paste0(org_info$name, " Report Card (",
-                                selected_var$year(), ")"))
+          report_title = paste0(
+            org_info$name, " Report Card (",
+            selected_var$year(), ")"
+          )
+        )
 
-        rmarkdown::render(tempReport, output_file = file,
-                          params = params,
-                          envir = new.env(parent = globalenv()))
+        rmarkdown::render(tempReport,
+          output_file = file,
+          params = params,
+          envir = new.env(parent = globalenv())
+        )
       }
     )
-
   })
 }
 

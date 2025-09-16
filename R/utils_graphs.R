@@ -13,19 +13,20 @@ graph_style <- function(fig, fig_title, y_title, y_range) {
     plotly::config(
       displaylogo = FALSE,
       modeBarButtonsToRemove = c(
-        'sendDataToCloud',
-        'zoom2d',
-        'pan2d',
-        'select2d',
-        'lasso2d',
-        'autoScale2d',
-        'resetScale2d',
-        'zoomIn2d',
-        'zoomOut2d',
-        'hoverClosestCartesian',
-        'hoverCompareCartesian'),
+        "sendDataToCloud",
+        "zoom2d",
+        "pan2d",
+        "select2d",
+        "lasso2d",
+        "autoScale2d",
+        "resetScale2d",
+        "zoomIn2d",
+        "zoomOut2d",
+        "hoverClosestCartesian",
+        "hoverCompareCartesian"
+      ),
       toImageButtonOptions = list(height = 400, width = 800)
-      ) %>%
+    ) %>%
     plotly::layout(
       title = fig_title,
       yaxis = list(
@@ -37,7 +38,8 @@ graph_style <- function(fig, fig_title, y_title, y_range) {
         tickfont = list(size = 16),
         linecolor = "black",
         showgrid = FALSE,
-        tickcolor = "black"),
+        tickcolor = "black"
+      ),
       xaxis = list(
         title = "Date",
         rangemode = "tozero",
@@ -46,14 +48,16 @@ graph_style <- function(fig, fig_title, y_title, y_range) {
         tickfont = list(size = 16),
         linecolor = "black",
         showgrid = FALSE,
-        tickcolor = "black"),
+        tickcolor = "black"
+      ),
       showlegend = TRUE,
       hoverlabel = list(bgcolor = "white"),
       margin = list(
         l = 50, r = 20,
         b = 20, t = 55,
-        pad = 0)
+        pad = 0
       )
+    )
 
   return(fig)
 }
@@ -74,12 +78,14 @@ add_line_breaks <- function(df) {
       Site_Name = unique(df$Site_Name),
       Parameter = unique(df$Parameter),
       Year = unique(df$Year),
-      Depth = unique(df$Depth))
+      Depth = unique(df$Depth)
+    )
   } else {
     df_null <- expand.grid(
       Site_Name = unique(df$Site_Name),
       Parameter = unique(df$Parameter),
-      Year = unique(df$Year))
+      Year = unique(df$Year)
+    )
   }
 
   df_null <- df_null %>%
@@ -122,61 +128,65 @@ add_thresholds <- function(thresh, visible = TRUE, date_range, y_range,
   if (thresh_min != -999999 & min_val < thresh_min) {
     fig <- fig %>%
       plotly::add_polygons(
-        x=c(min_date, max_date, max_date, min_date),
-        y=c(thresh_min, thresh_min, min_val, min_val),
-        line=list(width=0),
-        fillcolor= "#f6c0c0",
+        x = c(min_date, max_date, max_date, min_date),
+        y = c(thresh_min, thresh_min, min_val, min_val),
+        line = list(width = 0),
+        fillcolor = "#f6c0c0",
         visible = visible,
         hoverinfo = "text",
         hovertext = "Does Not Meet Criteria",
         inherit = FALSE,
         name = "Does Not Meet\nCriteria",
-        legendrank = 1003)
+        legendrank = 1003
+      )
   }
 
   if (thresh_max != -999999 & max_val > thresh_max) {
     fig <- fig %>%
       plotly::add_polygons(
-        x=c(min_date, max_date, max_date, min_date),
-        y=c(thresh_max, thresh_max, max_val, max_val),
-        line=list(width=0),
-        fillcolor= "#f6c0c0",
+        x = c(min_date, max_date, max_date, min_date),
+        y = c(thresh_max, thresh_max, max_val, max_val),
+        line = list(width = 0),
+        fillcolor = "#f6c0c0",
         visible = visible,
         hoverinfo = "text",
         hovertext = "Does Not Meet Criteria",
         inherit = FALSE,
         name = "Does Not\nMeet Criteria",
-        legendrank = 1002)
+        legendrank = 1002
+      )
   }
 
   if (thresh_excellent != -999999 & thresh_excellent < thresh_good &
-      thresh_excellent > min_val) {
+    thresh_excellent > min_val) {
     fig <- fig %>%
       plotly::add_polygons(
-        x=c(min_date, max_date, max_date, min_date),
-        y=c(thresh_excellent, thresh_excellent, min_val, min_val),
-        line=list(width=0),
-        fillcolor= "#dde8fe",
+        x = c(min_date, max_date, max_date, min_date),
+        y = c(thresh_excellent, thresh_excellent, min_val, min_val),
+        line = list(width = 0),
+        fillcolor = "#dde8fe",
         visible = visible,
         hoverinfo = "text",
         hovertext = "Excellent",
         inherit = FALSE,
         name = "Excellent",
-        legendrank = 1001)
+        legendrank = 1001
+      )
   } else if (thresh_good != -999999 & thresh_good < thresh_excellent &
-             thresh_excellent < max_val) {
+    thresh_excellent < max_val) {
     fig <- fig %>%
       plotly::add_polygons(
-        x=c(min_date, max_date, max_date, min_date),
-        y=c(thresh_excellent, thresh_excellent, max_val, max_val),
-        line=list(width=0),
-        fillcolor= "#dde8fe",
+        x = c(min_date, max_date, max_date, min_date),
+        y = c(thresh_excellent, thresh_excellent, max_val, max_val),
+        line = list(width = 0),
+        fillcolor = "#dde8fe",
         visible = visible,
         hoverinfo = "text",
         hovertext = "Excellent",
         inherit = FALSE,
         name = "Excellent",
-        legendrank = 1001)
+        legendrank = 1001
+      )
   }
 
   return(fig)
@@ -194,21 +204,21 @@ add_thresholds <- function(thresh, visible = TRUE, date_range, y_range,
 #'
 #' @noRd
 add_gam <- function(fig, df, visible = TRUE) {
-
   df <- dplyr::mutate(df, Dec_Date = lubridate::decimal_date(Date))
 
   # Code from Carmen Chan
   # https://www.displayr.com/how-to-add-trend-lines-in-r-using-plotly/
 
-  df_gam <- mgcv::gam(df$Result~s(df$Dec_Date))
-  df_pred <- predict(df_gam, type="response", se.fit=TRUE)
+  df_gam <- mgcv::gam(df$Result ~ s(df$Dec_Date))
+  df_pred <- predict(df_gam, type = "response", se.fit = TRUE)
   df_new <- data.frame(
-      x = df_gam$model[,2],
-      y = df_pred$fit,
-      lb = as.numeric(df_pred$fit - (1.96 * df_pred$se.fit)),
-      ub = as.numeric(df_pred$fit + (1.96 * df_pred$se.fit))) %>%
+    x = df_gam$model[, 2],
+    y = df_pred$fit,
+    lb = as.numeric(df_pred$fit - (1.96 * df_pred$se.fit)),
+    ub = as.numeric(df_pred$fit + (1.96 * df_pred$se.fit))
+  ) %>%
     dplyr::mutate(x = lubridate::date_decimal(x))
-  df_new <- df_new[order(df_new$x),]
+  df_new <- df_new[order(df_new$x), ]
 
   fig <- fig %>%
     plotly::add_trace(
@@ -220,22 +230,26 @@ add_gam <- function(fig, df, visible = TRUE) {
       line = list(
         color = "#2c2c2c",
         width = 2,
-        dash = "dash"),
+        dash = "dash"
+      ),
       visible = visible,
       inherit = FALSE,
-      name = "Trend Line (GAM)") %>%
+      name = "Trend Line (GAM)"
+    ) %>%
     plotly::add_ribbons(
       data = df_new,
       x = ~x,
       ymin = ~lb,
       ymax = ~ub,
-      line=list(
-        color="#818181",
-        opacity=0.4,
-        width=0),
+      line = list(
+        color = "#818181",
+        opacity = 0.4,
+        width = 0
+      ),
       fillcolor = list(
-        color="#818181",
-        opacity=0.4),
+        color = "#818181",
+        opacity = 0.4
+      ),
       visible = visible,
       inherit = FALSE,
       name = "95% Confidence\nInterval"
@@ -276,20 +290,25 @@ caption_graph <- function(df, thresh = NULL) {
 
   thresh_text <- "<hr><h3>Thresholds</h3>"
 
-  if (new_unit %in% c(NA, "None")) { new_unit <- NULL }
+  if (new_unit %in% c(NA, "None")) {
+    new_unit <- NULL
+  }
 
   if (thresh_min != -999999 & thresh_max != -999999) {
     thresh_text <- paste0(
       thresh_text, "<b>Acceptable:</b> ", pretty_number(thresh_min), " - ",
-      pretty_number(thresh_max), " ", new_unit)
+      pretty_number(thresh_max), " ", new_unit
+    )
   } else if (thresh_min != -999999) {
     thresh_text <- paste0(
       thresh_text, "<b>Acceptable:</b> &gt; ", pretty_number(thresh_min),
-      " ", new_unit)
+      " ", new_unit
+    )
   } else if (thresh_max != -999999) {
     thresh_text <- paste0(
       thresh_text, "<b>Acceptable:</b> &lt; ", pretty_number(thresh_max),
-      " ", new_unit)
+      " ", new_unit
+    )
   }
 
   if (nchar(thresh_text) > 19) {
@@ -299,11 +318,13 @@ caption_graph <- function(df, thresh = NULL) {
   if (thresh_excellent != -999999 & thresh_excellent < thresh_good) {
     thresh_text <- paste0(
       thresh_text, "<b>Excellent:</b> &lt; ", pretty_number(thresh_excellent),
-      " ", new_unit)
+      " ", new_unit
+    )
   } else if (thresh_good != -999999 & thresh_good < thresh_excellent) {
     thresh_text <- paste0(
       thresh_text, "<b>Excellent:</b> &gt; ", pretty_number(thresh_excellent),
-      " ", new_unit)
+      " ", new_unit
+    )
   }
 
   thresh_text <- trimws(thresh_text)

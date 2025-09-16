@@ -11,11 +11,10 @@
 #'   names.
 #'
 #' @noRd
-find_var_names <- function(df, in_format, out_format){
-
+find_var_names <- function(df, in_format, out_format) {
   # Check if df is dataframe
   chk <- inherits(df, "data.frame")
-  if(!chk) {
+  if (!chk) {
     stop("df must be type dataframe")
   }
 
@@ -23,14 +22,20 @@ find_var_names <- function(df, in_format, out_format){
   chk <- in_format %in% colnames(df)
   chk2 <- out_format %in% colnames(df)
   if (!chk & !chk2) {
-    stop("Invalid in_format and out_format. Acceptable formats: ",
-         paste(colnames(df), collapse=", "))
+    stop(
+      "Invalid in_format and out_format. Acceptable formats: ",
+      paste(colnames(df), collapse = ", ")
+    )
   } else if (!chk) {
-    stop("Invalid in_format. Acceptable formats: ",
-         paste(colnames(df), collapse=", "))
+    stop(
+      "Invalid in_format. Acceptable formats: ",
+      paste(colnames(df), collapse = ", ")
+    )
   } else if (!chk2) {
-    stop("Invalid out_format. Acceptable formats: ",
-         paste(colnames(df), collapse=", "))
+    stop(
+      "Invalid out_format. Acceptable formats: ",
+      paste(colnames(df), collapse = ", ")
+    )
   }
 
   # List new column names
@@ -40,17 +45,18 @@ find_var_names <- function(df, in_format, out_format){
   # Create matched list of old names, new names
   df <- df %>%
     dplyr::select(dplyr::all_of(c(in_format, out_format))) %>%
-    dplyr::filter_at(out_format, dplyr::all_vars(!is.na(.)  & . != "")) %>%
+    dplyr::filter_at(out_format, dplyr::all_vars(!is.na(.) & . != "")) %>%
     dplyr::filter_at(in_format, dplyr::all_vars(!is.na(.) & . != "")) %>%
     # If out_format includes multiple vars, only keep first value
     dplyr::mutate(
-      {{out_format}} := dplyr::if_else(
-        grepl("|", .data[[out_format]], fixed=TRUE),
+      {{ out_format }} := dplyr::if_else(
+        grepl("|", .data[[out_format]], fixed = TRUE),
         stringr::str_split_i(.data[[out_format]], "\\|", 1),
         .data[[out_format]]
-      ))
+      )
+    )
   # If in_format includes multiple vars, split to multiple rows
-  df <- tidyr::separate_longer_delim(df, {{in_format}}, "|") %>%
+  df <- tidyr::separate_longer_delim(df, {{ in_format }}, "|") %>%
     dplyr::filter(.data[[in_format]] != .data[[out_format]])
 
   if (nrow(df) > 0) {
@@ -104,7 +110,7 @@ rename_col <- function(df, old_colnames, new_colnames) {
   field_subs <- new_colnames[intersect(colnames(df), names(new_colnames))]
 
   if (length(field_subs) > 0) {
-    df <- dplyr::rename_with(df, ~ field_subs, names(field_subs))
+    df <- dplyr::rename_with(df, ~field_subs, names(field_subs))
   }
 
   return(df)
@@ -144,7 +150,6 @@ rename_var <- function(in_var, old_varname, new_varname) {
 #'
 #' @noRd
 rename_all_var <- function(df, col_name, old_varname, new_varname) {
-
   # Check inputs
   chk <- col_name %in% colnames(df)
   if (!chk) {
@@ -165,38 +170,44 @@ rename_all_var <- function(df, col_name, old_varname, new_varname) {
   # Update variable names
   df <- df %>%
     dplyr::mutate(
-      {{col_name}} := sapply(
+      {{ col_name }} := sapply(
         .data[[col_name]],
-        function(x) rename_var(x, old_varname, new_varname))) %>%
-    dplyr::mutate({{col_name}} := unname(.data[[col_name]])) # remove names
+        function(x) rename_var(x, old_varname, new_varname)
+      )
+    ) %>%
+    dplyr::mutate({{ col_name }} := unname(.data[[col_name]])) # remove names
 
   return(df)
 }
 
 #' Check for missing columns
 #'
-#' @description Produces error message if any columns are missing.
+#' @description `check_column_messing()` produces an error message if any
+#' columns are missing.
 #'
 #' @param df Input dataframe.
 #' @param field List of column names.
 #'
 #' @noRd
-check_column_missing <- function(df, field) {
-  # Modified code from MassWateR::checkMWRsites
+check_column_missing <- function(.data, col_list) {
+  chk <- col_list %in% colnames(.data)
 
-  chk <- field %in% colnames(df)
-  if(any(!chk)){
-    tochk <- field[!chk]
+  if (any(!chk)) {
+    missing_col <- col_list[!chk]
     stop("\tThe following columns are missing: ",
-         paste(tochk, collapse = ", "), call. = FALSE)
+      paste(missing_col, collapse = ", "),
+      call. = FALSE
+    )
   }
 }
 
-#' Skip Rows
+#' List rows with quality control data or failed qualifier code
 #'
-#' @description Lists rows where data is marked as suspect or a QAQC check.
 #'
-#' @param df Dataframe.
+#' @description `skip_rows()` lists rows with a suspect qualifier code or
+#' quality control activity type.
+#'
+#' @param df Input dataframe.
 #'
 #' @return Updated QAQC check.
 #'
@@ -208,7 +219,7 @@ skip_rows <- function(df) {
     chk <- rep(FALSE, nrow(df))
   }
 
-  if("Activity_Type" %in% colnames(df)) {
+  if ("Activity_Type" %in% colnames(df)) {
     chk2 <- !is.na(df$Activity_Type) &
       stringr::str_detect(df$Activity_Type, "Quality Control")
     chk <- chk | chk2
@@ -230,15 +241,17 @@ skip_rows <- function(df) {
 #' @noRd
 set_nondetect_values <- function(df) {
   chk <- df$Result %in% c("BDL")
-  if("Qualifier" %in% colnames(df)) {
+  if ("Qualifier" %in% colnames(df)) {
     chk <- chk | df$Qualifier %in% qaqc_flag$nondetect
   }
   chk <- chk & !skip_rows(df)
 
-  if (all(!chk)) { return(df) }
+  if (all(!chk)) {
+    return(df)
+  }
 
-  df_d <- df[!chk,]
-  df_nd <- df[chk,] %>%
+  df_d <- df[!chk, ]
+  df_nd <- df[chk, ] %>%
     dplyr::mutate(
       Qualifier = dplyr::if_else(
         is.na(Qualifier),
@@ -255,7 +268,7 @@ set_nondetect_values <- function(df) {
         Result = dplyr::case_when(
           is.na(Detection_Limit) ~ 0,
           Detection_Limit <= 0 ~ Detection_Limit,
-          TRUE ~ Detection_Limit/2
+          TRUE ~ Detection_Limit / 2
         )
       ) %>%
       dplyr::mutate(Result_Unit = Detection_Limit_Unit)
@@ -290,14 +303,14 @@ check_val_missing <- function(df, field, is_stop = TRUE) {
   df_field <- df[field]
   chk <- !is.na(df_field) | skip_rows(df)
 
-  if(any(!chk)){
+  if (any(!chk)) {
     rws <- which(!chk)
-    if (length(rws) > 20){
+    if (length(rws) > 20) {
       msg <- paste0("\t", field, " missing in ", toString(length(rws)), " rows")
     } else {
       msg <- paste0("\t", field, " missing in rows ", paste(rws, collapse = ", "))
     }
-    if (is_stop == TRUE){
+    if (is_stop == TRUE) {
       stop(msg, call. = FALSE)
     } else {
       warning(msg, call. = FALSE)
@@ -315,20 +328,22 @@ check_val_missing <- function(df, field, is_stop = TRUE) {
 #' @param is_stop Boolean. If TRUE, returns stop(). If FALSE, returns warning().
 #'
 #' @noRd
-check_val_duplicate <- function(df, field, is_stop=TRUE) {
+check_val_duplicate <- function(df, field, is_stop = TRUE) {
   dup1 <- df %>%
     dplyr::select(dplyr::all_of(field)) %>%
     duplicated()
-  if(any(dup1)){
+  if (any(dup1)) {
     dup2 <- df %>%
       dplyr::select(dplyr::all_of(field)) %>%
       duplicated(fromLast = TRUE)
     dup_rws <- c(which(dup1), which(dup2)) %>%
       unique() %>%
       sort()
-    msg <- paste0("\tDuplicate ", paste(field, collapse = ", "),
-                  " in rows ", paste(dup_rws, collapse = ", "))
-    if (is_stop == TRUE){
+    msg <- paste0(
+      "\tDuplicate ", paste(field, collapse = ", "),
+      " in rows ", paste(dup_rws, collapse = ", ")
+    )
+    if (is_stop == TRUE) {
       stop(msg, call. = FALSE)
     } else {
       warning(msg, call. = FALSE)
@@ -347,20 +362,25 @@ check_val_duplicate <- function(df, field, is_stop=TRUE) {
 #'
 #' @noRd
 check_val_count <- function(df, field) {
-
   field <- intersect(field, colnames(df))
 
-  if (length(field) == 0) { return(df) }
+  if (length(field) == 0) {
+    return(df)
+  }
 
   field_len <- lapply(df, dplyr::n_distinct)
   drop_field <- names(field_len[field_len < 2])
   drop_field <- intersect(field, drop_field)
 
-  if (length(drop_field) == 0) { return(df) }
+  if (length(drop_field) == 0) {
+    return(df)
+  }
 
   df <- dplyr::select(df, !dplyr::all_of(drop_field))
-  message("\tRemoved column ", paste(drop_field, collapse = ", "),
-          ": Less than 2 unique values")
+  message(
+    "\tRemoved column ", paste(drop_field, collapse = ", "),
+    ": Less than 2 unique values"
+  )
 
   return(df)
 }
@@ -379,10 +399,12 @@ check_val_numeric <- function(df, field) {
   typ <- df[field]
   chk <- !is.na(suppressWarnings(mapply(as.numeric, typ))) | is.na(typ)
 
-  if(any(!chk)){
+  if (any(!chk)) {
     rws <- which(!chk)
     stop("\tNon-numeric entries for ", field, " found in rows: ",
-         paste(rws, collapse = ", "), call. = FALSE)
+      paste(rws, collapse = ", "),
+      call. = FALSE
+    )
   }
 }
 
@@ -395,23 +417,24 @@ check_val_numeric <- function(df, field) {
 #' @param date_format Date format.
 #'
 #' @noRd
-format_date <- function(df, date_col, date_format="m/d/Y") {
-
+format_date <- function(df, date_col, date_format = "m/d/Y") {
   df_temp <- dplyr::filter(df, !is.na(.data[[date_col]]))
   chk <- mapply(lubridate::is.Date, df_temp[[date_col]])
 
-  if(all(chk)){
+  if (all(chk)) {
     return(df)
   } else if (is.null(date_format)) {
     stop("Date format is missing", call. = FALSE)
   }
 
-  date_var <- c("OS", "Om", "Op", "a", "A", "b", "B", "d", "H", "I", "j", "q",
-                "m", "M", "p", "S", "U", "w", "W", "y", "Y", "z", "r", "R", "T")
+  date_var <- c(
+    "OS", "Om", "Op", "a", "A", "b", "B", "d", "H", "I", "j", "q",
+    "m", "M", "p", "S", "U", "w", "W", "y", "Y", "z", "r", "R", "T"
+  )
   chk_var <- gsub("[^a-zA-Z]", "", date_format)
   chk_var <- gsub(paste(unlist(date_var), collapse = "|"), "", chk_var)
 
-  if(chk_var != "") {
+  if (chk_var != "") {
     stop("date_format contains invalid variables: ", chk_var, call. = FALSE)
   }
 
@@ -419,42 +442,51 @@ format_date <- function(df, date_col, date_format="m/d/Y") {
 
   df <- df %>%
     dplyr::mutate(
-      {{date_col}} := as.Date(
+      {{ date_col }} := as.Date(
         lubridate::parse_date_time(
           as.character(.data[[date_col]]),
           date_format,
-          quiet = TRUE)))
+          quiet = TRUE
+        )
+      )
+    )
 
   chk2 <- !is.na(df[[date_col]])
   chk <- chk | chk2
 
-  if(all(!chk2)) {
+  if (all(!chk2)) {
     stop('Date does not match format "', date_format, '"',
-         call. = FALSE)
+      call. = FALSE
+    )
   } else if (any(!chk)) {
     rws <- which(!chk)
     stop("Date is improperly formatted in rows: ",
-         paste(rws, collapse = ", "), call. = FALSE)
+      paste(rws, collapse = ", "),
+      call. = FALSE
+    )
   }
 
   return(df)
 }
 
-#' Convert units
+#' Convert Unit
 #'
-#' @description Uses values in `unit_conversion` to convert units.
+#' @description `convert_unit()` uses values in `unit_conversion` to convert
+#' units.
 #'
 #' @param x Numeric. Value to convert.
 #' @param old_unit String. Current unit.
 #' @param new_unit String. New unit.
-#' @param is_stop If TRUE, provides error message for invalid results.
-#'    Default TRUE.
+#' @param is_stop If TRUE, provides error message for invalid results. Default
+#' TRUE.
 #'
 #' @return Updated value.
 #'
 #' @noRd
 convert_unit <- function(x, old_unit, new_unit, is_stop = TRUE) {
-  if (old_unit == new_unit) { return(x) }
+  if (old_unit == new_unit) {
+    return(x)
+  }
 
   # Standardize names
   var_names <- find_var_names(varnames_units, "WQX", "measurements")
@@ -496,7 +528,7 @@ convert_unit <- function(x, old_unit, new_unit, is_stop = TRUE) {
 #' @noRd
 standardize_units <- function(df) {
   chk <- skip_rows(df)
-  df2 <- df[which(!chk),]
+  df2 <- df[which(!chk), ]
 
   df_temp <- df2 %>%
     dplyr::group_by(Parameter) %>%
@@ -505,7 +537,9 @@ standardize_units <- function(df) {
   df2 <- dplyr::left_join(df2, df_temp, by = dplyr::join_by(Parameter)) %>%
     dplyr::filter(Result_Unit != temp_unit)
 
-  if (nrow(df2) == 0) { return(df) }
+  if (nrow(df2) == 0) {
+    return(df)
+  }
 
   df2 <- df2 %>%
     dplyr::select(Parameter, Result, Result_Unit, temp_unit) %>%
@@ -520,16 +554,18 @@ standardize_units <- function(df) {
   chk <- is.na(df2$temp_result)
   if (any(chk)) {
     rws <- which(chk)
-    df_error <- df2[rws,]
+    df_error <- df2[rws, ]
     stop("Only one unit allowed per parameter. Unable to standardize units for:\n\t-",
-         paste(unique(df_error$Parameter), collapse = "\n\t-"), call. = FALSE)
+      paste(unique(df_error$Parameter), collapse = "\n\t-"),
+      call. = FALSE
+    )
   }
 
   df <- dplyr::left_join(
-      df,
-      df2,
-      by = dplyr::join_by(Parameter, Result, Result_Unit)
-    ) %>%
+    df,
+    df2,
+    by = dplyr::join_by(Parameter, Result, Result_Unit)
+  ) %>%
     dplyr::mutate(
       Result = dplyr::if_else(
         is.na(temp_result),
@@ -566,16 +602,18 @@ depth_to_m <- function(df) {
   exempt <- exempt | skip_rows(df)
 
   chk <- (!is.na(df$Depth) | exempt)
-  if(any(!chk)) {
+  if (any(!chk)) {
     rws <- which(!chk)
     warning("\tDepth is missing in rows ", paste(rws, collapse = ", "),
-            call. = FALSE)
+      call. = FALSE
+    )
   }
   chk <- (!is.na(df$Depth_Unit) | exempt)
-  if(any(!chk)) {
+  if (any(!chk)) {
     rws <- which(!chk)
     warning("\tDepth_Unit is missing in rows ", paste(rws, collapse = ", "),
-            call. = FALSE)
+      call. = FALSE
+    )
   }
 
   exempt <- (df$Depth_Unit %in% c(NA, "m") | exempt)
@@ -633,27 +671,31 @@ assign_depth_category <- function(df, sites = df_sites) {
       rws <- which(!chk)
       df[rws, "Depth_Category"] <- NA
       warning("\tRemoved invalid Depth_Category in rows ",
-        paste(rws, collapse = ", "), call. = FALSE)
+        paste(rws, collapse = ", "),
+        call. = FALSE
+      )
     }
   } else {
     message("\tAdded column Depth_Category")
-    df <- dplyr::mutate(df, Depth_Category=NA)
+    df <- dplyr::mutate(df, Depth_Category = NA)
   }
 
-  depth_col <- c("Max_Depth_Surface", "Max_Depth_Midwater",
-                 "Max_Depth_Near_Bottom")
+  depth_col <- c(
+    "Max_Depth_Surface", "Max_Depth_Midwater",
+    "Max_Depth_Near_Bottom"
+  )
   sites <- dplyr::select(sites, dplyr::any_of(c("Site_ID", depth_col)))
 
   missing_col <- setdiff(depth_col, colnames(sites))
   for (field in missing_col) {
-    df <- dplyr::mutate(df, {{field}} := NA)
+    df <- dplyr::mutate(df, {{ field }} := NA)
   }
 
   df <- dplyr::left_join(
-      df, sites,
-      by = "Site_ID",
-      keep = FALSE
-    ) %>%
+    df, sites,
+    by = "Site_ID",
+    keep = FALSE
+  ) %>%
     dplyr::mutate(
       Max_Depth_Surface = dplyr::if_else(
         is.na(Max_Depth_Surface),

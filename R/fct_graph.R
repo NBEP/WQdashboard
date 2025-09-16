@@ -14,14 +14,19 @@
 
 graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
                          create_trend = TRUE, show_trend = TRUE) {
-
-  if (nrow(df) == 0) { return(NULL) }
+  if (nrow(df) == 0) {
+    return(NULL)
+  }
 
   # Set variables ----
   min_val <- min(df$Result) * .8
-  if (min_val > 0) { min_val <- 0 }
+  if (min_val > 0) {
+    min_val <- 0
+  }
   max_val <- max(df$Result) * 1.2
-  if (max_val == min_val) { max_val <- min_val + 1 }
+  if (max_val == min_val) {
+    max_val <- min_val + 1
+  }
 
   min_date <- min(df$Date)
   max_date <- max(df$Date)
@@ -45,20 +50,21 @@ graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
       y = ~Result,
       type = "scatter",
       mode = "lines+markers",
-      name = ~wrap_text(Site_Name),
+      name = ~ wrap_text(Site_Name),
       marker = list(size = 7, color = "#2daebe"),
       line = list(color = "#2daebe"),
       hoverinfo = "text",
       hovertext = ~Description
-      )
+    )
   } else {
     # Add thresholds ----
     fig <- add_thresholds(
-        thresh = thresholds,
-        visible = show_thresh,
-        date_range = c(min_date, max_date),
-        y_range = c(min_val, max_val),
-        unit = df$Unit[1]) %>%
+      thresh = thresholds,
+      visible = show_thresh,
+      date_range = c(min_date, max_date),
+      y_range = c(min_val, max_val),
+      unit = df$Unit[1]
+    ) %>%
       plotly::add_trace(
         data = df_new,
         x = ~Date,
@@ -66,7 +72,7 @@ graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
         type = "scatter",
         mode = "lines+markers",
         inherit = FALSE,
-        name = ~wrap_text(Site_Name),
+        name = ~ wrap_text(Site_Name),
         marker = list(size = 7, color = "#2daebe"),
         line = list(color = "#2daebe"),
         hoverinfo = "text",
@@ -81,9 +87,10 @@ graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
 
   # Style plot ----
   fig <- graph_style(fig,
-      fig_title = fig_title,
-      y_title = pretty_unit(df$Parameter[1], df$Unit[1]),
-      y_range = list(min_val, max_val)) %>%
+    fig_title = fig_title,
+    y_title = pretty_unit(df$Parameter[1], df$Unit[1]),
+    y_range = list(min_val, max_val)
+  ) %>%
     plotly::layout(
       xaxis = list(range = c(min_date, max_date))
     )
@@ -104,14 +111,19 @@ graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
 #' @noRd
 
 graph_one_var <- function(df, fig_title, group = "Site_Name") {
-
-  if (nrow(df) == 0) { return(NULL) }
+  if (nrow(df) == 0) {
+    return(NULL)
+  }
 
   # Set variables ----
   min_val <- min(df$Result) * .8
-  if (min_val > 0) { min_val <- 0 }
+  if (min_val > 0) {
+    min_val <- 0
+  }
   max_val <- max(df$Result) * 1.2
-  if (max_val == min_val) { max_val <- min_val + 1 }
+  if (max_val == min_val) {
+    max_val <- min_val + 1
+  }
 
   df_new <- add_line_breaks(df)
   df_new["Group"] <- df_new[[group]]
@@ -126,7 +138,7 @@ graph_one_var <- function(df, fig_title, group = "Site_Name") {
   # Create plot ----
   fig <- plotly::plot_ly(
     data = df_new,
-    name = ~wrap_text(Group),
+    name = ~ wrap_text(Group),
     x = ~Date,
     y = ~Result,
     type = "scatter",
@@ -142,9 +154,10 @@ graph_one_var <- function(df, fig_title, group = "Site_Name") {
 
   # Style plot ----
   fig <- graph_style(fig,
-                     fig_title = fig_title,
-                     y_title = pretty_unit(df$Parameter[1], df$Unit[1]),
-                     y_range = list(min_val, max_val))
+    fig_title = fig_title,
+    y_title = pretty_unit(df$Parameter[1], df$Unit[1]),
+    y_range = list(min_val, max_val)
+  )
 
   return(fig)
 }
@@ -161,7 +174,9 @@ graph_one_var <- function(df, fig_title, group = "Site_Name") {
 #' @noRd
 
 graph_two_var <- function(df, fig_title) {
-  if (nrow(df) == 0) { return(NULL) }
+  if (nrow(df) == 0) {
+    return(NULL)
+  }
   par1 <- df$Parameter[1]
   unit1 <- df$Unit[1]
 
@@ -171,7 +186,9 @@ graph_two_var <- function(df, fig_title) {
 
   pal <- "#2daebe"
   shapes <- c("circle", "diamond")
-  if (nrow(df2) > 0) { pal <- c("#2daebe", "#2c2c2c") }
+  if (nrow(df2) > 0) {
+    pal <- c("#2daebe", "#2c2c2c")
+  }
 
   # Create graph with first parameter
   fig <- plotly::plot_ly(
@@ -187,7 +204,8 @@ graph_two_var <- function(df, fig_title) {
     symbols = shapes,
     marker = list(size = 7),
     hoverinfo = "text",
-    hovertext = ~Description)
+    hovertext = ~Description
+  )
 
   # Add second parameter
   if (nrow(df2) > 0) {
@@ -210,7 +228,8 @@ graph_two_var <- function(df, fig_title) {
         symbols = shapes,
         marker = list(size = 7),
         hoverinfo = "text",
-        hovertext = ~Description) %>%
+        hovertext = ~Description
+      ) %>%
       plotly::layout(
         yaxis2 = list(
           title = pretty_unit(par2, unit2),
@@ -222,11 +241,13 @@ graph_two_var <- function(df, fig_title) {
           tickfont = list(size = 16),
           linecolor = "black",
           showgrid = FALSE,
-          tickcolor = "black"),
+          tickcolor = "black"
+        ),
         legend = list(
           xanchor = "left",
-          x = 1.15)
+          x = 1.15
         )
+      )
   }
 
   # Calculate axes, style plot
@@ -234,7 +255,8 @@ graph_two_var <- function(df, fig_title) {
     fig,
     fig_title = fig_title,
     y_title = pretty_unit(par1, unit1),
-    y_range = NA)
+    y_range = NA
+  )
 
   return(fig)
 }

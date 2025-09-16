@@ -2,14 +2,17 @@ test_that("wrap_text works", {
   long_text <- "This is a long string of text."
 
   expect_equal(
-    wrap_text(long_text, str_len=20),
-    "This is a long\nstring of text.")
+    wrap_text(long_text, str_len = 20),
+    "This is a long\nstring of text."
+  )
   expect_equal(
-    wrap_text(long_text, str_len=10),
-    "This is\na long\nstring of\ntext.")
+    wrap_text(long_text, str_len = 10),
+    "This is\na long\nstring of\ntext."
+  )
   expect_equal(
-    wrap_text(long_text, str_len=20, linebreak="foo"),
-    "This is a longfoostring of text.")
+    wrap_text(long_text, str_len = 20, linebreak = "foo"),
+    "This is a longfoostring of text."
+  )
 })
 
 test_that("pretty_number works", {

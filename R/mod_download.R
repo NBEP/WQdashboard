@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_download_ui <- function(id){
+mod_download_ui <- function(id) {
   ns <- NS(id)
   tagList(
     bslib::card(
@@ -20,11 +20,13 @@ mod_download_ui <- function(id){
         choices = c("xls", "csv", "tsv"),
         choice_names = c("Excel", "csv", "tsv"),
         sort_choices = FALSE,
-        multiple = FALSE),
+        multiple = FALSE
+      ),
       downloadButton(
         ns("dl"),
         "Download",
-        style = "width:fit-content")
+        style = "width:fit-content"
+      )
     )
   )
 }
@@ -32,8 +34,8 @@ mod_download_ui <- function(id){
 #' download Server Functions
 #'
 #' @noRd
-mod_download_server <- function(id, selected_var){
-  moduleServer( id, function(input, output, session){
+mod_download_server <- function(id, selected_var) {
+  moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     # Citation ----
@@ -47,13 +49,17 @@ mod_download_server <- function(id, selected_var){
 
     # Format data ----
     # * Site data ----
-    site_col <- c("Site_ID", "Site_Name", "Latitude", "Longitude", "County",
-      "State", "Location_Type")
-    names(site_col) <- c("Monitoring Location ID", "Monitoring Location Name",
+    site_col <- c(
+      "Site_ID", "Site_Name", "Latitude", "Longitude", "County",
+      "State", "Location_Type"
+    )
+    names(site_col) <- c(
+      "Monitoring Location ID", "Monitoring Location Name",
       "Monitoring Location Latitude (DD.DDDD)",
       "Monitoring Location Longitude (-DDD.DDDD)",
       "Monitoring Location County Code", "State Code",
-      "Monitoring Location Type")
+      "Monitoring Location Type"
+    )
 
     sites <- reactive({
       req(selected_var$sites_all)
@@ -63,20 +69,24 @@ mod_download_server <- function(id, selected_var){
         dplyr::filter(Site_ID %in% selected_var$sites_all)
 
       field_subs <- site_col[intersect(colnames(df), names(site_col))]
-      df <- dplyr::rename_with(df, ~ field_subs, names(field_subs))
+      df <- dplyr::rename_with(df, ~field_subs, names(field_subs))
 
       return(df)
     })
 
     # * Data ----
-    data_col <- c("Site_ID", "Site_Name", "Activity_Type", "Date", "Depth",
+    data_col <- c(
+      "Site_ID", "Site_Name", "Activity_Type", "Date", "Depth",
       "Depth_Unit", "Depth_Category", "Parameter", "Result", "Result_Unit",
-      "Qualifier")
-    names(data_col) <- c("Monitoring Location ID", "Monitoring Location Name",
+      "Qualifier"
+    )
+    names(data_col) <- c(
+      "Monitoring Location ID", "Monitoring Location Name",
       "Activity Type", "Activity Start Date", "Activity Depth/Height Measure",
       "Activity Depth/Height Unit", "Activity Relative Depth Name",
       "Characteristic Name", "Result Value", "Result Unit",
-      "Result Measure Qualifier")
+      "Result Measure Qualifier"
+    )
 
     data_num <- reactive({
       req(selected_var$year_range())
@@ -85,7 +95,8 @@ mod_download_server <- function(id, selected_var){
       df <- df_data_all %>%
         dplyr::filter(
           Year >= selected_var$year_range()[1] &
-            Year <= selected_var$year_range()[2]) %>%
+            Year <= selected_var$year_range()[2]
+        ) %>%
         dplyr::filter(Parameter %in% selected_var$param_all)
 
       if ("Depth Category" %in% colnames(df_data_all)) {
@@ -97,11 +108,11 @@ mod_download_server <- function(id, selected_var){
         dplyr::select("Site_ID", "Site_Name")
 
       # Merge data
-      df_merge <- merge(df, df2, by="Site_ID")
+      df_merge <- merge(df, df2, by = "Site_ID")
 
       # Rename columns
       field_subs <- data_col[intersect(colnames(df_merge), names(data_col))]
-      df_merge <- dplyr::rename_with(df_merge, ~ field_subs, names(field_subs))
+      df_merge <- dplyr::rename_with(df_merge, ~field_subs, names(field_subs))
 
       return(df_merge)
     })
@@ -110,12 +121,15 @@ mod_download_server <- function(id, selected_var){
       req(selected_var$year_range())
       req(selected_var$param_all())
 
-      if (!exists("df_data_extra")) { return(NULL) }
+      if (!exists("df_data_extra")) {
+        return(NULL)
+      }
 
       df <- df_data_extra %>%
         dplyr::filter(
           Year >= selected_var$year_range()[1] &
-            Year <= selected_var$year_range()[2]) %>%
+            Year <= selected_var$year_range()[2]
+        ) %>%
         dplyr::filter(Parameter %in% selected_var$param_all)
 
       if ("Depth Category" %in% colnames(df_data_all)) {
@@ -127,11 +141,11 @@ mod_download_server <- function(id, selected_var){
         dplyr::select("Site_ID", "Site_Name")
 
       # Merge data
-      df_merge <- merge(df, df2, by="Site_ID")
+      df_merge <- merge(df, df2, by = "Site_ID")
 
       # Rename columns
       field_subs <- data_col[intersect(colnames(df_merge), names(data_col))]
-      df_merge <- dplyr::rename_with(df_merge, ~ field_subs, names(field_subs))
+      df_merge <- dplyr::rename_with(df_merge, ~field_subs, names(field_subs))
 
       return(df_merge)
     })
@@ -142,13 +156,11 @@ mod_download_server <- function(id, selected_var){
         sites = sites(),
         data_num = data_num(),
         data_text = data_text()
-        )
+      )
       data_list <- data_list[lengths(data_list) > 0]
 
       return(data_list)
     })
-
-
   })
 }
 

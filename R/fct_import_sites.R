@@ -13,23 +13,28 @@
 #' @param df Input dataframe.
 #'
 #' @return The return value, if any, from executing the function.
-qaqc_sites <- function(df){
-
+qaqc_sites <- function(df) {
   message("Checking site data...\n")
 
   # Define vars
   field_need <- c("Site_ID", "Site_Name", "Latitude", "Longitude")
-  field_optional <- c("Location_Type", "Town", "County", "State", "Watershed",
-    "Group", "Max_Depth_Surface", "Max_Depth_Midwater", "Max_Depth_Near_Bottom")
+  field_optional <- c(
+    "Location_Type", "Town", "County", "State", "Watershed",
+    "Group", "Max_Depth_Surface", "Max_Depth_Midwater", "Max_Depth_Near_Bottom"
+  )
   field_all <- c(field_need, field_optional)
-  field_numeric <- c("Latitude", "Longitude", "Max_Depth_Surface",
-    "Max_Depth_Midwater", "Max_Depth_Near_Bottom")
+  field_numeric <- c(
+    "Latitude", "Longitude", "Max_Depth_Surface",
+    "Max_Depth_Midwater", "Max_Depth_Near_Bottom"
+  )
 
   # Check columns
   check_column_missing(df, field_need)
 
   # Check values
-  for (field in field_need) { check_val_missing(df, field) }
+  for (field in field_need) {
+    check_val_missing(df, field)
+  }
 
   check_val_duplicate(df, "Site_ID")
   check_val_duplicate(df, "Site_Name", is_stop = FALSE)
@@ -42,7 +47,9 @@ qaqc_sites <- function(df){
   }
 
   field_check <- intersect(field_numeric, colnames(df))
-  for (field in field_check) { check_val_numeric(df, field) }
+  for (field in field_check) {
+    check_val_numeric(df, field)
+  }
 
   # Update data
   if ("State" %in% colnames(df)) {
@@ -50,14 +57,17 @@ qaqc_sites <- function(df){
     if (any(!chk)) {
       rws <- which(!chk)
       stop("Invalid entry for State in rows ",
-           paste(rws, collapse = ", "), call. = FALSE)
+        paste(rws, collapse = ", "),
+        call. = FALSE
+      )
     }
     chk <- df$State %in% state.name
     if (any(chk)) {
       df <- df %>%
         dplyr::mutate(State = dplyr::case_when(
           State %in% state.name ~ state.abb[match(State, state.name)],
-          TRUE ~ State))
+          TRUE ~ State
+        ))
       message("\t", sum(chk, na.rm = TRUE), " state names converted to
               abbreviation")
     }
@@ -76,7 +86,8 @@ qaqc_sites <- function(df){
           !is.na(Group) ~ Group,
           stringr::str_detect(Location_Type, "Ocean") ~ "Saltwater",
           # stringr::str_detect(Location_Type, "Lake") ~ "Lake",
-          TRUE ~ NA))
+          TRUE ~ NA
+        ))
     }
   }
 
@@ -90,18 +101,20 @@ qaqc_sites <- function(df){
 #' @param df Input dataframe.
 #'
 #' @return Updated dataframe.
-format_sites <- function(df){
+format_sites <- function(df) {
   message("\nFormatting site data...\n")
 
   # Drop extra columns
-  field_all <- c("Site_ID", "Site_Name", "Latitude", "Longitude",
+  field_all <- c(
+    "Site_ID", "Site_Name", "Latitude", "Longitude",
     "Location_Type", "Town", "County", "State", "Watershed", "Group",
-    "Max_Depth_Surface", "Max_Depth_Midwater", "Max_Depth_Near_Bottom")
+    "Max_Depth_Surface", "Max_Depth_Midwater", "Max_Depth_Near_Bottom"
+  )
   field_keep <- intersect(field_all, colnames(df))
 
   chk <- length(df) - length(field_keep)
   if (chk > 0) {
-    df <- dplyr::select(df, all_of(field_keep))  # Drop extra columns
+    df <- dplyr::select(df, all_of(field_keep)) # Drop extra columns
     message("\t", toString(chk), " columns removed")
   }
 
@@ -142,7 +155,9 @@ format_sites <- function(df){
       dplyr::select(!County)
   }
 
-  if (all(is.na(df$State))) { df <- dplyr::select(df, !State) }
+  if (all(is.na(df$State))) {
+    df <- dplyr::select(df, !State)
+  }
 
   return(df)
 }

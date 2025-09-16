@@ -157,4 +157,3 @@ test_that("Provides error message if threshold is not numeric", {
     regexp = "Non-numeric entries for Excellent found in rows: 2"
   )
 })
-

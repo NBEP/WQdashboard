@@ -15,8 +15,7 @@
 #' @return The return value, if any, from executing the function.
 select_dropdown <- function(
     id, label, choices, choice_names = NULL, sort_choices = TRUE,
-    sort_decreasing = FALSE, multiple = TRUE, max_options = NULL){
-
+    sort_decreasing = FALSE, multiple = TRUE, max_options = NULL) {
   if (!is.null(choices) & !is.null(choice_names)) {
     names(choices) <- choice_names
   }
@@ -31,11 +30,11 @@ select_dropdown <- function(
   }
 
   if (is.null(max_options) & multiple == TRUE) {
-    selected = choices
-    allow_actions = TRUE
+    selected <- choices
+    allow_actions <- TRUE
   } else {
-    selected = choices[1]
-    allow_actions = FALSE
+    selected <- choices[1]
+    allow_actions <- FALSE
   }
 
   shinyWidgets::pickerInput(id,
@@ -45,8 +44,10 @@ select_dropdown <- function(
     options = list(
       `actions-box` = allow_actions,
       `live-search` = TRUE,
-      `selected-text-format` = 'count > 1',
+      `selected-text-format` = "count > 1",
       `max-options` = max_options,
-      container = "body"),  # Allows dropdown overflow
-    multiple = multiple)
+      container = "body"
+    ), # Allows dropdown overflow
+    multiple = multiple
+  )
 }

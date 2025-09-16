@@ -18,9 +18,9 @@
 # parameter data:
 results_csv <- "test_data_ww_all.csv"
 in_format <- "RI_WW"
-date_format = "m/d/Y"
+date_format <- "m/d/Y"
 
-overwrite_existing = TRUE
+overwrite_existing <- TRUE
 
 # CODE ------------------------------------------------------------------------
 devtools::load_all()
@@ -78,4 +78,3 @@ if (overwrite_existing) {
 }
 usethis::use_data(df_score, overwrite = TRUE)
 message("Saved df_score \n\nFinished processing data")
-

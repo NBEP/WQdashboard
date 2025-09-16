@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_select_location_ui <- function(id){
+mod_select_location_ui <- function(id) {
   ns <- NS(id)
 
   # define vars
@@ -23,10 +23,13 @@ mod_select_location_ui <- function(id){
         radioButtons(
           ns("loc_type"),
           label = h3("Select Location"),
-          choices = loc_choices)),
+          choices = loc_choices
+        )
+      ),
       tabPanelBody(
         "notoggle",
-        h3("Select Location")),
+        h3("Select Location")
+      ),
       tabPanelBody("blank")
     ),
     tabsetPanel(
@@ -41,19 +44,26 @@ mod_select_location_ui <- function(id){
             ns("select_state"),
             label = h4("Select State"),
             choices = df_sites$State,
-            choice_names = state.name[match(df_sites$State, state.abb)])),
+            choice_names = state.name[match(df_sites$State, state.abb)]
+          )
+        ),
         conditionalPanel(
           condition = paste(length(df_sites$Town_Code), "> 0"),
           select_dropdown(
             ns("select_town"),
             label = h4("Select Town"),
-            choices = df_sites$Town_Code))),
+            choices = df_sites$Town_Code
+          )
+        )
+      ),
       tabPanelBody(
         "watershed",
         select_dropdown(
           ns("select_watershed"),
           label = h4("Select Watershed"),
-          choices = df_sites$Watershed)),
+          choices = df_sites$Watershed
+        )
+      ),
       tabPanelBody("blank")
     ),
     tabsetPanel(
@@ -65,7 +75,9 @@ mod_select_location_ui <- function(id){
           ns("select_sites_all"),
           label = h3("Select Sites"),
           choices = df_sites$Site_ID,
-          choice_names = df_sites$Site_Name)),
+          choice_names = df_sites$Site_Name
+        )
+      ),
       tabPanelBody(
         "sites_n",
         select_dropdown(
@@ -73,7 +85,9 @@ mod_select_location_ui <- function(id){
           label = h3("Select Site"),
           choices = df_sites$Site_ID,
           choice_names = df_sites$Site_Name,
-          multiple = FALSE))
+          multiple = FALSE
+        )
+      )
     )
   )
 }
@@ -83,14 +97,15 @@ mod_select_location_ui <- function(id){
 #' select_location Server Functions
 #'
 #' @noRd
-mod_select_location_server <- function(id, selected_tab, selected_site){
-  moduleServer( id, function(input, output, session){
+mod_select_location_server <- function(id, selected_tab, selected_site) {
+  moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     observe({
       updateTabsetPanel(
         inputId = "tabset_loc",
-        selected = input$loc_type)
+        selected = input$loc_type
+      )
     }) %>%
       bindEvent(input$loc_type)
 
@@ -107,7 +122,8 @@ mod_select_location_server <- function(id, selected_tab, selected_site){
     default_sites <- create_site_list(df_sites)
     locval <- reactiveValues(
       town_sites = default_sites,
-      watershed_sites = default_sites)
+      watershed_sites = default_sites
+    )
 
     # Update select_town OR town_sites when select state
     observe({
@@ -118,11 +134,13 @@ mod_select_location_server <- function(id, selected_tab, selected_site){
           session = session,
           inputId = "select_town",
           choices = choices,
-          selected = choices)
+          selected = choices
+        )
       } else {
         choices <- update_site_list(
           filter_col = "State",
-          filter_list = input$select_state)
+          filter_list = input$select_state
+        )
         locval$town_sites <- choices
       }
     }) %>%
@@ -132,7 +150,8 @@ mod_select_location_server <- function(id, selected_tab, selected_site){
     observe({
       choices <- update_site_list(
         filter_col = "Town_Code",
-        filter_list = input$select_town)
+        filter_list = input$select_town
+      )
       locval$town_sites <- choices
     }) %>%
       bindEvent(input$select_town)
@@ -141,7 +160,8 @@ mod_select_location_server <- function(id, selected_tab, selected_site){
     observe({
       choices <- update_site_list(
         filter_col = "Watershed",
-        filter_list = input$select_watershed)
+        filter_list = input$select_watershed
+      )
       locval$watershed_sites <- choices
     }) %>%
       bindEvent(input$select_watershed)
@@ -161,12 +181,14 @@ mod_select_location_server <- function(id, selected_tab, selected_site){
         session = session,
         inputId = "select_sites_all",
         choices = site_list(),
-        selected = site_list())
+        selected = site_list()
+      )
       shinyWidgets::updatePickerInput(
         session = session,
         inputId = "select_sites_n",
         choices = site_list(),
-        selected = site_list()[1])
+        selected = site_list()[1]
+      )
     }) %>%
       bindEvent(site_list())
 
@@ -178,16 +200,21 @@ mod_select_location_server <- function(id, selected_tab, selected_site){
         selected = selected_site()
       )
     }) %>%
-      bindEvent( selected_site() )
+      bindEvent(selected_site())
 
     return(
       list(
-        sites_all = reactive({ input$select_sites_all }),
-        sites_n = reactive({ input$select_sites_n }),
-        site_list = reactive({ site_list() })
+        sites_all = reactive({
+          input$select_sites_all
+        }),
+        sites_n = reactive({
+          input$select_sites_n
+        }),
+        site_list = reactive({
+          site_list()
+        })
       )
     )
-
   })
 }
 

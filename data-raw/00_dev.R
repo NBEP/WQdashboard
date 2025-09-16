@@ -8,25 +8,30 @@ devtools::load_all()
 # Set unit conversions
 varnames_units <- readr::read_csv(
   "data-raw/varnames_units.csv",
-  show_col_types = FALSE)
+  show_col_types = FALSE
+)
 usethis::use_data(varnames_units, overwrite = TRUE)
 
 # Set thresholds
 state_thresholds <- readr::read_csv(
-    "data-raw/state_thresholds.csv",
-    show_col_types = FALSE)
+  "data-raw/state_thresholds.csv",
+  show_col_types = FALSE
+)
 state_thresholds <- qaqc_thresholds(state_thresholds)
 
 epa_thresholds <- readr::read_csv(
-    "data-raw/epa_thresholds.csv",
-    show_col_types = FALSE)
+  "data-raw/epa_thresholds.csv",
+  show_col_types = FALSE
+)
 epa_thresholds <- qaqc_thresholds(epa_thresholds)
 
 official_thresholds <- dplyr::bind_rows(state_thresholds, epa_thresholds)
 usethis::use_data(official_thresholds, overwrite = TRUE)
 
 # Set QAQC fails -- use data from EPATADA
-if(!"remotes" %in% installed.packages()){ install.packages("remotes") }
+if (!"remotes" %in% installed.packages()) {
+  install.packages("remotes")
+}
 remotes::install_github("USEPA/EPATADA", ref = "develop")
 
 tada_qual_flags <- system.file(
@@ -44,6 +49,11 @@ tada_qual_flags <- readr::read_csv(
 
 qaqc_suspect <- dplyr::filter(tada_qual_flags, Flag == "Suspect")$Code
 qaqc_nondetect <- dplyr::filter(tada_qual_flags, Flag == "Non-Detect")$Code
+qaqc_overdetect <- dplyr::filter(tada_qual_flags, Flag == "Over-Detect")$Code
 
-qaqc_flag <- list(suspect = qaqc_suspect, nondetect = qaqc_nondetect)
+qaqc_flag <- list(
+  suspect = qaqc_suspect,
+  nondetect = qaqc_nondetect,
+  overdect = qaqc_overdetect
+)
 usethis::use_data(qaqc_flag, overwrite = TRUE)

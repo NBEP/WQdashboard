@@ -8,7 +8,7 @@
 #'
 #' @noRd
 list_loc_choices <- function(df = df_sites) {
-  loc_choices = NULL
+  loc_choices <- NULL
   # Check for state, town; add "town" option
   if (!is.null(df$Town_Code)) {
     loc_choices <- c("By Town" = "town")
@@ -56,17 +56,23 @@ set_loc_tab <- function(loc_choices) {
 #'
 #' @noRd
 update_town_list <- function(df = df_sites, state_list) {
-  if (!"Town_Code" %in% colnames(df)) { return(NULL) }
+  if (!"Town_Code" %in% colnames(df)) {
+    return(NULL)
+  }
 
   town_list <- unique(df$Town_Code) %>%
     sort()
 
-  if (!"State" %in% colnames(df)) { return(town_list) }
+  if (!"State" %in% colnames(df)) {
+    return(town_list)
+  }
 
   # stringr::str_sub(town_list, -2, -1) works same as sub() but adds dependency
-  town_list <- subset(town_list, sub('^.+,\\s+', '', town_list) %in% state_list)
+  town_list <- subset(town_list, sub("^.+,\\s+", "", town_list) %in% state_list)
 
-  if (length(town_list) == 0) { return(NULL) }
+  if (length(town_list) == 0) {
+    return(NULL)
+  }
   return(town_list)
 }
 
@@ -87,7 +93,9 @@ create_site_list <- function(df = df_sites) {
     stop("Missing columns ", paste(tochk, collapse = ", "))
   }
 
-  if (nrow(df) == 0) { return(NULL) }
+  if (nrow(df) == 0) {
+    return(NULL)
+  }
 
   df <- df %>%
     dplyr::select(Site_ID, Site_Name) %>%
@@ -118,7 +126,9 @@ update_site_list <- function(df = df_sites, filter_col, filter_list) {
 
   df <- dplyr::filter(df, .data[[filter_col]] %in% filter_list)
 
-  if (nrow(df) == 0) { return(NULL) }
+  if (nrow(df) == 0) {
+    return(NULL)
+  }
 
   site_list <- create_site_list(df)
 
@@ -137,10 +147,12 @@ update_site_list <- function(df = df_sites, filter_col, filter_list) {
 #'
 #' @noRd
 list_months <- function(month_list, as_range = FALSE) {
-  if (length(month_list) == 1) { return(month_list) }
+  if (length(month_list) == 1) {
+    return(month_list)
+  }
 
   month_list <- month_list[month_list %in% month.name]
-  month_list <- as.integer(factor(month_list, levels=month.name))
+  month_list <- as.integer(factor(month_list, levels = month.name))
 
   if (as_range) {
     month_range <- c(min(month_list), max(month_list))

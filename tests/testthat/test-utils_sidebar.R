@@ -1,10 +1,14 @@
 # Define variables -------------------------------------------------------------
-df <- data.frame(Site_ID = c("001", "002"),
-                 Site_Name = c("NBEP", "Blackstone"),
-                 Town_Code = c("Providence, RI", "Worcester, MA"),
-                 State = c("RI", "MA"),
-                 Watershed = c("Woonasquatucker River-Moshassuck River",
-                               "Upper Blackstone River"))
+df <- data.frame(
+  Site_ID = c("001", "002"),
+  Site_Name = c("NBEP", "Blackstone"),
+  Town_Code = c("Providence, RI", "Worcester, MA"),
+  State = c("RI", "MA"),
+  Watershed = c(
+    "Woonasquatucker River-Moshassuck River",
+    "Upper Blackstone River"
+  )
+)
 df_notown <- dplyr::select(df, !Town_Code)
 df_nostate <- dplyr::select(df, !State)
 df_nowatershed <- dplyr::select(df, !Watershed)
@@ -43,8 +47,8 @@ test_that("list_loc_choices and set_loc_tab interact correctly", {
 })
 
 test_that("update_town_list filters town by state", {
-  expect_equal(update_town_list(df=df, state_list = "RI"), "Providence, RI")
-  expect_null(update_town_list(df=df_notown, state_list = "RI"))
+  expect_equal(update_town_list(df = df, state_list = "RI"), "Providence, RI")
+  expect_null(update_town_list(df = df_notown, state_list = "RI"))
 })
 
 test_that("create_site_list generates alphabetical site list", {
@@ -56,12 +60,16 @@ test_that("create_site_list generates alphabetical site list", {
 })
 
 test_that("update_site_list filters sites by selected col, variables", {
-  df <- data.frame(Site_ID = c("001", "002"),
-                   Site_Name = c("NBEP", "Blackstone"),
-                   Town_Code = c("Providence, RI", "Worcester, MA"),
-                   State = c("RI", "MA"),
-                   Watershed = c("Woonasquatucker River-Moshassuck River",
-                                 "Upper Blackstone River"))
+  df <- data.frame(
+    Site_ID = c("001", "002"),
+    Site_Name = c("NBEP", "Blackstone"),
+    Town_Code = c("Providence, RI", "Worcester, MA"),
+    State = c("RI", "MA"),
+    Watershed = c(
+      "Woonasquatucker River-Moshassuck River",
+      "Upper Blackstone River"
+    )
+  )
 
   chk <- c("002")
   names(chk) <- c("Blackstone")
@@ -70,39 +78,50 @@ test_that("update_site_list filters sites by selected col, variables", {
     update_site_list(
       df = df,
       filter_col = "State",
-      filter_list = "MA"),
-    chk)
+      filter_list = "MA"
+    ),
+    chk
+  )
   expect_equal(
     update_site_list(
       df = df,
       filter_col = "Town_Code",
-      filter_list = "Worcester, MA"),
-    chk)
+      filter_list = "Worcester, MA"
+    ),
+    chk
+  )
   expect_equal(
     update_site_list(
       df = df,
       filter_col = "Watershed",
-      filter_list = "Upper Blackstone River"),
-    chk)
+      filter_list = "Upper Blackstone River"
+    ),
+    chk
+  )
   expect_error(
     update_site_list(
       df = df,
       filter_col = "Red_Herring",
-      filter_list = "MA"))
+      filter_list = "MA"
+    )
+  )
 })
 
 test_that("sort_months sorts months chronologically", {
   expect_equal(
     list_months(c("April", "January", "March", "January")),
-    c("January", "February", "March", "April"))
+    c("January", "February", "March", "April")
+  )
   expect_equal(list_months("April"), "April")
   expect_equal(
     list_months(c("April", "January", "March", "January"), as_range = TRUE),
-    c("January", "April"))
+    c("January", "April")
+  )
 })
 
 test_that("sort_depth works", {
   expect_equal(
     sort_depth(c("Midwater", "Bottom", "Surface", "Midwater")),
-    c("Surface", "Midwater", "Bottom"))
+    c("Surface", "Midwater", "Bottom")
+  )
 })

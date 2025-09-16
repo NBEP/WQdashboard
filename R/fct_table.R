@@ -40,8 +40,8 @@ column_styles <- function(df, show_score = TRUE) {
       rowHeader = TRUE,
       sticky = "left",
       style = list(borderRight = "1px solid #eee")
-      )
     )
+  )
 
   col_loc <- c("Town", "County", "State", "Watershed", "Group")
   col_loc <- intersect(colnames(df), col_loc)
@@ -60,7 +60,8 @@ column_styles <- function(df, show_score = TRUE) {
         "function(column, state) {
           const { col_title  } = state.meta
           return col_title
-        }")
+        }"
+      )
     )
   }
 
@@ -89,7 +90,7 @@ column_styles <- function(df, show_score = TRUE) {
     )
   }
 
-  return (col_style)
+  return(col_style)
 }
 
 #' Graph Table
@@ -113,9 +114,9 @@ graph_table <- function(df, group) {
 
     df_wide <- df %>%
       dplyr::select(Date, Result) %>%
-      dplyr::rename({{var_name}} := Result)
+      dplyr::rename({{ var_name }} := Result)
   } else {
-    df_wide <- tidyr::spread(df, {{group}}, Result)
+    df_wide <- tidyr::spread(df, {{ group }}, Result)
   }
 
   if (group == "Parameter") {
@@ -140,16 +141,16 @@ graph_table <- function(df, group) {
       header = function(value) gsub("_", " ", value, fixed = TRUE),
       headerStyle = list(background = "#f7f7f8"),
       na = "-"
-      ),
+    ),
     columns = list(
       Date = reactable::colDef(
         rowHeader = TRUE,
         sticky = "left",
         style = list(borderRight = "1px solid #eee"),
         minWidth = 120
-        )
       )
     )
+  )
 
   return(fig)
 }

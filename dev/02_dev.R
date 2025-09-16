@@ -13,21 +13,20 @@
 
 # Engineering
 
-## Dependencies ----
-## Amend DESCRIPTION with dependencies read from package code parsing
-## install.packages('attachment') # if needed.
-usethis::use_package("bslib")
-usethis::use_package("dplyr")
-usethis::use_package("leaflet")
-usethis::use_package("lubridate")
-usethis::use_package("reactable")
-usethis::use_package("shiny")
-usethis::use_package("shinya11y")
-usethis::use_package("shinyWidgets")
-usethis::use_package("stringr")
+# Dependencies ----
+# Amend DESCRIPTION with dependencies read from package code parsing
+# install.packages('attachment') if needed.
+attachment::att_amend_desc()
 
-## Add modules ----
-## Create a module infrastructure in R/
+usethis::use_import_from("magrittr", "%>%")
+usethis::use_import_from("data.table", ":=")
+usethis::use_import_from("rlang", ".data")
+usethis::use_import_from("stats", "setNames")
+
+usethis::use_package("sf", "Suggests")
+
+# Add modules ----
+# Create a module infrastructure in R/
 golem::add_module(name = "sidebar", with_test = TRUE)
 golem::add_module(name = "select_location", with_test = TRUE)
 golem::add_module(name = "map", with_test = TRUE)
@@ -37,37 +36,37 @@ golem::add_module(name = "graphs_trend_graph", with_test = TRUE)
 golem::add_module(name = "graphs_graph", with_test = TRUE)
 golem::add_module(name = "download", with_test = TRUE)
 
-## Add helper functions ----
-## Creates fct_* and utils_*
-# golem::add_fct("helpers", with_test = TRUE)
-# golem::add_utils("helpers", with_test = TRUE)
-golem::add_utils("import_data", with_test = TRUE)
-golem::add_utils("sidebar", with_test = TRUE)
-golem::add_utils("graphs", with_test = TRUE)
-golem::add_utils("thresholds", with_test = TRUE)
+# Add helper functions ----
+# Creates fct_* and utils_*
+golem::add_fct("calculate_score", with_test = TRUE)
+golem::add_fct("graph", with_test = TRUE)
+golem::add_fct("import_results", with_test = TRUE)
 golem::add_fct("import_sites", with_test = TRUE)
 golem::add_fct("import_thresholds", with_test = TRUE)
-golem::add_fct("import_results", with_test = TRUE)
-golem::add_fct("calculate_score", with_test = TRUE)
-golem::add_utils("add_popup_text", with_test = TRUE)
 golem::add_fct("select_dropdown", with_test = TRUE)
 golem::add_fct("table", with_test = TRUE)
-golem::add_utils("table", with_test = TRUE)
-golem::add_fct("graph", with_test = TRUE)
 
-## External resources
-## Creates .js and .css files at inst/app/www
+golem::add_utils("add_popup_text", with_test = TRUE)
+golem::add_utils("graphs", with_test = TRUE)
+golem::add_utils("import_data", with_test = TRUE)
+golem::add_utils("sidebar", with_test = TRUE)
+golem::add_utils("table", with_test = TRUE)
+golem::add_utils("thresholds", with_test = TRUE)
+
+
+# External resources
+# Creates .js and .css files at inst/app/www
 golem::add_js_file("script")
 golem::add_js_handler("handlers")
 golem::add_css_file("custom")
 golem::add_sass_file("custom")
 
-## Add internal datasets ----
-## If you have data in your package
+# Add internal datasets ----
+# If you have data in your package
 usethis::use_data_raw(name = "my_dataset", open = FALSE)
 
-## Tests ----
-## Add one line by test you want to create
+# Tests ----
+# Add one line by test you want to create
 usethis::use_test("app")
 
 # Documentation

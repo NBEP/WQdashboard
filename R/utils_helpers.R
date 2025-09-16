@@ -7,9 +7,9 @@
 #' @param linebreak Linebreak symbol.
 #'
 #' @return Updated list.
-wrap_text <- function(old_list, str_len=20, linebreak = NULL){
+wrap_text <- function(old_list, str_len = 20, linebreak = NULL) {
   new_list <- stringr::str_wrap(old_list, width = str_len)
-  if(!is.null(linebreak)){
+  if (!is.null(linebreak)) {
     new_list <- gsub("\n", linebreak, new_list)
   }
   return(new_list)
@@ -23,12 +23,12 @@ wrap_text <- function(old_list, str_len=20, linebreak = NULL){
 #'
 #' @return Shortened number.
 #' @noRd
-pretty_number <- function(x){
+pretty_number <- function(x) {
   y <- dplyr::if_else(
     abs(x) < 1,
     signif(x, 2),
     round(x, 2)
-    )
+  )
   return(y)
 }
 
@@ -63,7 +63,7 @@ find_unit <- function(param) {
 #'
 #' @return String.
 #' @noRd
-pretty_unit <- function(par, par_unit){
+pretty_unit <- function(par, par_unit) {
   if (par_unit %in% c(NA, "None")) {
     return(par)
   }
@@ -80,7 +80,7 @@ pretty_unit <- function(par, par_unit){
 #'
 #' @return String.
 #' @noRd
-pretty_list <- function(x){
+pretty_list <- function(x) {
   if (all(is.na(x))) {
     return(NA)
   }

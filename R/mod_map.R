@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_map_ui <- function(id){
+mod_map_ui <- function(id) {
   ns <- NS(id)
   tagList(
     bslib::navset_card_tab(
@@ -16,8 +16,8 @@ mod_map_ui <- function(id){
       full_screen = TRUE,
       bslib::nav_panel(
         "Map",
-        leaflet::leafletOutput(ns('map'))
-        ),
+        leaflet::leafletOutput(ns("map"))
+      ),
       bslib::nav_panel(
         "Table",
         reactable::reactableOutput(ns("table"))
@@ -29,8 +29,8 @@ mod_map_ui <- function(id){
 #' map Server Functions
 #'
 #' @noRd
-mod_map_server <- function(id, selected_var){
-  moduleServer(id, function(input, output, session){
+mod_map_server <- function(id, selected_var) {
+  moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     # Set title ----
@@ -39,8 +39,10 @@ mod_map_server <- function(id, selected_var){
     })
 
     # Static variables ----
-    drop_col <- c("Year", "Site_ID", "Parameter", "Unit", "score_typ",
-                  "Latitude", "Longitude", "popup_loc", "popup_score", "alt")
+    drop_col <- c(
+      "Year", "Site_ID", "Parameter", "Unit", "score_typ",
+      "Latitude", "Longitude", "popup_loc", "popup_score", "alt"
+    )
 
     df_default <- df_score %>%
       dplyr::filter(Year == max(Year)) %>%
@@ -62,7 +64,7 @@ mod_map_server <- function(id, selected_var){
           dplyr::filter(
             Depth == selected_var$depth_n() |
               stringr::str_detect(df$Parameter, "Depth")
-            )
+          )
       }
 
       return(df)
@@ -70,7 +72,11 @@ mod_map_server <- function(id, selected_var){
 
     map_type <- reactive({
       chk <- "No Threshold Established" %in% df_param()$score_str
-      if (chk) { return("score_num") } else { return("score_str") }
+      if (chk) {
+        return("score_num")
+      } else {
+        return("score_str")
+      }
     })
 
     df_map <- reactive({
@@ -83,7 +89,7 @@ mod_map_server <- function(id, selected_var){
       # Update dataframe
       df <- dplyr::filter(df, Site_ID %in% sites)
 
-      if(!selected_var$score()) {
+      if (!selected_var$score()) {
         df <- dplyr::filter(df, !is.na(score_num))
       }
 
@@ -102,7 +108,7 @@ mod_map_server <- function(id, selected_var){
           max(df_sites$Latitude) # Lat max
         ) %>%
         leaflet::addProviderTiles(leaflet::providers$Esri.WorldTopoMap) %>%
-        leaflet::addScaleBar(position="bottomleft")
+        leaflet::addScaleBar(position = "bottomleft")
 
       # * Add watershed ----
       if (exists("shp_watershed")) {
@@ -114,20 +120,22 @@ mod_map_server <- function(id, selected_var){
             label = ~Name,
             labelOptions = leaflet::labelOptions(textsize = "15px"),
             # Stroke
-            color = '#6B8091',
+            color = "#6B8091",
             weight = 0.5,
             smoothFactor = 0.5,
             opacity = 0.9,
             # Fill
             fillOpacity = 0.4,
-            fillColor = '#C6D9EC',
+            fillColor = "#C6D9EC",
             # Highlight
             highlightOptions = leaflet::highlightOptions(
-              fillColor = '#EEF4F9',
+              fillColor = "#EEF4F9",
               weight = 1.2,
-              bringToFront = FALSE),
+              bringToFront = FALSE
+            ),
             # misc
-            group = 'Watersheds')
+            group = "Watersheds"
+          )
         layer_list <- "Watersheds"
       }
 
@@ -151,10 +159,12 @@ mod_map_server <- function(id, selected_var){
             highlightOptions = leaflet::highlightOptions(
               color = "#3e576c",
               weight = 3,
-              bringToFront = TRUE),
+              bringToFront = TRUE
+            ),
             # misc
             options = leaflet::pathOptions(pane = "river_pane"),
-            group = "Rivers")
+            group = "Rivers"
+          )
         layer_list <- c(layer_list, "Rivers")
         layer_list <- layer_list[!is.na(layer_list)]
       }
@@ -164,7 +174,8 @@ mod_map_server <- function(id, selected_var){
         map <- map %>%
           leaflet::addLayersControl(
             overlayGroups = layer_list,
-            position='topleft')
+            position = "topleft"
+          )
       }
 
       return(map)
@@ -184,15 +195,16 @@ mod_map_server <- function(id, selected_var){
             lat = ~Latitude,
             layerId = ~Site_ID,
             # Icons
-            icon = ~leaflet::icons(
+            icon = ~ leaflet::icons(
               iconUrl = num_symbols(df_param(), df_map()),
               iconWidth = 20,
-              iconHeight = 20),
+              iconHeight = 20
+            ),
             # Label
             label = ~alt,
             labelOptions = leaflet::labelOptions(textsize = "15px"),
             # Popup
-            popup = ~paste0(
+            popup = ~ paste0(
               popup_loc,
               "<br><br><b>", selected_var$param_n(), "</b>",
               popup_score, "<br>",
@@ -201,13 +213,15 @@ mod_map_server <- function(id, selected_var){
                 label = "View Trends",
                 onclick = paste0(
                   'Shiny.setInputValue("', ns("graph_link"),
-                  '", (Math.random() * 1000) + 1);')
+                  '", (Math.random() * 1000) + 1);'
                 )
+              )
             ),
             # Accessibility
             options = leaflet::markerOptions(
               alt = ~alt,
-              riseOnHover = TRUE)
+              riseOnHover = TRUE
+            )
           )
       } else {
         leaflet::leafletProxy("map") %>%
@@ -218,15 +232,16 @@ mod_map_server <- function(id, selected_var){
             lat = ~Latitude,
             layerId = ~Site_ID,
             # Icons
-            icon = ~leaflet::icons(
+            icon = ~ leaflet::icons(
               iconUrl = cat_pal(df_param())[score_str],
               iconWidth = 20,
-              iconHeight = 20),
+              iconHeight = 20
+            ),
             # Label
             label = ~alt,
             labelOptions = leaflet::labelOptions(textsize = "15px"),
             # Popup
-            popup = ~paste0(
+            popup = ~ paste0(
               popup_loc,
               "<br><br><b>", selected_var$param_n(), "</b>",
               popup_score, "<br>",
@@ -235,13 +250,15 @@ mod_map_server <- function(id, selected_var){
                 label = "View Trends",
                 onclick = paste0(
                   'Shiny.setInputValue("', ns("graph_link"),
-                  '", (Math.random() * 1000) + 1);')
+                  '", (Math.random() * 1000) + 1);'
+                )
               )
             ),
             # Accessibility
             options = leaflet::markerOptions(
               alt = ~alt,
-              riseOnHover = TRUE)
+              riseOnHover = TRUE
+            )
           )
       }
     }) %>%
@@ -256,15 +273,18 @@ mod_map_server <- function(id, selected_var){
             pal = num_pal(df_param()),
             values = df_param()$score_num,
             title = htmltools::tags$div(
-              paste(selected_var$param_n(),
-                find_unit(selected_var$param_n())),
-              style = 'font-size: 18px'),
+              paste(
+                selected_var$param_n(),
+                find_unit(selected_var$param_n())
+              ),
+              style = "font-size: 18px"
+            ),
             shape = "rect",
             orientation = "vertical",
             bins = 5,
             naLabel = "No Data Available",
-            labelStyle = 'font-size: 14px;',
-            position = 'topright',
+            labelStyle = "font-size: 14px;",
+            position = "topright",
             group = "Legend"
           )
       } else {
@@ -275,12 +295,13 @@ mod_map_server <- function(id, selected_var){
             labels = cat_labels(df_param()),
             width = 20,
             height = 20,
-            orientation = 'vertical',
+            orientation = "vertical",
             title = htmltools::tags$div(
               selected_var$param_n(),
-              style = 'font-size: 18px'),
-            labelStyle = 'font-size: 14px;',
-            position = 'topright',
+              style = "font-size: 18px"
+            ),
+            labelStyle = "font-size: 14px;",
+            position = "topright",
             group = "Legend"
           )
       }
@@ -292,13 +313,16 @@ mod_map_server <- function(id, selected_var){
       df = df_default,
       show_score = TRUE,
       col_title = "Average",
-      count = 0)
+      count = 0
+    )
 
     col_title <- reactive({
       df <- df_param() %>%
         dplyr::filter(!is.na(score_num))
 
-      if (nrow(df) == 0) { return("Average") }
+      if (nrow(df) == 0) {
+        return("Average")
+      }
 
       par_type <- df$score_typ[1]
       par_unit <- df$Unit[1]
@@ -326,11 +350,13 @@ mod_map_server <- function(id, selected_var){
       reactable_table(
         val$df,
         show_score = val$show_score,
-        col_title = val$col_title)
+        col_title = val$col_title
+      )
     })
 
     # * Update table ----
-    observe({reactable::updateReactable("table",
+    observe({
+      reactable::updateReactable("table",
         data = dplyr::select(df_map(), !dplyr::any_of(drop_col)),
         meta = list(col_title = col_title())
       )
@@ -346,16 +372,21 @@ mod_map_server <- function(id, selected_var){
     }) %>% bindEvent(map_type())
 
     # Return data -------------------------------------------------------------
-    selected_site <- reactive({ input$map_marker_click$id }) %>%
+    selected_site <- reactive({
+      input$map_marker_click$id
+    }) %>%
       bindEvent(input$graph_link)
 
     return(
       list(
-        graph_link = reactive({ input$graph_link }),
-        site = reactive({ selected_site() })
+        graph_link = reactive({
+          input$graph_link
+        }),
+        site = reactive({
+          selected_site()
+        })
       )
     )
-
   })
 }
 
