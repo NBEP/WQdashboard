@@ -3,57 +3,59 @@
 # README: This script defines a series of universal variables necessary for the
 #  app to run. DOES NOT NEED TO BE RUN UNLESS VARIABLES CHANGE.
 
-devtools::load_all()
+library("readr")
+library("dplyr")
+remotes::install_github("massbays-tech/wqformat")
+remotes::install_github("nbep/importwqd")
 
-# Set unit conversions
-varnames_units <- readr::read_csv(
-  "data-raw/varnames_units.csv",
-  show_col_types = FALSE
-)
-usethis::use_data(varnames_units, overwrite = TRUE)
+# Add varname templates to data-raw ----
+df_param <- wqformat:::varnames_parameters %>%
+  dplyr::filter(!is.na(.data$wqdashboard)) %>%
+  dplyr::select("wqdashboard") %>%
+  dplyr::mutate(
+    "wqdashboard" = dplyr::if_else(
+      grepl("|", .data$wqdashboard, fixed = TRUE),
+      stringr::str_split_i(.data$wqdashboard, "\\|", 1),
+      .data$wqdashboard
+    )
+  ) %>%
+  dplyr::mutate("Custom" = NA) %>%
+  dplyr::arrange(.data$wqdashboard)
 
-# Set thresholds
-state_thresholds <- readr::read_csv(
-  "data-raw/state_thresholds.csv",
-  show_col_types = FALSE
-)
-state_thresholds <- qaqc_thresholds(state_thresholds)
+readr::write_csv(df_param, "data-raw/varnames_parameters.csv", na = "")
 
-epa_thresholds <- readr::read_csv(
-  "data-raw/epa_thresholds.csv",
-  show_col_types = FALSE
-)
-epa_thresholds <- qaqc_thresholds(epa_thresholds)
+df_units <- wqformat:::varnames_units %>%
+  dplyr::filter(!is.na(.data$wqdashboard)) %>%
+  dplyr::select("wqdashboard") %>%
+  dplyr::mutate(
+    "wqdashboard" = dplyr::if_else(
+      grepl("|", .data$wqdashboard, fixed = TRUE),
+      stringr::str_split_i(.data$wqdashboard, "\\|", 1),
+      .data$wqdashboard
+    )
+  ) %>%
+  dplyr::mutate("Custom" = NA) %>%
+  dplyr::arrange(.data$wqdashboard)
 
-official_thresholds <- dplyr::bind_rows(state_thresholds, epa_thresholds)
-usethis::use_data(official_thresholds, overwrite = TRUE)
+readr::write_csv(df_units, "data-raw/varnames_units.csv", na = "")
 
-# Set QAQC fails -- use data from EPATADA
-if (!"remotes" %in% installed.packages()) {
-  install.packages("remotes")
-}
-remotes::install_github("USEPA/EPATADA", ref = "develop")
-
-tada_qual_flags <- system.file(
-  "extdata",
-  "WQXMeasureQualifierCodeRef.csv",
-  package = "EPATADA"
-)
-
-tada_qual_flags <- readr::read_csv(
-  tada_qual_flags,
+# Upload state, epa threshold metadata ----
+df_state <- readr::read_csv(
+  "inst/extdata/state_thresholds.csv",
   show_col_types = FALSE
 ) %>%
-  dplyr::select(Code, "TADA.MeasureQualifierCode.Flag") %>%
-  dplyr::rename(Flag = "TADA.MeasureQualifierCode.Flag")
+  importwqd::qaqc_thresholds() %>%
+  importwqd::format_thresholds()
 
-qaqc_suspect <- dplyr::filter(tada_qual_flags, Flag == "Suspect")$Code
-qaqc_nondetect <- dplyr::filter(tada_qual_flags, Flag == "Non-Detect")$Code
-qaqc_overdetect <- dplyr::filter(tada_qual_flags, Flag == "Over-Detect")$Code
+df_epa <- readr::read_csv(
+  "inst/extdata/epa_thresholds.csv",
+  show_col_types = FALSE
+) %>%
+  importwqd::qaqc_thresholds() %>%
+  importwqd::format_thresholds()
 
-qaqc_flag <- list(
-  suspect = qaqc_suspect,
-  nondetect = qaqc_nondetect,
-  overdect = qaqc_overdetect
-)
-usethis::use_data(qaqc_flag, overwrite = TRUE)
+official_thresholds <- dplyr::bind_rows(df_state, df_epa)
+usethis::use_data(official_thresholds, overwrite = TRUE)
+
+# Clean up ----
+rm(list=ls())

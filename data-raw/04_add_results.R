@@ -56,12 +56,62 @@ if (nrow(df) > 250000) {
 }
 
 # Upload data (all)
-df_data_all <- df
+df_data_all <- df %>%
+  dplyr::mutate(
+    "Description" = paste0(
+      "<b>", .data$Site_Name, "</b><br>",
+      format(.data$Date, format = "%B %d, %Y")
+    )
+  ) %>%
+  dplyr::mutate(
+    "Description" = dplyr::if_else(
+      !is.na(.data$Depth),
+      paste0(.data$Description, "<br>Depth: ", Depth),
+      .data$Description
+    )
+  ) %>%
+  dplyr::mutate(
+    "Description" = paste0(
+      .data$Description, "<br>", .data$Parameter, ": ",
+      pretty_number(.data$Result)
+    )
+  ) %>%
+  dplyr::mutate(
+    "Description" = dplyr::if_else(
+      !.data$Unit %in% c(NA, "None"),
+      paste(.data$Description, .data$Unit),
+      .data$Description
+    )
+  )
+
 usethis::use_data(df_data_all, overwrite = TRUE)
 message("Saved df_data_all")
 
 # Format, upload data (short)
 df <- format_results(df)
+
+sites <- dplyr::select(site_data, c("Site_ID", "Site_Name"))
+
+dat <- dplyr::left_join(dat, sites, by = "Site_ID") %>%
+  dplyr::mutate(
+    "Description" = paste0(
+      "<b>", Site_Name, "</b><br>", format(Date, format = "%B %d, %Y"), "<br>"
+    )
+  ) %>%
+  dplyr::mutate(Description = dplyr::if_else(
+    !is.na(Depth),
+    paste0(Description, "Depth: ", Depth, "<br>"),
+    Description
+  )) %>%
+  dplyr::mutate(Description = paste0(
+    Description,
+    Parameter, ": ", pretty_number(Result)
+  )) %>%
+  dplyr::mutate(Description = dplyr::if_else(
+    !Unit %in% c(NA, "None"),
+    paste(Description, Unit),
+    Description
+  ))
 
 df_data <- df
 usethis::use_data(df_data, overwrite = TRUE)
