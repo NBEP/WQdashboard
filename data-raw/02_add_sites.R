@@ -7,11 +7,10 @@
 #' @param in_format Input format. Accepted formats include wqdashboard,
 #' WQX, MassWateR,  RI_WW (RI Watershed Watch), MA_BRC (Blackstone River
 #' Coalition), and ME_FOCB (Friends of Casco Bay). To use a custom format, set
-#' `in_format` to "custom" and update the file `colnames_sites.csv` in the
-#' `data-raw` folder.
-#' @param default_state State name or abbreviation. Blank values in the column
-#' "State" will be replaced with `default_state`. Set to `NA` to ignore this
-#' feature.
+#' `in_format` to "custom" and update `data-raw/colnames_sites.csv`
+#' @param default_state State name or abbreviation. Blank rows in column "State"
+#' will be set to `default_state`. Set to `NA` to leave blank rows as-is.
+#' as-is.
 #'
 #' @noRd
 
@@ -22,39 +21,37 @@ default_state <- "Rhode Island"
 
 # CODE ------------------------------------------------------------------------
 library("readr")
+library("dplyr")
+library("remotes")
 remotes::install_github("massbays-tech/wqformat")
 remotes::install_github("nbep/importwqd")
 
 # Import data
-df <- readr::read_csv(sites_csv, show_col_types = FALSE)
+df_raw <- readr::read_csv(sites_csv, show_col_types = FALSE)
 
 # Process data
-supported_formats <- c("ma_brc", "masswater", "me_focb", "ri_ww", "wqx")
-
-if (tolower(in_format) %in% supported_formats) {
-  df_sites_all <- wqformat::format_sites(
-    df,
-    in_format,
-    "wqdashboard",
-    drop_extra_col = FALSE
-  )
-} else if (tolower(in_format) != "wqdashboard") {
+if (tolower(in_format) == "custom") {
   message("Reformatting data...")
   df_colnames <- readr::read_csv(
     "data-raw/colnames_sites.csv",
     show_col_types = FALSE
   )
-  old_col <- df_colnames[["Former Column Names"]]
-  new_col <- df_colnames[["wqdashboard Column Names"]]
 
-  df_sites_all <- wqformat::rename_col(df_sites_all, old_col, new_col)
+  df_raw <- importwqd::prep_sites(df_raw, df_colnames)
+} else if (tolower(in_format) != "wqdashboard") {
+  df_raw <- wqformat::format_sites(
+    df_raw,
+    in_format,
+    "wqdashboard",
+    drop_extra_col = FALSE
+  )
 }
 
-df_sites_all <- importwqd::qaqc_sites(df_sites_all, default_state)
+df_sites_all <- importwqd::qaqc_sites(df_raw, default_state)
 usethis::use_data(df_sites_all, overwrite = TRUE)
 
 df_sites <- importwqd::format_sites(df_sites_all)
 usethis::use_data(df_sites, overwrite = TRUE)
-message("Finished processing data")
+message("Done")
 
-rm(list=ls())
+rm(list = ls())

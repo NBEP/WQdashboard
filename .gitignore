@@ -15,3 +15,5 @@ data-raw/epa_thresholds.csv
 data/official_thresholds.rda
 data/org_info.rda
 *.pdf
+inst/extdata/custom_thresholds.csv
+dev/config_attachment.yaml

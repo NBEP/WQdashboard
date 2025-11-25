@@ -9,8 +9,8 @@
 #' include wqdashboard, WQX, MassWateR,  RI_DEM (Rhode Island DEM), RI_WW
 #' (RI Watershed Watch), MA_BRC (Blackstone River Coalition), ME_DEP (Maine
 #' DEP), and ME_FOCB (Friends of Casco Bay). To use a custom format, set
-#' `in_format` to "custom" and update the files `varnames_results.csv` and
-#' `varnames_units.csv` in the `data-raw` folder.
+#' `in_format` to "custom" and update the files `data-raw/varnames_results.csv`
+#' and `data-raw/varnames_units.csv`
 #'
 #' @noRd
 
@@ -21,13 +21,14 @@ in_format <- "MA_BRC"
 # CODE ------------------------------------------------------------------------
 library("readr")
 library("dplyr")
+library("remotes")
 remotes::install_github("massbays-tech/wqformat")
 remotes::install_github("nbep/importwqd")
 
 message("Uploading thresholds")
-custom_thresholds <- readr::read_csv(threshold_csv, show_col_types = FALSE)
+df_raw <- readr::read_csv(threshold_csv, show_col_types = FALSE)
 
-if (nrow(custom_thresholds) == 0) {
+if (nrow(df_raw) == 0) {
   stop("Empty dataframe, no thresholds found")
 }
 
@@ -41,19 +42,19 @@ if (in_format == "custom") {
     show_col_types = FALSE
   )
 
-  custom_thresholds <- custom_thresholds %>%
-    wqformat::update_var("Parameter", df_param$Custom, df_param$wqdashboard) %>%
-    wqformat::update_var("Unit", df_unit$Custom, df_unit$wqdashboard)
+  df_raw <- importwqd::prep_thresholds(df_raw, df_param, df_unit)
+
+  in_format <- "wqdashboard"
 }
 
 # QAQC data, save to inst/extdata
-custom_thresholds <- importwqd::qaqc_thresholds(custom_thresholds, in_format)
-message("Exporting data to inst/extdata/custom_thresholds.csv")
+custom_thresholds <- importwqd::qaqc_thresholds(df_raw, in_format)
+message("Exporting thresholds to inst/extdata/custom_thresholds.csv")
 readr::write_csv(custom_thresholds, "inst/extdata/custom_thresholds.csv")
 
 # Format data, save to data
 custom_thresholds <- importwqd::format_thresholds(custom_thresholds)
 usethis::use_data(custom_thresholds, overwrite = TRUE)
-message("Finished processing data")
+message("Done")
 
 rm(list=ls())

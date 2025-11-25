@@ -19,20 +19,56 @@
 results_csv <- "test_data_ww_all.csv"
 in_format <- "RI_WW"
 date_format <- "m/d/Y"
+timezone <- Sys.timezone()
 
 overwrite_existing <- TRUE
 
 # CODE ------------------------------------------------------------------------
-devtools::load_all()
+library("readr")
+library("dplyr")
+library("remotes")
+remotes::install_github("massbays-tech/wqformat")
+remotes::install_github("nbep/importwqd")
 
-df <- readr::read_csv(
+df_raw <- readr::read_csv(
   paste0("data-raw/", results_csv),
   show_col_types = FALSE,
   guess_max = Inf
 )
 
-if (in_format != "WQdashboard") {
-  df <- preformat_results(df, in_format)
+if (in_format == "custom") {
+  df_colnames <- readr::read_csv(
+    "data-raw/colnames_results.csv",
+    show_col_types = FALSE
+  )
+  df_param <- readr::read_csv(
+    "data-raw/varnames_parameters.csv",
+    show_col_types = FALSE
+  )
+  df_unit <- readr::read_csv(
+    "data-raw/varnames_units.csv",
+    show_col_types = FALSE
+  )
+  df_qual <- readr::read_csv(
+    "data-raw/varnames_qualifiers.csv",
+    show_col_types = FALSE
+  )
+  df_activity <- readr::read_csv(
+    "data-raw/varnames_activity.csv",
+    show_col_types = FALSE
+  )
+
+  df_raw <- importwqd::prep_results(
+    df_raw, df_colnames, df_param, df_unit, df_qual, df_activity
+  )
+} else if (in_format == "wqdashboard") {
+  df_raw <- wqformat::format_wqd_results(df_raw, date_format)
+} else {
+  df_raw <- df_raw %>%
+    wqformat::format_results(
+      in_format, "wqdashboard", date_format, timezone,
+      drop_extra_col = FALSE
+    )
 }
 
 # QAQC data
