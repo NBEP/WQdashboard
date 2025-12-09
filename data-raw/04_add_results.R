@@ -16,12 +16,13 @@
 #  z Timezone
 
 # parameter data:
-results_csv <- "test_data_ww_all.csv"
+results_csv <- "test_data_ww_clean.csv"
 in_format <- "RI_WW"
 date_format <- "m/d/Y"
 timezone <- Sys.timezone()
 
 overwrite_existing <- TRUE
+recalculate_score <- FALSE
 
 # CODE ------------------------------------------------------------------------
 library("readr")
@@ -30,6 +31,14 @@ library("remotes")
 remotes::install_github("massbays-tech/wqformat")
 remotes::install_github("nbep/importwqd")
 
+source("R/utils.R")
+load("data/df_sites_all.rda")
+load("data/df_sites.rda")
+load("data/official_thresholds.rda")
+load("data/custom_thresholds.rda")
+load("data/df_score.rda")
+
+# Import, format data ----
 df_raw <- readr::read_csv(
   paste0("data-raw/", results_csv),
   show_col_types = FALSE,
@@ -71,96 +80,69 @@ if (in_format == "custom") {
     )
 }
 
-# QAQC data
-df <- qaqc_results(df, date_format)
-chk_years <- unique(df$Year)
+# QAQC data ----
+df_qaqc <- importwqd::qaqc_results(df_raw, df_sites)
+chk_years <- unique(df_qaqc$Year)
 
-# Combine datasets (if not overwriting)
+# Combine datasets (if overwrite_existing is FALSE)
 if (!overwrite_existing) {
-  keep_cols <- intersect(colnames(df), colnames(df_data_all))
-  df <- dplyr::select(df, dplyr::all_of(keep_cols))
-  df2 <- dplyr::select(df_data_all, dplyr::all_of(keep_cols))
-  df <- rbind(df, df2) %>% unique()
-  df <- standardize_units(df)
+  df_qaqc <- dplyr::bind_rows(df_data_all, df_qaqc) %>%
+    unique() %>%
+    wqformat::standardize_units(
+      "Parameter",
+      "Result",
+      "Result_Unit",
+      warn_only = FALSE
+    ) %>%
+    wqformat::standardize_units_across(
+      "Result_Unit",
+      "Detection_Limit_Unit",
+      c("Lower_Detection_Limit", "Upper_Detection_Limit"),
+      warn_only = FALSE
+    ) %>%
+    unique()
 }
 
-if (nrow(df) > 250000) {
+if (nrow(df_qaqc) > 250000) {
   warning(
-    "Dataset contains over 250,000 rows and website is likely to experience performance issues",
+    "Large dataset. Website may experience performance issues.",
     call. = FALSE
   )
 }
 
-# Upload data (all)
-df_data_all <- df %>%
-  dplyr::mutate(
-    "Description" = paste0(
-      "<b>", .data$Site_Name, "</b><br>",
-      format(.data$Date, format = "%B %d, %Y")
-    )
-  ) %>%
-  dplyr::mutate(
-    "Description" = dplyr::if_else(
-      !is.na(.data$Depth),
-      paste0(.data$Description, "<br>Depth: ", Depth),
-      .data$Description
-    )
-  ) %>%
-  dplyr::mutate(
-    "Description" = paste0(
-      .data$Description, "<br>", .data$Parameter, ": ",
-      pretty_number(.data$Result)
-    )
-  ) %>%
-  dplyr::mutate(
-    "Description" = dplyr::if_else(
-      !.data$Unit %in% c(NA, "None"),
-      paste(.data$Description, .data$Unit),
-      .data$Description
-    )
-  )
-
+# Upload df_data_all
+df_data_all <- df_qaqc
 usethis::use_data(df_data_all, overwrite = TRUE)
 message("Saved df_data_all")
 
-# Format, upload data (short)
-df <- format_results(df)
+# Format data ----
+df_thresh <- official_thresholds
+if (exists("custom_thresholds")) {
+  df_thresh <- dplyr::bind_rows(custom_thresholds, official_thresholds)
+}
 
-sites <- dplyr::select(site_data, c("Site_ID", "Site_Name"))
+df_temp <- importwqd::format_results(df_data_all, df_sites_all, df_thresh)
 
-dat <- dplyr::left_join(dat, sites, by = "Site_ID") %>%
-  dplyr::mutate(
-    "Description" = paste0(
-      "<b>", Site_Name, "</b><br>", format(Date, format = "%B %d, %Y"), "<br>"
-    )
-  ) %>%
-  dplyr::mutate(Description = dplyr::if_else(
-    !is.na(Depth),
-    paste0(Description, "Depth: ", Depth, "<br>"),
-    Description
-  )) %>%
-  dplyr::mutate(Description = paste0(
-    Description,
-    Parameter, ": ", pretty_number(Result)
-  )) %>%
-  dplyr::mutate(Description = dplyr::if_else(
-    !Unit %in% c(NA, "None"),
-    paste(Description, Unit),
-    Description
-  ))
+df_data <- df_temp %>%
+  dplyr::select(!c("Site_Name", "Calculation", "Good", "Fair"))
 
-df_data <- df
 usethis::use_data(df_data, overwrite = TRUE)
 message("Saved df_data")
 
-# Calculate, upload scores
-if (overwrite_existing) {
-  df_score <- format_score(df)
-} else {
-  score_old <- dplyr::filter(df_score, !Year %in% chk_years)
-  df_new <- dplyr::filter(df, Year %in% chk_years)
-  score_new <- format_score(df_new)
-  df_score <- rbind(score_old, score_new)
+# Calculate scores ----
+chk <- (!overwrite_existing || recalculate_score) & exists("df_score")
+if (chk) {
+  df_temp <- dplyr::filter(df_temp, .data$Year %in% chk_years)
+  df_old <- dplyr::filter(df_score, !.data$Year %in% chk_years)
 }
+
+df_score <- importwqd::score_results(df_temp, df_sites)
+
+if (chk) {
+  df_score <- rbind(df_old, df_score)
+}
+
 usethis::use_data(df_score, overwrite = TRUE)
 message("Saved df_score \n\nFinished processing data")
+
+rm(list = ls())
