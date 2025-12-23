@@ -10,7 +10,7 @@
 list_loc_choices <- function(df = df_sites) {
   loc_choices <- NULL
   # Check for state, town; add "town" option
-  if (!is.null(df$Town_Code)) {
+  if (!is.null(df$Town)) {
     loc_choices <- c("By Town" = "town")
   } else if (!is.null(df$State)) {
     loc_choices <- c("By State" = "town")
@@ -56,11 +56,11 @@ set_loc_tab <- function(loc_choices) {
 #'
 #' @noRd
 update_town_list <- function(df = df_sites, state_list) {
-  if (!"Town_Code" %in% colnames(df)) {
+  if (!"Town" %in% colnames(df)) {
     return(NULL)
   }
 
-  town_list <- unique(df$Town_Code) %>%
+  town_list <- unique(df$Town) %>%
     sort()
 
   if (!"State" %in% colnames(df)) {
@@ -76,9 +76,9 @@ update_town_list <- function(df = df_sites, state_list) {
   return(town_list)
 }
 
-#' create_site_list
+#' Generate list of sites
 #'
-#' @description Creates list of sites, sorted by name.
+#' @description `create_site_list()` generates a list of sites, sorted by name.
 #'
 #' @param df Input dataframe. Default is df_sites.
 #'
@@ -86,25 +86,16 @@ update_town_list <- function(df = df_sites, state_list) {
 #'
 #' @noRd
 create_site_list <- function(df = df_sites) {
-  req_col <- c("Site_ID", "Site_Name")
-  chk <- req_col %in% colnames(df)
-  if (any(!chk)) {
-    tochk <- req_col[!chk]
-    stop("Missing columns ", paste(tochk, collapse = ", "))
-  }
-
   if (nrow(df) == 0) {
     return(NULL)
   }
 
-  df <- df %>%
-    dplyr::select(Site_ID, Site_Name) %>%
-    dplyr::arrange(Site_Name)
+  df <- dplyr::arrange(df, .data$Site_Name)
 
   site_list <- df$Site_ID
   names(site_list) <- df$Site_Name
 
-  return(site_list)
+  site_list
 }
 
 #' update_site_list
@@ -130,54 +121,5 @@ update_site_list <- function(df = df_sites, filter_col, filter_list) {
     return(NULL)
   }
 
-  site_list <- create_site_list(df)
-
-  return(site_list)
-}
-
-#' List months
-#'
-#' @description Creates ordered list of months in range.
-#'
-#' @param month_list Unsorted list of months.
-#' @param as_range Boolean. If TRUE, only lists first and last month in range.
-#'   Default FALSE.
-#'
-#' @return Sorted list of months.
-#'
-#' @noRd
-list_months <- function(month_list, as_range = FALSE) {
-  if (length(month_list) == 1) {
-    return(month_list)
-  }
-
-  month_list <- month_list[month_list %in% month.name]
-  month_list <- as.integer(factor(month_list, levels = month.name))
-
-  if (as_range) {
-    month_range <- c(min(month_list), max(month_list))
-  } else {
-    month_range <- seq(min(month_list), max(month_list))
-  }
-
-  month_range <- month.name[month_range]
-
-  return(month_range)
-}
-
-#' Sort depth
-#'
-#' @description Orders depths from shallow to deep.
-#'
-#' @param depth_list Unsorted depth list.
-#'
-#' @return Sorted depth list.
-#'
-#' @noRd
-sort_depth <- function(depth_list) {
-  depth_list <- unique(depth_list)
-  all_depths <- c("Surface", "Midwater", "Near Bottom", "Bottom")
-  all_depths <- all_depths[all_depths %in% depth_list]
-
-  return(all_depths)
+  create_site_list(df)
 }

@@ -39,20 +39,20 @@ mod_select_location_ui <- function(id) {
       tabPanelBody(
         "town",
         conditionalPanel(
-          condition = paste(length(df_sites$State), "> 0"),
+          condition = paste(length(loc_list$state), "> 0"),
           select_dropdown(
             ns("select_state"),
             label = h4("Select State"),
-            choices = df_sites$State,
-            choice_names = state.name[match(df_sites$State, state.abb)]
+            choices = loc_list$state,
+            choice_names = state.name[match(loc_list$state, state.abb)]
           )
         ),
         conditionalPanel(
-          condition = paste(length(df_sites$Town_Code), "> 0"),
+          condition = paste(length(loc_list$town), "> 0"),
           select_dropdown(
             ns("select_town"),
             label = h4("Select Town"),
-            choices = df_sites$Town_Code
+            choices = loc_list$town
           )
         )
       ),
@@ -61,7 +61,7 @@ mod_select_location_ui <- function(id) {
         select_dropdown(
           ns("select_watershed"),
           label = h4("Select Watershed"),
-          choices = df_sites$Watershed
+          choices = loc_list$watershed
         )
       ),
       tabPanelBody("blank")
@@ -127,7 +127,7 @@ mod_select_location_server <- function(id, selected_tab, selected_site) {
 
     # Update select_town OR town_sites when select state
     observe({
-      if (!is.null(df_sites$Town_Code)) {
+      if (!is.null(loc_list$town)) {
         choices <- update_town_list(state_list = input$select_state)
 
         shinyWidgets::updatePickerInput(
@@ -149,7 +149,7 @@ mod_select_location_server <- function(id, selected_tab, selected_site) {
     # Update town_sites when select town
     observe({
       choices <- update_site_list(
-        filter_col = "Town_Code",
+        filter_col = "Town",
         filter_list = input$select_town
       )
       locval$town_sites <- choices

@@ -31,12 +31,17 @@ library("remotes")
 remotes::install_github("massbays-tech/wqformat")
 remotes::install_github("nbep/importwqd")
 
-source("R/utils.R")
+source("R/utils_import_data.R")
 load("data/df_sites_all.rda")
 load("data/df_sites.rda")
 load("data/official_thresholds.rda")
 load("data/custom_thresholds.rda")
-load("data/df_score.rda")
+
+if (!overwrite_existing) {
+  load("data/df_data_all.rda")
+  load("data/df_score.rda")
+}
+
 
 # Import, format data ----
 df_raw <- readr::read_csv(
@@ -67,9 +72,11 @@ if (in_format == "custom") {
     show_col_types = FALSE
   )
 
-  df_raw <- importwqd::prep_results(
-    df_raw, df_colnames, df_param, df_unit, df_qual, df_activity
-  )
+  df_raw <- df_raw %>%
+    importwqd::prep_results(
+      df_colnames, df_param, df_unit, df_qual, df_activity
+    ) %>%
+    wqformat::format_wqd_results(date_format)
 } else if (in_format == "wqdashboard") {
   df_raw <- wqformat::format_wqd_results(df_raw, date_format)
 } else {
@@ -81,7 +88,7 @@ if (in_format == "custom") {
 }
 
 # QAQC data ----
-df_qaqc <- importwqd::qaqc_results(df_raw, df_sites)
+df_qaqc <- importwqd::qaqc_results(df_raw, df_sites_all)
 chk_years <- unique(df_qaqc$Year)
 
 # Combine datasets (if overwrite_existing is FALSE)
@@ -129,8 +136,19 @@ df_data <- df_temp %>%
 usethis::use_data(df_data, overwrite = TRUE)
 message("Saved df_data")
 
+# Update df_sites -----
+chk <- c(
+  setdiff(df_sites$Site_ID, unique(df_data$Site_ID)),
+  setdiff(unique(df_data$Site_ID), df_sites$Site_ID)
+)
+if (length(chk) > 0) {
+  message("Updating df_sites")
+  df_sites <- importwqd::format_sites(df_sites_all, unique(df_data$Site_ID))
+  usethis::use_data(df_sites, overwrite = TRUE)
+}
+
 # Calculate scores ----
-chk <- (!overwrite_existing || recalculate_score) & exists("df_score")
+chk <- !overwrite_existing & !recalculate_score & exists("df_score")
 if (chk) {
   df_temp <- dplyr::filter(df_temp, .data$Year %in% chk_years)
   df_old <- dplyr::filter(df_score, !.data$Year %in% chk_years)
@@ -143,6 +161,49 @@ if (chk) {
 }
 
 usethis::use_data(df_score, overwrite = TRUE)
-message("Saved df_score \n\nFinished processing data")
+message("Saved df_score")
+
+# Set sidebar variables ----
+message("Setting sidebar dropdown lists")
+state <- NULL
+town <- NULL
+watershed <- NULL
+
+if ("State" %in% colnames(df_sites)) {
+  state <- unique(df_sites$State)
+}
+if ("Town" %in% colnames(df_sites)) {
+  town <- unique(df_sites$Town)
+}
+if ("Watershed" %in% colnames(df_sites)) {
+  watershed <- unique(df_sites$Watershed)
+}
+
+param_short <- df_score %>%
+  dplyr::filter(
+    !.data$score_str %in% c("No Data Available", "No Threshold Established")
+  )
+param_short <- sort(unique(param_short$Parameter))
+
+depth <- NULL
+if ("Depth" %in% colnames(df_data)) {
+  depth <- sort_depth(df_data$Depth)
+}
+
+loc_list <- list(
+  state = state,
+  town = town,
+  watershed = watershed
+)
+dat_list <- list(
+  param = sort(unique(df_data$Parameter)),
+  param_short = param_short,
+  depth = depth,
+  year = sort(unique(df_data$Year)),
+  month = sort_months(df_data$Month)
+)
+
+usethis::use_data(loc_list, dat_list, internal = TRUE, overwrite = TRUE)
+message("Done")
 
 rm(list = ls())
