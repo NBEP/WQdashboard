@@ -10,11 +10,6 @@
 mod_sidebar_ui <- function(id) {
   ns <- NS(id)
 
-  param_short <- dplyr::filter(
-    df_score,
-    !score_str %in% c("No Data Available", "No Threshold Established")
-  )
-
   tagList(
     bslib::accordion(
       multiple = FALSE,
@@ -36,7 +31,7 @@ mod_sidebar_ui <- function(id) {
             select_dropdown(
               ns("select_param_n"),
               label = h3("Select Indicator"),
-              choices = unique(df_data$Parameter),
+              choices = dat_list$param,
               multiple = FALSE
             )
           ),
@@ -45,7 +40,7 @@ mod_sidebar_ui <- function(id) {
             select_dropdown(
               ns("select_param_short"),
               label = h3("Select Indicators"),
-              choices = unique(param_short$Parameter)
+              choices = dat_list$param_short
             )
           ),
           tabPanelBody(
@@ -53,7 +48,7 @@ mod_sidebar_ui <- function(id) {
             select_dropdown(
               ns("select_param_all"),
               label = h3("Select Indicators"),
-              choices = unique(df_data$Parameter)
+              choices = dat_list$param
             )
           )
         ),
@@ -78,7 +73,7 @@ mod_sidebar_ui <- function(id) {
             select_dropdown(
               ns("select_depth_n"),
               label = h3("Select Depth"),
-              choices = sort_depth(df_data$Depth),
+              choices = dat_list$depth,
               sort_choices = FALSE,
               multiple = FALSE
             )
@@ -88,7 +83,7 @@ mod_sidebar_ui <- function(id) {
             select_dropdown(
               ns("select_depth_all"),
               label = h3("Select Depths"),
-              choices = sort_depth(df_data$Depth),
+              choices = dat_list$depth,
               sort_choices = FALSE
             )
           ),
@@ -107,7 +102,7 @@ mod_sidebar_ui <- function(id) {
             select_dropdown(
               ns("select_year"),
               label = h3("Select Year"),
-              choices = df_score$Year,
+              choices = dat_list$year,
               sort_decreasing = TRUE,
               multiple = FALSE
             )
@@ -117,16 +112,22 @@ mod_sidebar_ui <- function(id) {
             sliderInput(
               ns("select_year_range"),
               label = h3("Select Years"),
-              min = min(df_data$Year),
-              max = max(df_data$Year),
-              value = c(min(df_data$Year), max(df_data$Year)),
+              min = dat_list$year[1],
+              max = dat_list$year[length(dat_list$year)],
+              value = c(
+                dat_list$year[1],
+                dat_list$year[length(dat_list$year)]
+              ),
               sep = ""
             ),
             shinyWidgets::sliderTextInput(
               ns("select_month"),
               label = h3("Select Months"),
-              choices = list_months(df_data$Month),
-              selected = list_months(df_data$Month, as_range = TRUE)
+              choices = dat_list$month,
+              selected = c(
+                dat_list$month[1],
+                dat_list$month[length(dat_list$month)]
+              )
             )
           )
         )
@@ -147,7 +148,8 @@ mod_sidebar_server <- function(id, selected_tab, selected_site) {
     # Modules ----------------------------------------------------------------
     loc_server <- mod_select_location_server(
       "select_location",
-      selected_tab, selected_site
+      selected_tab,
+      selected_site
     )
 
     # Show/hide secret tabs ---------------------------------------------------
@@ -173,7 +175,7 @@ mod_sidebar_server <- function(id, selected_tab, selected_site) {
       bindEvent(selected_tab())
 
     observe({
-      if (length(unique(df_data$Depth)) < 2) {
+      if (length(dat_list$depth) < 2) {
         updateTabsetPanel(inputId = "tabset_depth", selected = "depth_null")
       } else if (selected_tab() %in% c("map", "graphs")) {
         updateTabsetPanel(inputId = "tabset_depth", selected = "depth_n")

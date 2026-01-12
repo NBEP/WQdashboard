@@ -19,8 +19,10 @@ graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
   }
 
   # Set variables ----
+  param <- df$Parameter[1]
+
   min_val <- min(df$Result) * .8
-  if (min_val > 0) {
+  if (min_val > 0 & param != "pH") {
     min_val <- 0
   }
   max_val <- max(df$Result) * 1.2

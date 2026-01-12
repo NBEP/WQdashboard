@@ -72,7 +72,7 @@ usethis::use_test("app")
 # Documentation
 
 ## Vignette ----
-usethis::use_vignette("WQdashboard")
+usethis::use_vignette("wqdashboard")
 devtools::build_vignettes()
 
 ## Code Coverage----

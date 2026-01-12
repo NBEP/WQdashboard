@@ -18,10 +18,6 @@ add_popup_text <- function(df) {
     df <- dplyr::mutate(df,
       popup_loc = paste(popup_loc, "<br>Town:", Town)
     )
-  } else if ("County" %in% colnames(df)) {
-    df <- dplyr::mutate(df,
-      popup_loc = paste(popup_loc, "<br>County:", County)
-    )
   } else if ("State" %in% colnames(df)) {
     df <- dplyr::mutate(df,
       popup_loc = paste(popup_loc, "<br>State:", State)

@@ -1,14 +1,12 @@
-﻿WQdashboard,WQX,MassWateR,RI_WW,RI_DEM,Blackstone_River_Coalition
-Site_ID,Monitoring Location ID,Monitoring Location ID,WW_Station,,BRC_CODE
-Site_Name,Monitoring Location Name,Monitoring Location Name,Site_DESCR,,SITE_NAME
-Latitude,Monitoring Location Latitude (DD.DDDD) ,Monitoring Location Latitude,LAT_DD,,LATITUDE
-Longitude,Monitoring Location Longitude (-DDD.DDDD),Monitoring Location Longitude,LON_DD,,LONGITUDE
-State,State Code,,State,,
-County,Monitoring Location County Name,,COUNTY,,
-Town,,,Town,,TOWN
-Watershed,,,HUC_12_NAME,,HUC_NAME
-Group,,Location Group,,,CFR
-Location_Type,Monitoring Location Type ,,WB_Type,,
-Max_Depth_Surface,,,,,
-Max_Depth_Midwater,,,,,
-Max_Depth_Near_Bottom,,,MaxDepth_m,,
+wqdashboard,Custom,Mandatory?,Description
+Site_ID,,x,Site ID. Must be unique values.
+Site_Name,,x,Site name
+Latitude,,x,Latitude
+Longitude,,x,Longitude
+Town,,,Town name
+State,,,State name or abbreviation
+Watershed,,,Watershed name
+Group,,,"Category used to compare site samples to local, state, and federal thresholds. Accepted values: Warmwater, Coldwater, Saltwater"
+Max_Surface_Depth_m,,,Maximum depth (meters) for surface samples. Default value is 1.
+Max_Midwater_Depth_m,,,Maximum depth (meters) for midwater samples. Default value is Max_Depth_m - 1.
+Max_Depth_m,,,Maximum site depth (meters)

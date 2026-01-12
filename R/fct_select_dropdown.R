@@ -14,8 +14,9 @@
 #'
 #' @return The return value, if any, from executing the function.
 select_dropdown <- function(
-    id, label, choices, choice_names = NULL, sort_choices = TRUE,
-    sort_decreasing = FALSE, multiple = TRUE, max_options = NULL) {
+  id, label, choices, choice_names = NULL, sort_choices = TRUE,
+  sort_decreasing = FALSE, multiple = TRUE, max_options = NULL
+) {
   if (!is.null(choices) & !is.null(choice_names)) {
     names(choices) <- choice_names
   }

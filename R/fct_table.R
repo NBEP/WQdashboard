@@ -107,16 +107,28 @@ graph_table <- function(df, group) {
   col_select <- c("Date", "Result", group)
   df <- dplyr::select(df, dplyr::all_of(col_select))
 
-  var_count <- length(unique(df[[group]]))
+  var_list <- unique(df[[group]])
 
-  if (var_count == 1) {
+  if (length(var_list) == 1) {
     var_name <- df[[group]][1]
 
     df_wide <- df %>%
       dplyr::select(Date, Result) %>%
       dplyr::rename({{ var_name }} := Result)
   } else {
-    df_wide <- tidyr::spread(df, {{ group }}, Result)
+    df_wide <- df %>%
+      tidyr::pivot_wider(
+        names_from = {{group}},
+        values_from = Result,
+        values_fn = list
+      )
+
+    for (var in var_list) {
+      df_wide <- df_wide %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate( {{var}} := paste(.data[[var]], collapse=', ')) %>%
+        dplyr::ungroup()
+    }
   }
 
   if (group == "Parameter") {

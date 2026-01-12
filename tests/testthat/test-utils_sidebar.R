@@ -52,10 +52,15 @@ test_that("update_town_list filters town by state", {
 })
 
 test_that("create_site_list generates alphabetical site list", {
+  dat <- data.frame(
+    Site_ID = c("001", "002"),
+    Site_Name = c("NBEP", "Blackstone")
+  )
+
   chk <- c("002", "001")
   names(chk) <- c("Blackstone", "NBEP")
 
-  expect_equal(create_site_list(df), chk)
+  expect_equal(create_site_list(dat), chk)
   expect_error(create_site_list(df_noloc))
 })
 
@@ -104,24 +109,5 @@ test_that("update_site_list filters sites by selected col, variables", {
       filter_col = "Red_Herring",
       filter_list = "MA"
     )
-  )
-})
-
-test_that("sort_months sorts months chronologically", {
-  expect_equal(
-    list_months(c("April", "January", "March", "January")),
-    c("January", "February", "March", "April")
-  )
-  expect_equal(list_months("April"), "April")
-  expect_equal(
-    list_months(c("April", "January", "March", "January"), as_range = TRUE),
-    c("January", "April")
-  )
-})
-
-test_that("sort_depth works", {
-  expect_equal(
-    sort_depth(c("Midwater", "Bottom", "Surface", "Midwater")),
-    c("Surface", "Midwater", "Bottom")
   )
 })
