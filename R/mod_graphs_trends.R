@@ -134,10 +134,22 @@ mod_graphs_trends_server <- function(id, df) {
 
     # * Calc thresholds ----
     thresh <- reactive({
-      thresh <- find_threshold(
-        site_id = df()$Site_ID[1],
-        parameter = df()$Parameter[1],
-        depth = df()$Depth[1]
+      thresh_min = df()$Min[1]
+      thresh_max = df()$Max[1]
+      thresh_excellent = df()$Excellent[1]
+      thresh_best = df()$Best[1]
+
+      chk <- is.na(thresh_min) & is.na(thresh_max) & is.na(thresh_excellent) &
+        is.na(thresh_best)
+      if (chk) {
+        return(NULL)
+      }
+
+      thresh <- list(
+        thresh_min = thresh_min,
+        thresh_max = thresh_max,
+        thresh_excellent = thresh_excellent,
+        thresh_best = thresh_best
       )
 
       return(thresh)
@@ -209,11 +221,6 @@ mod_graphs_trends_server <- function(id, df) {
     }) %>%
       bindEvent(input$toggle_trends)
 
-    # Caption ----
-    fig_caption <- reactive({
-      caption_graph(df(), thresh())
-    })
-
     # Graph ----
     output$plot <- plotly::renderPlotly({
       graph_trends(
@@ -228,7 +235,7 @@ mod_graphs_trends_server <- function(id, df) {
 
     # Caption ----
     output$caption <- renderUI({
-      HTML(caption_graph(df(), thresh()))
+      HTML(caption_graph(df()))
     })
 
     # Table ----

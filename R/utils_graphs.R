@@ -116,16 +116,15 @@ add_thresholds <- function(thresh, visible = TRUE, date_range, y_range,
   max_date <- date_range[2]
   min_val <- y_range[1]
   max_val <- y_range[2]
-  old_unit <- thresh$Unit
 
-  thresh_min <- convert_threshold_unit(thresh$Threshold_Min, old_unit, unit)
-  thresh_max <- convert_threshold_unit(thresh$Threshold_Max, old_unit, unit)
-  thresh_excellent <- convert_threshold_unit(thresh$Excellent, old_unit, unit)
-  thresh_good <- convert_threshold_unit(thresh$Good, old_unit, unit)
+  thresh_min <- thresh$thresh_min
+  thresh_max <- thresh$thresh_max
+  thresh_excellent <- thresh$thresh_excellent
+  thresh_best <- thresh$thresh_best
 
   fig <- plotly::plot_ly()
 
-  if (thresh_min != -999999 & min_val < thresh_min) {
+  if (!is.na(thresh_min) & min_val < thresh_min) {
     fig <- fig %>%
       plotly::add_polygons(
         x = c(min_date, max_date, max_date, min_date),
@@ -141,7 +140,7 @@ add_thresholds <- function(thresh, visible = TRUE, date_range, y_range,
       )
   }
 
-  if (thresh_max != -999999 & max_val > thresh_max) {
+  if (!is.na(thresh_max) & max_val > thresh_max) {
     fig <- fig %>%
       plotly::add_polygons(
         x = c(min_date, max_date, max_date, min_date),
@@ -157,8 +156,8 @@ add_thresholds <- function(thresh, visible = TRUE, date_range, y_range,
       )
   }
 
-  if (thresh_excellent != -999999 & thresh_excellent < thresh_good &
-    thresh_excellent > min_val) {
+  chk <- !is.na(thresh_excellent) & !is.na(thresh_best)
+  if (chk & thresh_best == "low" & thresh_excellent > min_val) {
     fig <- fig %>%
       plotly::add_polygons(
         x = c(min_date, max_date, max_date, min_date),
@@ -172,8 +171,7 @@ add_thresholds <- function(thresh, visible = TRUE, date_range, y_range,
         name = "Excellent",
         legendrank = 1001
       )
-  } else if (thresh_good != -999999 & thresh_good < thresh_excellent &
-    thresh_excellent < max_val) {
+  } else if (chk & thresh_best == "high" & thresh_excellent < max_val) {
     fig <- fig %>%
       plotly::add_polygons(
         x = c(min_date, max_date, max_date, min_date),
@@ -262,52 +260,44 @@ add_gam <- function(fig, df, visible = TRUE) {
 #'
 #' @description Generate list of threshold values.
 #'
-#' @param df Input dataframe.
-#' @param thresh Dataframe with threshold values.
+#' @param df Input dataframe
 #'
 #' @return List of threshold values.
 #'
 #' @noRd
-caption_graph <- function(df, thresh = NULL) {
-  if (is.null(thresh)) {
-    return("")
-  }
-
+caption_graph <- function(df) {
   parameter <- df$Parameter[1]
-  old_unit <- thresh$Unit
-  new_unit <- df$Unit[1]
+  unit <- df$Unit[1]
+  thresh_min <- df$Min[1]
+  thresh_max <- df$Max[1]
+  thresh_excellent <- df$Excellent[1]
+  thresh_best <- df$Best[1]
 
-  thresh_min <- convert_threshold_unit(thresh$Threshold_Min, old_unit, new_unit)
-  thresh_max <- convert_threshold_unit(thresh$Threshold_Max, old_unit, new_unit)
-  thresh_excellent <- convert_threshold_unit(thresh$Excellent, old_unit, new_unit)
-  thresh_good <- convert_threshold_unit(thresh$Good, old_unit, new_unit)
-
-  chk <- thresh_min == -999999 & thresh_max == -999999 &
-    (thresh_excellent == -999999 | thresh_good == -999999)
+  chk <- is.na(thresh_min) & is.na(thresh_max) & is.na(thresh_best)
   if (chk) {
     return("")
   }
 
   thresh_text <- "<hr><h3>Thresholds</h3>"
 
-  if (new_unit %in% c(NA, "None")) {
-    new_unit <- NULL
+  if (unit %in% c(NA, "None")) {
+    unit <- NULL
   }
 
-  if (thresh_min != -999999 & thresh_max != -999999) {
+  if (!is.na(thresh_min) & !is.na(thresh_max)) {
     thresh_text <- paste0(
       thresh_text, "<b>Acceptable:</b> ", pretty_number(thresh_min), " - ",
-      pretty_number(thresh_max), " ", new_unit
+      pretty_number(thresh_max), " ", unit
     )
-  } else if (thresh_min != -999999) {
+  } else if (!is.na(thresh_min)) {
     thresh_text <- paste0(
       thresh_text, "<b>Acceptable:</b> &gt; ", pretty_number(thresh_min),
-      " ", new_unit
+      " ", unit
     )
-  } else if (thresh_max != -999999) {
+  } else if (!is.na(thresh_max)) {
     thresh_text <- paste0(
       thresh_text, "<b>Acceptable:</b> &lt; ", pretty_number(thresh_max),
-      " ", new_unit
+      " ", unit
     )
   }
 
@@ -315,19 +305,18 @@ caption_graph <- function(df, thresh = NULL) {
     thresh_text <- paste0(trimws(thresh_text), "<br>")
   }
 
-  if (thresh_excellent != -999999 & thresh_excellent < thresh_good) {
+  chk <- !is.na(thresh_best) & !is.na(thresh_excellent)
+  if (chk & thresh_best == "low") {
     thresh_text <- paste0(
       thresh_text, "<b>Excellent:</b> &lt; ", pretty_number(thresh_excellent),
-      " ", new_unit
+      " ", unit
     )
-  } else if (thresh_good != -999999 & thresh_good < thresh_excellent) {
+  } else if (chk & thresh_best == "high") {
     thresh_text <- paste0(
       thresh_text, "<b>Excellent:</b> &gt; ", pretty_number(thresh_excellent),
-      " ", new_unit
+      " ", unit
     )
   }
 
-  thresh_text <- trimws(thresh_text)
-
-  return(thresh_text)
+  trimws(thresh_text)
 }

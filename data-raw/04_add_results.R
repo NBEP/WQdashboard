@@ -131,7 +131,7 @@ if (exists("custom_thresholds")) {
 df_temp <- importwqd::format_results(df_data_all, df_sites_all, df_thresh)
 
 df_data <- df_temp %>%
-  dplyr::select(!c("Site_Name", "Calculation", "Good", "Fair"))
+  dplyr::select(!c("Calculation", "Good", "Fair"))
 
 usethis::use_data(df_data, overwrite = TRUE)
 message("Saved df_data")
