@@ -25,7 +25,7 @@ app_server <- function(input, output, session) {
     selected_site = map_var$site
   )
 
-  map_var <- importwqd::mod_map_server(
+  map_var <- mod_map_server(
     "map",
     in_var = sidebar_var,
     map_bounds = map_bounds,

@@ -1,128 +1,42 @@
-#' Leaflet popup text
+#' Continuous palette
 #'
-#' `add_popup_text()` adds column with pre-formatted popup, alt text for
-#'   leaflet map.
+#' `num_pal()` generates a colorblind safe palette for continuous data.
 #'
-#' @param df A dataframe.
-#'
-#' @returns Updated dataframe.
-#'
-#' @noRd
-add_popup_text <- function(df) {
-  df <- df %>%
-    dplyr::mutate(popup_loc = paste0("<b>", Site_Name, "</b>")) %>%
-    dplyr::mutate(popup_score = "") %>%
-    dplyr::mutate(alt = paste0(Site_Name, ","))
-
-  if ("Town" %in% colnames(df)) {
-    df <- dplyr::mutate(df,
-      popup_loc = paste(popup_loc, "<br>Town:", Town)
-    )
-  } else if ("State" %in% colnames(df)) {
-    df <- dplyr::mutate(df,
-      popup_loc = paste(popup_loc, "<br>State:", State)
-    )
-  }
-
-  if ("Watershed" %in% colnames(df)) {
-    df <- dplyr::mutate(df,
-      popup_loc = paste(popup_loc, "<br>Watershed:", Watershed)
-    )
-  }
-
-  if ("Group" %in% colnames(df)) {
-    df <- dplyr::mutate(df,
-      popup_loc = dplyr::if_else(
-        is.na(Group),
-        paste(popup_loc, "<br>Group: Other"),
-        paste(popup_loc, "<br>Group:", Group)
-      )
-    )
-  }
-
-  if ("Depth" %in% colnames(df)) {
-    df <- dplyr::mutate(df,
-      popup_score = paste(popup_score, "<br>Depth:", Depth)
-    )
-  }
-
-  df <- df %>%
-    dplyr::mutate(popup_score = dplyr::if_else(
-      is.na(score_num),
-      paste(popup_score, "<br><i>No data</i>"),
-      paste0(
-        popup_score,
-        "<br>", score_typ, ": ", score_num
-      )
-    )) %>%
-    dplyr::mutate(popup_score = dplyr::if_else(
-      is.na(score_num) | Unit %in% c(NA, "None"),
-      popup_score,
-      paste(popup_score, Unit)
-    )) %>%
-    dplyr::mutate(popup_score = dplyr::if_else(
-      is.na(score_num) | score_str == "No Threshold Established",
-      popup_score,
-      paste(popup_score, "<br>Score:", score_str)
-    )) %>%
-    dplyr::mutate(alt = dplyr::case_when(
-      is.na(score_num) ~ paste(alt, "No data"),
-      score_str == "No Threshold Established" ~ paste(alt, score_num, Unit),
-      TRUE ~ paste(alt, score_str)
-    ))
-
-
-  return(df)
-}
-
-#' num_pal
-#'
-#' Creates palette for continuous data.
-#'
-#' @param df_param df_score filtered by year and parameter.
+#' @param pal_range Numeric list. Minimum, maximum values for continuous data.
 #'
 #' @returns Icon code.
 #'
 #' @noRd
-num_pal <- function(df_param) {
-  chk <- is.na(df_param$score_num)
+num_pal <- function(pal_range) {
+  x <- pal_range[1]
+  y <- pal_range[2]
 
-  if (all(chk)) {
-    par_min <- 0
-    par_max <- 1
-  } else {
-    par_min <- min(df_param$score_num, na.rm = TRUE)
-    par_max <- max(df_param$score_num, na.rm = TRUE)
-  }
-
-  if (par_min == par_max) {
-    if (par_min > 1) {
-      par_min <- par_min - 1
+  if (x == y) {
+    if (x >= 1) {
+      x <- x - 1
     }
-    par_max <- par_max + 1
+    y <- y + 1
   }
 
-  pal <- leaflet::colorNumeric(
+  leaflet::colorNumeric(
     palette = c(
       "#b2fd99", "#97e39d", "#7dcaa1", "#63b1a5", "#4997a9",
       "#417ea0", "#47638c", "#4e4876", "#55285d"
     ),
-    domain = c(par_min, par_max),
+    domain = c(x, y),
     # bins = 5,
     na.color = "#f4f4f4"
   )
-
-  return(pal)
 }
 
-#' num_shape
+#' Icon shape
 #'
-#' Helper function for `num_symbols`. Sets all icons as circles, except NA
-#'   values which are cross.
+#' `num_shape()` is a helper function for `num_symbols` that sets `NA` values
+#' as crosses and all other values as circles.
 #'
-#' @param x List of values.
+#' @param x Integer
 #'
-#' @returns List of shapes.
+#' @returns Shape name. If `x` is `NA`, returns "cross", else returns "circle".
 #'
 #' @noRd
 num_shape <- function(x) {
@@ -133,45 +47,42 @@ num_shape <- function(x) {
   }
 }
 
-#' num_symbols
+#' Continuous data icons
 #'
-#' Creates `leaflet` icons for continuous data.
+#' `num_symbols()` generates icons for continuous data.
 #'
-#' @param df_param df_score filtered by year and parameter.
-#' @param df Data to map.
+#' @param .data Dataframe
+#' @param pal_range Integer list. Minimum, maximum values for continuous scale.
 #'
-#' @returns Icon code.
+#' @returns Icon code
 #'
 #' @noRd
-num_symbols <- function(df_param, df) {
-  pal <- num_pal(df_param)
+num_symbols <- function(.data, pal_range) {
+  pal <- num_pal(pal_range)
 
-  icon_symbols <- Map(
+  Map(
     f = leaflegend::makeSymbol,
-    shape = lapply(df$score_num, num_shape),
-    fillColor = pal(df$score_num),
+    shape = lapply(.data$score_num, num_shape),
+    fillColor = pal(.data$score_num),
     color = "#444444",
     opacity = 1,
     width = 24,
     "stroke-width" = 1.5
   )
-
-  return(icon_symbols)
 }
 
-#' pal_cat
+#' Categorical data icons
 #'
-#' Creates `leaflet` icons for categorical data.
+#' `cat_pal()` generates icons for categorical data.
 #'
-#' @param df_param df_score filtered by year and parameter.
-#' @param is_legend Boolean. If TRUE, formats symbols legend. If FALSE, formats
-#'   symbols for map. Default FALSE.
+#' @param score_str List. Variable names.
+#' @param is_legend Boolean. If `TRUE`, formats symbols for a legend. If
+#' `FALSE`, formats symbols for map. Default `FALSE`.
 #'
-#' @returns Icon code.
+#' @returns Icon code
 #'
 #' @noRd
-cat_pal <- function(df_param, is_legend = FALSE) {
-  param_score <- unique(df_param$score_str)
+cat_pal <- function(score_str, is_legend = FALSE) {
   x <- c("Excellent", "Good", "Fair", "Poor")
   y <- c("Meets Criteria", "Does Not Meet Criteria")
 
@@ -179,21 +90,20 @@ cat_pal <- function(df_param, is_legend = FALSE) {
   icon_shape <- "cross"
   icon_names <- "No Data Available"
 
-  if (any(param_score %in% x)) {
+  chk_x <- any(score_str %in% x)
+  chk_y <- any(score_str %in% y)
+  chk_legend <- chk_x & chk_y & is_legend
+
+  if (chk_x) {
     icon_color <- c("#347bc0", "#62c2dd", "#f3d56f", "#db7363", icon_color)
     icon_shape <- c("circle", "rect", "triangle", "diamond", icon_shape)
     icon_names <- c(x, icon_names)
   }
 
-  if (any(param_score %in% y)) {
+  if (chk_y && !chk_legend) {
     icon_color <- c("#62c2dd", "#db7363", icon_color)
     icon_shape <- c("rect", "diamond", icon_shape)
     icon_names <- c(y, icon_names)
-  }
-
-  if (is_legend) {
-    icon_color <- unique(icon_color)
-    icon_shape <- unique(icon_shape)
   }
 
   icon_symbols <- Map(
@@ -205,39 +115,41 @@ cat_pal <- function(df_param, is_legend = FALSE) {
     width = 24,
     "stroke-width" = 1.5
   )
+
   if (!is_legend) {
     icon_symbols <- setNames(icon_symbols, nm = icon_names)
   }
 
-  return(icon_symbols)
+  icon_symbols
 }
 
-#' cat_labels
+#' Categorical data labels
 #'
-#' Creates legend labels to accompany `pal_cat`.
+#' `cat_labels` generates legend labels to accompany `pal_cat`.
 #'
-#' @param df_param df_score filtered by year and parameter.
+#' @inheritParams cat_pal
 #'
-#' @returns List of labels.
+#' @returns List of labels
 #'
 #' @noRd
-cat_labels <- function(df_param) {
-  param_score <- unique(df_param$score_str)
+cat_labels <- function(score_str) {
   x <- c("Excellent", "Good", "Fair", "Poor")
   y <- c("Meets Criteria", "Does Not Meet Criteria")
 
   label_list <- "No Data Available"
 
-  if (any(param_score %in% x) & any(param_score %in% y)) {
+  chk_x <- any(score_str %in% x)
+  chk_y <- any(score_str %in% y)
+  if (chk_x && chk_y) {
     label_list <- c(
       "Excellent", "Good / Meets Criteria", "Fair",
       "Poor / Does Not Meet Criteria", label_list
     )
-  } else if (any(param_score %in% x)) {
+  } else if (chk_x) {
     label_list <- c(x, label_list)
-  } else if (any(param_score %in% y)) {
+  } else if (chk_y) {
     label_list <- c(y, label_list)
   }
 
-  return(label_list)
+  label_list
 }

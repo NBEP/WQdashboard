@@ -1,7 +1,9 @@
 testServer(
   mod_map_server,
   # Add here your module params
-  args = list(),
+  args = list(
+    df_raw=df_score[0, ]
+  ),
   {
     ns <- session$ns
     expect_true(
