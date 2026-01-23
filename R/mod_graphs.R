@@ -76,7 +76,7 @@ mod_graphs_server <- function(id, selected_var) {
       req(selected_var$year_range())
       req(selected_var$month_range())
 
-      selected_months <- sort_months(selected_var$month_range())
+      selected_months <- importwqd:::sort_months(selected_var$month_range())
 
       df <- df_data %>%
         dplyr::filter(

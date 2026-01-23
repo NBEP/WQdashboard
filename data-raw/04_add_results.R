@@ -31,7 +31,6 @@ library("remotes")
 remotes::install_github("massbays-tech/wqformat")
 remotes::install_github("nbep/importwqd")
 
-source("R/utils_import_data.R")
 load("data/df_sites_all.rda")
 load("data/df_sites.rda")
 load("data/official_thresholds.rda")
@@ -41,7 +40,6 @@ if (!overwrite_existing) {
   load("data/df_data_all.rda")
   load("data/df_score.rda")
 }
-
 
 # Import, format data ----
 df_raw <- readr::read_csv(
@@ -133,19 +131,13 @@ df_temp <- importwqd::format_results(df_data_all, df_sites_all, df_thresh)
 df_data <- df_temp %>%
   dplyr::select(!c("Calculation", "Good", "Fair"))
 
+chk <- unique(df_data$Depth)
+if (length(chk) < 2) {
+  df_data$Depth <- NULL
+}
+
 usethis::use_data(df_data, overwrite = TRUE)
 message("Saved df_data")
-
-# Update df_sites -----
-chk <- c(
-  setdiff(df_sites$Site_ID, unique(df_data$Site_ID)),
-  setdiff(unique(df_data$Site_ID), df_sites$Site_ID)
-)
-if (length(chk) > 0) {
-  message("Updating df_sites")
-  df_sites <- importwqd::format_sites(df_sites_all, unique(df_data$Site_ID))
-  usethis::use_data(df_sites, overwrite = TRUE)
-}
 
 # Calculate scores ----
 chk <- !overwrite_existing & !recalculate_score & exists("df_score")
@@ -165,45 +157,17 @@ message("Saved df_score")
 
 # Set sidebar variables ----
 message("Setting sidebar dropdown lists")
-state <- NULL
-town <- NULL
-watershed <- NULL
 
-if ("State" %in% colnames(df_sites)) {
-  state <- unique(df_sites$State)
-}
-if ("Town" %in% colnames(df_sites)) {
-  town <- unique(df_sites$Town)
-}
-if ("Watershed" %in% colnames(df_sites)) {
-  watershed <- unique(df_sites$Watershed)
+if (file.exists("data/df_data_extra.rda")) {
+  load("data/df_data_extra.rda")
+} else {
+  df_data_extra <- NULL
 }
 
-param_short <- df_score %>%
-  dplyr::filter(
-    !.data$score_str %in% c("No Data Available", "No Threshold Established")
-  )
-param_short <- sort(unique(param_short$Parameter))
 
-depth <- NULL
-if ("Depth" %in% colnames(df_data)) {
-  depth <- sort_depth(df_data$Depth)
-}
+varlist <- importwqd::sidebar_var(df_sites, df_data, df_score, df_data_extra)
 
-loc_list <- list(
-  state = state,
-  town = town,
-  watershed = watershed
-)
-dat_list <- list(
-  param = sort(unique(df_data$Parameter)),
-  param_short = param_short,
-  depth = depth,
-  year = sort(unique(df_data$Year)),
-  month = sort_months(df_data$Month)
-)
-
-usethis::use_data(loc_list, dat_list, internal = TRUE, overwrite = TRUE)
+usethis::use_data(varlist, internal = TRUE, overwrite = TRUE)
 message("Done")
 
 rm(list = ls())

@@ -5,9 +5,6 @@
 #' @import shiny
 #' @noRd
 app_ui <- function(request) {
-  # Try to fix the dplyr problem....
-  library(magrittr)
-
   tagList(
     # Leave this function for adding external resources
     golem_add_external_resources(),
@@ -17,11 +14,11 @@ app_ui <- function(request) {
       useBusyIndicators(),
       title = h1(paste(org_info$name, "Water Quality Data")),
       id = "tabset",
-      sidebar = mod_sidebar_ui("sidebar_1"),
+      sidebar = importwqd::mod_sidebar_ui("sidebar", varlist),
       bslib::nav_panel("Map",
         value = "map",
         class = "bslib-page-dashboard",
-        mod_map_ui("map_1")
+        importwqd::mod_map_ui("map")
       ),
       bslib::nav_panel("Report Card",
         value = "report_card",

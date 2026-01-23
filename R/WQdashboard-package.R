@@ -5,6 +5,8 @@
 #' @importFrom data.table :=
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
+#' @importFrom shiny tagList
+#' @importFrom shiny useBusyIndicators
 #' @importFrom stats setNames
 ## usethis namespace: end
 NULL

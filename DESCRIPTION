@@ -17,6 +17,7 @@ Imports:
     golem (>= 0.4.1),
     htmltools,
     htmlwidgets,
+    importwqd,
     leaflegend,
     leaflet,
     lubridate,
@@ -26,14 +27,13 @@ Imports:
     reactable,
     rlang,
     rmarkdown,
-    shiny (>= 1.8.0),
+    shiny,
     shinyjs,
     shinyWidgets,
     stats,
     stringr,
     tidyr
 Suggests: 
-    importwqd,
     knitr,
     readr,
     sf,
