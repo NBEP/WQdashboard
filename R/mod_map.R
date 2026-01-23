@@ -16,11 +16,11 @@ mod_map_ui <- function(id) {
       full_screen = TRUE,
       bslib::nav_panel(
         "Map",
-        leaflet::leafletOutput(ns("map"))
+        # leaflet::leafletOutput(ns("map"))
       ),
       bslib::nav_panel(
         "Table",
-        reactable::reactableOutput(ns("table"))
+        # reactable::reactableOutput(ns("table"))
       )
     )
   )
@@ -55,9 +55,9 @@ mod_map_server <- function(
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     # Set title ----
-    output$title <- renderText({
-      paste0(in_var$param_n(), " (", in_var$year(), ")")
-    })
+    # output$title <- renderText({
+    #   paste0(in_var$param_n(), " (", in_var$year(), ")")
+    # })
 
     # Static variables ----
     drop_col <- c(
@@ -65,332 +65,337 @@ mod_map_server <- function(
       "Latitude", "Longitude", "popup_loc", "popup_score", "alt"
     )
 
-    # Reactive variables ----
-    val <- reactiveValues(
-      df_map = df_raw,
-      score_range = c(0, 1),
-      score_str = "No Data Available",
-      legend = "",
-      df_table = dplyr::select(df_raw, !dplyr::any_of(drop_col)),
-      show_score = TRUE,
-      static_col = "Average",
-      dynamic_col = "Average"
-    )
-
-    # * Most variables ----
-    observe({
-      req(in_var$df_map())
-
-      dat <- in_var$df_map() %>%
-        dplyr::filter(!is.na(.data$score_num))
-
-      score_min <- 0
-      score_max <- 1
-      score_str <- "No Data Available"
-      par_unit <- ""
-      col_title <- "Average"
-
-      if (nrow(dat) > 0) {
-        score_min <- min(dat$score_num, na.rm = TRUE)
-        score_max <- max(dat$score_num, na.rm = TRUE)
-        score_str <- unique(dat$score_str)
-        par_unit <- dat$Unit[1]
-        col_title <- dat$score_typ[1]
-      }
-
-      if (par_unit %in% c(NA, "None", "")) {
-        par_unit <- ""
-      } else {
-        par_unit <- paste0("(", par_unit, ")")
-      }
-
-      val$score_range <- c(score_min, score_max)
-      val$score_str <- score_str
-      val$legend <- trimws(paste(in_var$param_n, par_unit))
-      val$dynamic_col <- trimws(paste(col_title, par_unit))
-    }) %>%
-      bindEvent(in_var$df_map())
-
-    # * df_map ----
-    observe({
-      req(in_var$sites_all())
-      req(in_var$df_map())
-
-      if (selected_tab() == "map") {
-        sites <- in_var$sites_all()
-
-        val$df_map <- in_var$df_map() %>%
-          dplyr::filter(.data$Site_ID %in% !!sites)
-      }
-    }) %>%
-      bindEvent(
-        selected_tab(),
-        in_var$df_map(),
-        in_var$sites_all()
-      )
-
-    # * Map type ----
-    map_type <- reactive({
-      chk <- "No Threshold Established" %in% val$score_str
-      if (chk) {
-        return("score_num")
-      } else {
-        return("score_str")
-      }
-    }) %>%
-      bindEvent(val$score_str)
-
-    # * Default table ----
-    observe({
-      val$df_table <- dplyr::select(val$df_map, !dplyr::any_of(drop_col))
-      val$static_col <- val$dynamic_col
-      if (map_type() == "score_str") {
-        val$show_score <- TRUE
-      } else {
-        val$show_score <- FALSE
-      }
-    }) %>%
-      bindEvent(input$tabset, ignoreInit = TRUE, once = TRUE)
-
-    # Map ----
-    output$map <- leaflet::renderLeaflet({
-      layer_list <- NA
-
-      map <- leaflet::leaflet() %>%
-        leaflet::fitBounds(map_bounds) %>%
-        leaflet::addProviderTiles(leaflet::providers$Esri.WorldTopoMap) %>%
-        leaflet::addScaleBar(position = "bottomleft")
-
-      # * Add watershed ----
-      if (!is.null(shp_watershed)) {
-        map <- map %>%
-          leaflet::addPolygons(
-            data = shp_watershed,
-            layerId = shp_watershed,
-            # Label
-            label = ~Name,
-            labelOptions = leaflet::labelOptions(textsize = "15px"),
-            # Stroke
-            color = "#6B8091",
-            weight = 0.5,
-            smoothFactor = 0.5,
-            opacity = 0.9,
-            # Fill
-            fillOpacity = 0.4,
-            fillColor = "#C6D9EC",
-            # Highlight
-            highlightOptions = leaflet::highlightOptions(
-              fillColor = "#EEF4F9",
-              weight = 1.2,
-              bringToFront = FALSE
-            ),
-            # misc
-            group = "Watersheds"
-          )
-        layer_list <- "Watersheds"
-      }
-
-      # * Add rivers ----
-      if (!is.null(shp_river)) {
-        map <- map %>%
-          leaflet::addMapPane("river_pane", zIndex = 420) %>%
-          leaflet::addPolylines(
-            data = shp_river,
-            layerId = shp_river,
-            # Label
-            label = ~Label,
-            labelOptions = leaflet::labelOptions(textsize = "15px"),
-            popup = ~Popup,
-            # Stroke
-            color = "#6B8091",
-            weight = 2,
-            smoothFactor = 1,
-            opacity = 1,
-            # Highlight
-            highlightOptions = leaflet::highlightOptions(
-              color = "#3e576c",
-              weight = 3,
-              bringToFront = TRUE
-            ),
-            # misc
-            options = leaflet::pathOptions(pane = "river_pane"),
-            group = "Rivers"
-          )
-        layer_list <- c(layer_list, "Rivers")
-        layer_list <- layer_list[!is.na(layer_list)]
-      }
-
-      # * Add layer toggle ----
-      if (!all(is.na(layer_list))) {
-        map <- map %>%
-          leaflet::addLayersControl(
-            overlayGroups = layer_list,
-            position = "topleft"
-          )
-      }
-
-      map
-    })
-
-    # * Add sites ----
-    observe({
-      if (nrow(val$df_map) == 0) {
-        leaflet::leafletProxy("map") %>%
-          leaflet::clearMarkers()
-      } else if (map_type() == "score_num") {
-        leaflet::leafletProxy("map") %>%
-          leaflet::clearMarkers() %>%
-          leaflet::addMarkers(
-            data = val$df_map,
-            lng = ~Longitude,
-            lat = ~Latitude,
-            layerId = ~Site_ID,
-            # Icons
-            icon = ~ leaflet::icons(
-              iconUrl = num_symbols(val$df_map, val$score_range),
-              iconWidth = 20,
-              iconHeight = 20
-            ),
-            # Label
-            label = ~alt,
-            labelOptions = leaflet::labelOptions(textsize = "15px"),
-            # Popup
-            popup = ~ paste0(
-              popup_loc,
-              "<br><br><b>", in_var$param_n(), "</b>",
-              popup_score, "<br>",
-              actionLink(
-                ns("graph_link"),
-                label = "View Trends",
-                onclick = paste0(
-                  'Shiny.setInputValue("', ns("graph_link"),
-                  '", (Math.random() * 1000) + 1);'
-                )
-              )
-            ),
-            # Accessibility
-            options = leaflet::markerOptions(
-              alt = ~alt,
-              riseOnHover = TRUE
-            )
-          )
-      } else {
-        leaflet::leafletProxy("map") %>%
-          leaflet::clearMarkers() %>%
-          leaflet::addMarkers(
-            data = val$df_map,
-            lng = ~Longitude,
-            lat = ~Latitude,
-            layerId = ~Site_ID,
-            # Icons
-            icon = ~ leaflet::icons(
-              iconUrl = cat_pal(val$score_str())[score_str],
-              iconWidth = 20,
-              iconHeight = 20
-            ),
-            # Label
-            label = ~alt,
-            labelOptions = leaflet::labelOptions(textsize = "15px"),
-            # Popup
-            popup = ~ paste0(
-              popup_loc,
-              "<br><br><b>", in_var$param_n(), "</b>",
-              popup_score, "<br>",
-              actionLink(
-                ns("graph_link2"),
-                label = "View Trends",
-                onclick = paste0(
-                  'Shiny.setInputValue("', ns("graph_link"),
-                  '", (Math.random() * 1000) + 1);'
-                )
-              )
-            ),
-            # Accessibility
-            options = leaflet::markerOptions(
-              alt = ~alt,
-              riseOnHover = TRUE
-            )
-          )
-      }
-    }) %>%
-      bindEvent(
-        val$df_map,
-        map_type()
-      )
-
-    # * Add legend ----
-    observe({
-      if (map_type() == "score_num") {
-        leaflet::leafletProxy("map") %>%
-          leaflet::clearControls() %>%
-          leaflegend::addLegendNumeric(
-            pal = num_pal(val$score_range),
-            values = val$score_range,
-            title = htmltools::tags$div(
-              val$legend,
-              style = "font-size: 18px"
-            ),
-            shape = "rect",
-            orientation = "vertical",
-            bins = 5,
-            naLabel = "No Data Available",
-            labelStyle = "font-size: 14px;",
-            position = "topright",
-            group = "Legend"
-          )
-      } else {
-        leaflet::leafletProxy("map") %>%
-          leaflet::clearControls() %>%
-          leaflegend::addLegendImage(
-            images = cat_pal(val$score_str, TRUE),
-            labels = cat_labels(val$score_str),
-            width = 20,
-            height = 20,
-            orientation = "vertical",
-            title = htmltools::tags$div(
-              in_var$param_n(),
-              style = "font-size: 18px"
-            ),
-            labelStyle = "font-size: 14px;",
-            position = "topright",
-            group = "Legend"
-          )
-      }
-    }) %>%
-      bindEvent(
-        map_type(),
-        val$score_range,
-        val$score_str,
-        val$legend
-      )
-
-    # Table -----
-    output$table <- reactable::renderReactable({
-      report_table(
-        val$df_table,
-        show_score = val$show_score,
-        col_title = val$col_title
-      )
-    })
-
-    # * Update table ----
-    observe({
-      reactable::updateReactable(
-        "table",
-        data = dplyr::select(val$df_map, !dplyr::any_of(drop_col)),
-        meta = list(col_title = val$dynamic_col)
-      )
-    }) %>%
-      bindEvent(val$df_map, val$dynamic_col)
-
-    observe({
-      if (map_type() == "score_str") {
-        hideCols(ns("table"), as.list(""))
-      } else {
-        hideCols(ns("table"), as.list("score_str"))
-      }
-    }) %>%
-      bindEvent(map_type())
+    # # Reactive variables ----
+    # val <- reactiveValues(
+    #   df_map = df_raw,
+    #   score_range = c(0, 1),
+    #   score_str = "No Data Available",
+    #   legend = "",
+    #   df_table = dplyr::select(df_raw, !dplyr::any_of(drop_col)),
+    #   show_score = TRUE,
+    #   static_col = "Average",
+    #   dynamic_col = "Average"
+    # )
+    #
+    # # * Most variables ----
+    # observe({
+    #   req(in_var$df_map())
+    #
+    #   dat <- in_var$df_map() %>%
+    #     dplyr::filter(!is.na(.data$score_num))
+    #
+    #   score_min <- 0
+    #   score_max <- 1
+    #   score_str <- "No Data Available"
+    #   par_unit <- ""
+    #   col_title <- "Average"
+    #
+    #   if (nrow(dat) > 0) {
+    #     score_min <- min(dat$score_num, na.rm = TRUE)
+    #     score_max <- max(dat$score_num, na.rm = TRUE)
+    #     score_str <- unique(dat$score_str)
+    #     par_unit <- dat$Unit[1]
+    #     col_title <- dat$score_typ[1]
+    #   }
+    #
+    #   if (par_unit %in% c(NA, "None", "")) {
+    #     par_unit <- ""
+    #   } else {
+    #     par_unit <- paste0("(", par_unit, ")")
+    #   }
+    #
+    #   val$score_range <- c(score_min, score_max)
+    #   val$score_str <- score_str
+    #   val$legend <- trimws(paste(in_var$param_n, par_unit))
+    #   val$dynamic_col <- trimws(paste(col_title, par_unit))
+    # }) %>%
+    #   bindEvent(in_var$df_map())
+    #
+    # # * df_map ----
+    # observe({
+    #   req(in_var$sites_all())
+    #   req(in_var$df_map())
+    #
+    #   if (selected_tab() == "map") {
+    #     sites <- in_var$sites_all()
+    #
+    #     val$df_map <- in_var$df_map() %>%
+    #       dplyr::filter(.data$Site_ID %in% !!sites)
+    #   }
+    # }) %>%
+    #   bindEvent(
+    #     selected_tab(),
+    #     in_var$df_map(),
+    #     in_var$sites_all()
+    #   )
+    #
+    # # * Map type ----
+    # map_type <- reactive({
+    #   chk <- "No Threshold Established" %in% val$score_str
+    #   if (chk) {
+    #     return("score_num")
+    #   } else {
+    #     return("score_str")
+    #   }
+    # }) %>%
+    #   bindEvent(val$score_str)
+    #
+    # # * Default table ----
+    # observe({
+    #   val$df_table <- dplyr::select(val$df_map, !dplyr::any_of(drop_col))
+    #   val$static_col <- val$dynamic_col
+    #   if (map_type() == "score_str") {
+    #     val$show_score <- TRUE
+    #   } else {
+    #     val$show_score <- FALSE
+    #   }
+    # }) %>%
+    #   bindEvent(input$tabset, ignoreInit = TRUE, once = TRUE)
+    #
+    # # Map ----
+    # output$map <- leaflet::renderLeaflet({
+    #   layer_list <- NA
+    #
+    #   map <- leaflet::leaflet() %>%
+    #     leaflet::fitBounds(
+    #       map_bounds$lat1,
+    #       map_bounds$lng1,
+    #       map_bounds$lat2,
+    #       map_bounds$lng2
+    #     ) %>%
+    #     leaflet::addProviderTiles(leaflet::providers$Esri.WorldTopoMap) %>%
+    #     leaflet::addScaleBar(position = "bottomleft")
+    #
+    #   # # * Add watershed ----
+    #   # if (!is.null(shp_watershed)) {
+    #   #   map <- map %>%
+    #   #     leaflet::addPolygons(
+    #   #       data = shp_watershed,
+    #   #       layerId = shp_watershed,
+    #   #       # Label
+    #   #       label = ~Name,
+    #   #       labelOptions = leaflet::labelOptions(textsize = "15px"),
+    #   #       # Stroke
+    #   #       color = "#6B8091",
+    #   #       weight = 0.5,
+    #   #       smoothFactor = 0.5,
+    #   #       opacity = 0.9,
+    #   #       # Fill
+    #   #       fillOpacity = 0.4,
+    #   #       fillColor = "#C6D9EC",
+    #   #       # Highlight
+    #   #       highlightOptions = leaflet::highlightOptions(
+    #   #         fillColor = "#EEF4F9",
+    #   #         weight = 1.2,
+    #   #         bringToFront = FALSE
+    #   #       ),
+    #   #       # misc
+    #   #       group = "Watersheds"
+    #   #     )
+    #   #   layer_list <- "Watersheds"
+    #   # }
+    #   #
+    #   # # * Add rivers ----
+    #   # if (!is.null(shp_river)) {
+    #   #   map <- map %>%
+    #   #     leaflet::addMapPane("river_pane", zIndex = 420) %>%
+    #   #     leaflet::addPolylines(
+    #   #       data = shp_river,
+    #   #       layerId = shp_river,
+    #   #       # Label
+    #   #       label = ~Label,
+    #   #       labelOptions = leaflet::labelOptions(textsize = "15px"),
+    #   #       popup = ~Popup,
+    #   #       # Stroke
+    #   #       color = "#6B8091",
+    #   #       weight = 2,
+    #   #       smoothFactor = 1,
+    #   #       opacity = 1,
+    #   #       # Highlight
+    #   #       highlightOptions = leaflet::highlightOptions(
+    #   #         color = "#3e576c",
+    #   #         weight = 3,
+    #   #         bringToFront = TRUE
+    #   #       ),
+    #   #       # misc
+    #   #       options = leaflet::pathOptions(pane = "river_pane"),
+    #   #       group = "Rivers"
+    #   #     )
+    #   #   layer_list <- c(layer_list, "Rivers")
+    #   #   layer_list <- layer_list[!is.na(layer_list)]
+    #   # }
+    #   #
+    #   # # * Add layer toggle ----
+    #   # if (!all(is.na(layer_list))) {
+    #   #   map <- map %>%
+    #   #     leaflet::addLayersControl(
+    #   #       overlayGroups = layer_list,
+    #   #       position = "topleft"
+    #   #     )
+    #   # }
+    #
+    #   map
+    # })
+    #
+    # # * Add sites ----
+    # observe({
+    #   if (nrow(val$df_map) == 0) {
+    #     leaflet::leafletProxy("map") %>%
+    #       leaflet::clearMarkers()
+    #   } else if (map_type() == "score_num") {
+    #     leaflet::leafletProxy("map") %>%
+    #       leaflet::clearMarkers() %>%
+    #       leaflet::addMarkers(
+    #         data = val$df_map,
+    #         lng = ~Longitude,
+    #         lat = ~Latitude,
+    #         layerId = ~Site_ID,
+    #         # Icons
+    #         icon = ~ leaflet::icons(
+    #           iconUrl = num_symbols(val$df_map, val$score_range),
+    #           iconWidth = 20,
+    #           iconHeight = 20
+    #         ),
+    #         # Label
+    #         label = ~alt,
+    #         labelOptions = leaflet::labelOptions(textsize = "15px"),
+    #         # Popup
+    #         popup = ~ paste0(
+    #           popup_loc,
+    #           "<br><br><b>", in_var$param_n(), "</b>",
+    #           popup_score, "<br>",
+    #           actionLink(
+    #             ns("graph_link"),
+    #             label = "View Trends",
+    #             onclick = paste0(
+    #               'Shiny.setInputValue("', ns("graph_link"),
+    #               '", (Math.random() * 1000) + 1);'
+    #             )
+    #           )
+    #         ),
+    #         # Accessibility
+    #         options = leaflet::markerOptions(
+    #           alt = ~alt,
+    #           riseOnHover = TRUE
+    #         )
+    #       )
+    #   } else {
+    #     leaflet::leafletProxy("map") %>%
+    #       leaflet::clearMarkers() %>%
+    #       leaflet::addMarkers(
+    #         data = val$df_map,
+    #         lng = ~Longitude,
+    #         lat = ~Latitude,
+    #         layerId = ~Site_ID,
+    #         # Icons
+    #         icon = ~ leaflet::icons(
+    #           iconUrl = cat_pal(val$score_str())[score_str],
+    #           iconWidth = 20,
+    #           iconHeight = 20
+    #         ),
+    #         # Label
+    #         label = ~alt,
+    #         labelOptions = leaflet::labelOptions(textsize = "15px"),
+    #         # Popup
+    #         popup = ~ paste0(
+    #           popup_loc,
+    #           "<br><br><b>", in_var$param_n(), "</b>",
+    #           popup_score, "<br>",
+    #           actionLink(
+    #             ns("graph_link2"),
+    #             label = "View Trends",
+    #             onclick = paste0(
+    #               'Shiny.setInputValue("', ns("graph_link"),
+    #               '", (Math.random() * 1000) + 1);'
+    #             )
+    #           )
+    #         ),
+    #         # Accessibility
+    #         options = leaflet::markerOptions(
+    #           alt = ~alt,
+    #           riseOnHover = TRUE
+    #         )
+    #       )
+    #   }
+    # }) %>%
+    #   bindEvent(
+    #     val$df_map,
+    #     map_type()
+    #   )
+    #
+    # # * Add legend ----
+    # observe({
+    #   if (map_type() == "score_num") {
+    #     leaflet::leafletProxy("map") %>%
+    #       leaflet::clearControls() %>%
+    #       leaflegend::addLegendNumeric(
+    #         pal = num_pal(val$score_range),
+    #         values = val$score_range,
+    #         title = htmltools::tags$div(
+    #           val$legend,
+    #           style = "font-size: 18px"
+    #         ),
+    #         shape = "rect",
+    #         orientation = "vertical",
+    #         bins = 5,
+    #         naLabel = "No Data Available",
+    #         labelStyle = "font-size: 14px;",
+    #         position = "topright",
+    #         group = "Legend"
+    #       )
+    #   } else {
+    #     leaflet::leafletProxy("map") %>%
+    #       leaflet::clearControls() %>%
+    #       leaflegend::addLegendImage(
+    #         images = cat_pal(val$score_str, TRUE),
+    #         labels = cat_labels(val$score_str),
+    #         width = 20,
+    #         height = 20,
+    #         orientation = "vertical",
+    #         title = htmltools::tags$div(
+    #           in_var$param_n(),
+    #           style = "font-size: 18px"
+    #         ),
+    #         labelStyle = "font-size: 14px;",
+    #         position = "topright",
+    #         group = "Legend"
+    #       )
+    #   }
+    # }) %>%
+    #   bindEvent(
+    #     map_type(),
+    #     val$score_range,
+    #     val$score_str,
+    #     val$legend
+    #   )
+    #
+    # # Table -----
+    # output$table <- reactable::renderReactable({
+    #   report_table(
+    #     val$df_table,
+    #     show_score = val$show_score,
+    #     col_title = val$col_title
+    #   )
+    # })
+    #
+    # # * Update table ----
+    # observe({
+    #   reactable::updateReactable(
+    #     "table",
+    #     data = dplyr::select(val$df_map, !dplyr::any_of(drop_col)),
+    #     meta = list(col_title = val$dynamic_col)
+    #   )
+    # }) %>%
+    #   bindEvent(val$df_map, val$dynamic_col)
+    #
+    # observe({
+    #   if (map_type() == "score_str") {
+    #     hideCols(ns("table"), as.list(""))
+    #   } else {
+    #     hideCols(ns("table"), as.list("score_str"))
+    #   }
+    # }) %>%
+    #   bindEvent(map_type())
 
     # Return data ----
     selected_site <- reactive({

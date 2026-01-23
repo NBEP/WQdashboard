@@ -9,7 +9,7 @@ mod_map_server(
   in_var,
   map_bounds,
   df_raw,
-  map_tab,
+  selected_tab,
   shp_watershed = NULL,
   shp_river = NULL
 )
@@ -25,8 +25,7 @@ longitude, minimum latitude, maximum longitude, maximum latitude.}
 
 \item{df_raw}{Dataframe. Default map data.}
 
-\item{map_tab}{Reactive boolean. If map tab is selected and data should be
-updated, set to `TRUE`. Else, set to `FALSE`.}
+\item{selected_tab}{Reactive string. Name of selected tab.}
 
 \item{shp_watershed}{Shapefile. Watershed polygons. Set to `NULL` if
 no shapefile available. Default `NULL`.}

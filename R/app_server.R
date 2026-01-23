@@ -22,34 +22,36 @@ app_server <- function(input, output, session) {
     selected_tab = reactive({
       input$tabset
     }),
-    selected_site = map_var$site
-  )
-
-  map_var <- mod_map_server(
-    "map",
-    in_var = sidebar_var,
-    map_bounds = map_bounds,
-    df_raw = df_score[0, ],
-    selected_tab = reactive({
-      input$tabset
-    }),
-    shp_watershed = shp_watershed,
-    shp_river = shp_river
-  )
-
-  mod_report_card_server(
-    "report_card_1",
-    sidebar_var,
-    selected_tab = reactive({
-      input$tabset
+    selected_site = reactive({
+      df_sites$Site_ID[1]
     })
   )
-  mod_graphs_server("graphs_1", sidebar_var)
-  mod_download_server("download_1", sidebar_var)
+
+  # map_var <- mod_map_server(
+  #   "map",
+  #   in_var = sidebar_var,
+  #   map_bounds = map_bounds,
+  #   df_raw = df_score[0, ],
+  #   selected_tab = reactive({
+  #     input$tabset
+  #   }),
+  #   shp_watershed = shp_watershed,
+  #   shp_river = shp_river
+  # )
+
+  # mod_report_card_server(
+  #   "report_card_1",
+  #   sidebar_var,
+  #   selected_tab = reactive({
+  #     input$tabset
+  #   })
+  # )
+  # mod_graphs_server("graphs_1", sidebar_var)
+  # mod_download_server("download_1", sidebar_var)
 
   # Update tabs ----
-  observe({
-    updateTabsetPanel(inputId = "tabset", selected = "graphs")
-  }) %>%
-    bindEvent(map_var$graph_link())
+  # observe({
+  #   updateTabsetPanel(inputId = "tabset", selected = "graphs")
+  # }) %>%
+  #   bindEvent(map_var$graph_link())
 }
