@@ -2,7 +2,7 @@
 output: pdf_document
 params:
   df_report: NULL
-  report_title: NULL
+  year: NULL
   always_allow_html: true
 header-includes:
 - \usepackage{booktabs}
@@ -23,6 +23,9 @@ header-includes:
 
 ```{r table, echo = FALSE, warnings = FALSE}
 
+library(knitr)
+library(kableExtra)
+
 # Drop extra rows
 df_report <- params$df_report
 col_names <- gsub("[_]", " ", names(df_report))
@@ -39,23 +42,25 @@ if (col_count == 6) {
 }
 
 # Create kable
-knitr::kable(df_report, "latex",
+knitr::kable(
+    df_report, "latex",
     col.names = col_names,
     longtable = T,
     booktabs = T, 
-    caption = params$report_title) %>%
-  kableExtra::kable_styling(latex_options = c("repeat_header")) %>%
+    caption = paste0("Report Card (", params$year, ")")
+  ) |>
+  kableExtra::kable_styling(latex_options = c("repeat_header")) |>
   # Set max column width
-  kableExtra::column_spec(1:col_count, width = col_width) %>%
+  kableExtra::column_spec(1:col_count, width = col_width) |>
   # Style header
-  kableExtra::row_spec(0, bold = T, background = "#EEEEEE") %>%
+  kableExtra::row_spec(0, bold = T, background = "#EEEEEE") |>
   # Color code final column
   kableExtra::column_spec(col_count, background = dplyr::case_when(
     df_report$score_str == 'Excellent' ~  '#afccec',
     df_report$score_str %in% c('Good', "Meets Criteria") ~ '#cbe4e7',
     df_report$score_str == 'Fair' ~ '#ffffe0', 
     df_report$score_str %in% c('Poor', "Does Not Meet Criteria") ~ '#f9cfb4',
-    TRUE ~ '#FFFFFF')) %>%
+    TRUE ~ '#FFFFFF')) |>
   # Add line after each row
   kableExtra::row_spec(1:row_count, hline_after=T)
 

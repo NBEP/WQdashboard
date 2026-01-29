@@ -10,7 +10,7 @@
 #' @return Reactable table.
 #'
 #' @noRd
-reactable_table <- function(df, show_score = TRUE, col_title = "Average") {
+report_table <- function(df, show_score = TRUE, col_title = "Average") {
   reactable::reactable(
     df,
     highlight = TRUE,

@@ -1,7 +1,18 @@
 testServer(
   mod_report_card_server,
   # Add here your module params
-  args = list(),
+  args = list(
+    df_raw = data.frame(
+      Site_Name = NA,
+      State = NA,
+      Town = NA,
+      Watershed = NA,
+      Group = NA,
+      Depth = NA,
+      Paramter = NA,
+      score_str = NA
+    )
+  ),
   {
     ns <- session$ns
     expect_true(

@@ -5,15 +5,7 @@
 #' @import shiny
 #' @noRd
 app_server <- function(input, output, session) {
-  # Set variables
-  map_bounds <- list(
-    lat1 = min(df_sites$Latitude),
-    lat2 = max(df_sites$Latitude),
-    lng1 = min(df_sites$Longitude),
-    lng2 = max(df_sites$Longitude)
-  )
-
-  # Add module servers ----
+  # Sidebar module ----
   sidebar_var <- importwqd::mod_sidebar_server(
     "sidebar",
     df_sites = df_sites,
@@ -27,6 +19,14 @@ app_server <- function(input, output, session) {
     })
   )
 
+  # Map module ----
+  map_bounds <- list(
+    lat1 = min(df_sites$Latitude),
+    lat2 = max(df_sites$Latitude),
+    lng1 = min(df_sites$Longitude),
+    lng2 = max(df_sites$Longitude)
+  )
+
   watershed <- NULL
   river <- NULL
 
@@ -37,7 +37,7 @@ app_server <- function(input, output, session) {
     river <- shp_river
   }
 
-  map_var <- mod_map_server(
+  map_var <- importwqd::mod_map_server(
     "map",
     in_var = sidebar_var,
     map_bounds = map_bounds,
@@ -49,19 +49,30 @@ app_server <- function(input, output, session) {
     shp_river = river
   )
 
-  # mod_report_card_server(
-  #   "report_card_1",
-  #   sidebar_var,
-  #   selected_tab = reactive({
-  #     input$tabset
-  #   })
-  # )
+  # Report card module ----
+  keep_col <- c(
+    "Site_Name", "State", "Town", "Watershed", "Group", "Depth", "Parameter",
+    "score_str"
+  )
+
+  df_report_raw <- df_score[0,] |>
+    dplyr::select(dplyr::any_of(keep_col))
+
+  mod_report_card_server(
+    "report_card",
+    in_var = sidebar_var,
+    df_raw = df_report_raw,
+    selected_tab = reactive({
+      input$tabset
+    })
+  )
+
   # mod_graphs_server("graphs_1", sidebar_var)
   # mod_download_server("download_1", sidebar_var)
 
   # Update tabs ----
-  # observe({
-  #   updateTabsetPanel(inputId = "tabset", selected = "graphs")
-  # }) %>%
-  #   bindEvent(map_var$graph_link())
+  observe({
+    updateTabsetPanel(inputId = "tabset", selected = "graphs")
+  }) %>%
+    bindEvent(map_var$graph_link())
 }

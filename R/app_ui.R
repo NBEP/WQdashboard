@@ -18,12 +18,12 @@ app_ui <- function(request) {
       bslib::nav_panel("Map",
         value = "map",
         class = "bslib-page-dashboard",
-        mod_map_ui("map")
+        importwqd::mod_map_ui("map")
       ),
       bslib::nav_panel("Report Card",
         value = "report_card",
         class = "bslib-page-dashboard",
-        # mod_report_card_ui("report_card_1")
+        mod_report_card_ui("report_card")
       ),
       bslib::nav_panel("Graphs",
         value = "graphs",

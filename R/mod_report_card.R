@@ -9,6 +9,7 @@
 #' @importFrom shiny NS tagList
 mod_report_card_ui <- function(id) {
   ns <- NS(id)
+
   tagList(
     bslib::card(
       min_height = 250,
@@ -19,7 +20,7 @@ mod_report_card_ui <- function(id) {
         style = "text-align:center;display:inline-block;",
         downloadButton(
           ns("download_pdf"),
-          "Download as PDF",
+          "Download Report (PDF)",
           style = "width: fit-content;"
         )
       ),
@@ -29,109 +30,78 @@ mod_report_card_ui <- function(id) {
 
 #' report_card Server Functions
 #'
+#' @param in_var Reactive output from `mod_sidebar_server`.
+#' @param df_raw Dataframe. Default report card data.
+#' @param selected_tab Reactive string. Name of selected tab.
+#'
 #' @noRd
-mod_report_card_server <- function(id, selected_var, selected_tab) {
+mod_report_card_server <- function(
+    id, in_var, df_raw, selected_tab
+) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     # Pass info to ui ----
     output$title <- renderUI({
-      HTML(paste0(
-        "<h2>Report Card (", selected_var$year(), ")</h2>"
-      ))
+      HTML(
+        paste0("<h2>Report Card (", in_var$year(), ")</h2>")
+      )
     })
 
     # Define variables -----
-    drop_rows <- c(
-      "Year", "Site_ID", "Unit", "score_typ", "score_num",
-      "Latitude", "Longitude", "popup_loc", "popup_score", "alt"
-    )
-
-    df_default <- df_score %>%
-      dplyr::filter(Year == max(Year)) %>%
-      dplyr::select(!dplyr::all_of(drop_rows))
-
     val <- reactiveValues(
-      df = df_default,
-      count = 0
+      df_static = df_raw
     )
 
-    df_filter <- reactive({
-      # Define var
-      df <- selected_var$df_score_f()
-      param <- c(selected_var$param_short(), "-")
-      sites <- selected_var$sites_all()
-      if (length(sites) == 0 | length(param) == 1) {
-        return(df_default[0, ])
+    report_tab <- reactive({
+      if (selected_tab() == "report_card") {
+        return(TRUE)
+      } else {
+        return(FALSE)
       }
-
-      # Update dataframe
-      df <- df %>%
-        dplyr::filter(Parameter %in% param) %>%
-        dplyr::filter(Site_ID %in% sites) %>%
-        dplyr::select(!dplyr::all_of(drop_rows))
-
-      if ("Depth" %in% colnames(df_score)) {
-        depth_list <- c(NA, selected_var$depth_all())
-        df <- dplyr::filter(df, Depth %in% depth_list)
-      }
-
-      if (!selected_var$score()) {
-        df <- dplyr::filter(
-          df,
-          !(score_str %in% c("No Data Available", "No Threshold Established"))
-        )
-      }
-
-      df <- df %>% replace(is.na(.), "-") # necessary for PDF
-
-      return(df)
     })
 
     observe({
-      if (val$count < 2 & selected_tab() == "report_card") {
-        val$count <- val$count + 1
-        val$df <- df_filter()
-      }
-    }) %>%
-      bindEvent(selected_tab())
+      req(report_tab())
 
-    # Table ------------------------------------------------------------------
+      val$df_static <- in_var$df_report()
+    }) |>
+      bindEvent(report_tab(), ignoreInit = TRUE, once = TRUE)
+
+    # Table ----
     output$table <- reactable::renderReactable({
-      reactable_table(val$df)
+      report_table(val$df_static)
     })
 
     # Update table
     observe({
-      reactable::updateReactable("table", data = df_filter())
-    }) %>%
-      bindEvent(df_filter())
+      reactable::updateReactable("table", data = in_var$df_report())
+    }) |>
+      bindEvent(in_var$df_report())
 
     # Download PDF ----
     output$download_pdf <- downloadHandler(
       filename = function() {
-        paste0("report_card_", selected_var$year(), ".pdf")
+        paste0("report_card_", in_var$year(), ".pdf")
       },
       content = function(file) {
-        src <- normalizePath(system.file("rmd", "report_card.Rmd",
-          package = "WQdashboard"
-        ))
+        src <- normalizePath(
+          system.file("reports/report_card.Rmd", package="WQdashboard")
+        )
 
-        # temporarily switch to the temp dir, in case you do not have write
-        # permission to the current working directory
+        # Copy file to temporary directory
         tempReport <- file.path(tempdir(), "report_card.Rmd")
         file.copy(src, tempReport, overwrite = TRUE)
 
         # Set up parameters to pass to Rmd document
         params <- list(
-          df_report = df_filter(),
-          report_title = paste0(
-            org_info$name, " Report Card (",
-            selected_var$year(), ")"
-          )
+          df_report = in_var$df_report(),
+          year = in_var$year()
         )
 
-        rmarkdown::render(tempReport,
+        # Knit document
+        rmarkdown::render(
+          tempReport,
           output_file = file,
           params = params,
           envir = new.env(parent = globalenv())
@@ -140,9 +110,3 @@ mod_report_card_server <- function(id, selected_var, selected_tab) {
     )
   })
 }
-
-## To be copied in the UI
-# mod_report_card_ui("report_card_1")
-
-## To be copied in the server
-# mod_report_card_server("report_card_1")
