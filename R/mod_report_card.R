@@ -104,6 +104,9 @@ mod_report_card_server <- function(
       dat
     })
 
+    # TO DO - DISABLE BUTTON IF nrow(in_var$df_report()) == 0
+    # TO DO - DOWNLOAD INDICATOR
+
     output$download_pdf <- downloadHandler(
       filename = function() {
         paste0("report_card_", in_var$year(), ".pdf")
