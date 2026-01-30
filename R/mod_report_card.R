@@ -80,6 +80,30 @@ mod_report_card_server <- function(
       bindEvent(in_var$df_report())
 
     # Download PDF ----
+    site_data <- reactive({
+      req(in_var$df_report())
+
+      dat <- in_var$df_report()
+
+      loc_col <- c("Site_Name", "State", "Town", "Watershed", "Group")
+      loc_col <- intersect(loc_col, colnames(dat))
+
+      if (length(loc_col) < 2) {
+        return(dat[0,])
+      }
+
+      dat <- in_var$df_report() |>
+        dplyr::select(dplyr::any_of(loc_col)) |>
+        dplyr::distinct() |>
+        importwqd:::prep_pdf(na_sub = "")
+
+      if (ncol(dat) < 2) {
+        return(dat[0,])
+      }
+
+      dat
+    })
+
     output$download_pdf <- downloadHandler(
       filename = function() {
         paste0("report_card_", in_var$year(), ".pdf")
@@ -95,6 +119,9 @@ mod_report_card_server <- function(
 
         # Prep dataframe
         dat <- in_var$df_report() |>
+          dplyr::select(
+            dplyr::any_of(c("Site_Name", "Depth", "Parameter", "score_str"))
+          ) |>
           dplyr::rename("Score" = "score_str") |>
           importwqd:::prep_pdf(na_sub = "")
 
@@ -103,6 +130,7 @@ mod_report_card_server <- function(
           input = temp_report,
           execute_params = list(
             df_report = dat,
+            df_site = site_data(),
             year = in_var$year()
           )
         )

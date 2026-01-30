@@ -1,38 +1,67 @@
 ---
-title: "Water Quality Report"
-format: 
-  pdf:
-    classoption: landscape
+format: pdf
 params:
   df_report: NA
+  df_site: NA
+  org_name: ""
   year: NA
+title: "`r params$year` Water Quality Report"
 ---
 
-
 ```{r}
-#| label: tbl-report
-#| tbl-cap: !expr paste0("Water Quality (", params$year, ")")
 #| echo: false
 
 library(knitr)
 library(kableExtra)
+```
+
+```{r}
+#| label: tbl-sites
+#| tbl-cap: Site Metadata
+#| echo: false
+
+dat <- data.frame(params$df_site, check.names = FALSE)
+
+if (nrow(dat) > 0) {
+  col_width <- trunc(40 / ncol(dat))
+  col_width <- paste0(col_width, "em")
+  
+  knitr::kable(
+      dat, "latex",
+      longtable = T,
+      booktabs = T,
+      caption = "Site Metadata"
+    ) |>
+    kableExtra::kable_styling(
+      latex_options = c("repeat_header", "striped")
+    ) |>
+    kableExtra::column_spec(1:ncol(dat), width = col_width) |>
+  kableExtra::row_spec(0, bold = T)
+}
+
+```
+
+```{r}
+#| label: tbl-results
+#| tbl-cap: Water Quality
+#| echo: false
 
 # Drop extra rows
 dat <- data.frame(params$df_report, check.names = FALSE)
 
-col_count <- ncol(dat)
-row_count <- nrow(dat)
+col_width <- trunc(40 / ncol(dat))
+col_width <- paste0(col_width, "em")
 
 # Create kable
 knitr::kable(
   dat, "latex",
   longtable = T,
   booktabs = T,
-  caption = paste0("Report Card (", params$year, ")")
+  caption = "Water Quality"
 ) |>
   kableExtra::kable_styling(
     latex_options = c("repeat_header", "striped")
   ) |>
-  kableExtra::column_spec(1:col_count, width = "7em") |>
-  kableExtra::row_spec(0, bold = T, background = "#EEEEEE")
+  kableExtra::column_spec(1:ncol(dat), width = col_width) |>
+  kableExtra::row_spec(0, bold = T)
 ```
