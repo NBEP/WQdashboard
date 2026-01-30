@@ -1,0 +1,38 @@
+---
+title: "Water Quality Report"
+format: 
+  pdf:
+    classoption: landscape
+params:
+  df_report: NA
+  year: NA
+---
+
+
+```{r}
+#| label: tbl-report
+#| tbl-cap: !expr paste0("Water Quality (", params$year, ")")
+#| echo: false
+
+library(knitr)
+library(kableExtra)
+
+# Drop extra rows
+dat <- data.frame(params$df_report, check.names = FALSE)
+
+col_count <- ncol(dat)
+row_count <- nrow(dat)
+
+# Create kable
+knitr::kable(
+  dat, "latex",
+  longtable = T,
+  booktabs = T,
+  caption = paste0("Report Card (", params$year, ")")
+) |>
+  kableExtra::kable_styling(
+    latex_options = c("repeat_header", "striped")
+  ) |>
+  kableExtra::column_spec(1:col_count, width = "7em") |>
+  kableExtra::row_spec(0, bold = T, background = "#EEEEEE")
+```

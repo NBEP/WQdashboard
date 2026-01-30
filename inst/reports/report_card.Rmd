@@ -28,8 +28,6 @@ library(kableExtra)
 
 # Drop extra rows
 df_report <- params$df_report
-col_names <- gsub("[_]", " ", names(df_report))
-col_names <- c(col_names[-length(col_names)], "Score")
 
 row_count <- nrow(df_report)
 col_count <- length(df_report)
@@ -44,7 +42,6 @@ if (col_count == 6) {
 # Create kable
 knitr::kable(
     df_report, "latex",
-    col.names = col_names,
     longtable = T,
     booktabs = T, 
     caption = paste0("Report Card (", params$year, ")")
@@ -55,12 +52,16 @@ knitr::kable(
   # Style header
   kableExtra::row_spec(0, bold = T, background = "#EEEEEE") |>
   # Color code final column
-  kableExtra::column_spec(col_count, background = dplyr::case_when(
-    df_report$score_str == 'Excellent' ~  '#afccec',
-    df_report$score_str %in% c('Good', "Meets Criteria") ~ '#cbe4e7',
-    df_report$score_str == 'Fair' ~ '#ffffe0', 
-    df_report$score_str %in% c('Poor', "Does Not Meet Criteria") ~ '#f9cfb4',
-    TRUE ~ '#FFFFFF')) |>
+  kableExtra::column_spec(
+    col_count, 
+    background = dplyr::case_when(
+      df_report$score_str == 'Excellent' ~  '#afccec',
+      df_report$score_str %in% c('Good', "Meets Criteria") ~ '#cbe4e7',
+      df_report$score_str == 'Fair' ~ '#ffffe0', 
+      df_report$score_str %in% c('Poor', "Does Not Meet Criteria") ~ '#f9cfb4',
+      TRUE ~ '#FFFFFF'
+    )
+  ) |>
   # Add line after each row
   kableExtra::row_spec(1:row_count, hline_after=T)
 

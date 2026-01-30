@@ -86,26 +86,29 @@ mod_report_card_server <- function(
       },
       content = function(file) {
         src <- normalizePath(
-          system.file("reports/report_card.Rmd", package="WQdashboard")
+          system.file("reports/report_card.qmd", package="WQdashboard")
         )
 
         # Copy file to temporary directory
-        tempReport <- file.path(tempdir(), "report_card.Rmd")
-        file.copy(src, tempReport, overwrite = TRUE)
+        temp_report <- file.path(tempdir(), "report_card.qmd")
+        file.copy(src, temp_report, overwrite = TRUE)
 
-        # Set up parameters to pass to Rmd document
-        params <- list(
-          df_report = in_var$df_report(),
-          year = in_var$year()
+        # Prep dataframe
+        dat <- in_var$df_report() |>
+          dplyr::rename("Score" = "score_str") |>
+          importwqd:::prep_pdf(na_sub = "")
+
+        # Render Quarto
+        quarto::quarto_render(
+          input = temp_report,
+          execute_params = list(
+            df_report = dat,
+            year = in_var$year()
+          )
         )
 
-        # Knit document
-        rmarkdown::render(
-          tempReport,
-          output_file = file,
-          params = params,
-          envir = new.env(parent = globalenv())
-        )
+        # Copy quarto document to `file` argument
+        file.copy(file.path(tempdir(),"report_card.pdf"), file)
       }
     )
   })
