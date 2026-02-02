@@ -93,4 +93,4 @@ if (is.null(river_shp)) {
 
 usethis::use_data(shp_river, overwrite = TRUE)
 
-rm(list=ls())
+rm(list = ls())

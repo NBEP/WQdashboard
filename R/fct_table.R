@@ -118,7 +118,7 @@ graph_table <- function(df, group) {
   } else {
     df_wide <- df %>%
       tidyr::pivot_wider(
-        names_from = {{group}},
+        names_from = {{ group }},
         values_from = Result,
         values_fn = list
       )
@@ -126,7 +126,7 @@ graph_table <- function(df, group) {
     for (var in var_list) {
       df_wide <- df_wide %>%
         dplyr::rowwise() %>%
-        dplyr::mutate( {{var}} := paste(.data[[var]], collapse=', ')) %>%
+        dplyr::mutate({{ var }} := paste(.data[[var]], collapse = ", ")) %>%
         dplyr::ungroup()
     }
   }

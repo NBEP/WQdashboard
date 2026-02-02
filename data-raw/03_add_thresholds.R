@@ -57,4 +57,4 @@ custom_thresholds <- importwqd::format_thresholds(custom_thresholds)
 usethis::use_data(custom_thresholds, overwrite = TRUE)
 message("Done")
 
-rm(list=ls())
+rm(list = ls())

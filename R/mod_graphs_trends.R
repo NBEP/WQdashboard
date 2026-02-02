@@ -134,10 +134,10 @@ mod_graphs_trends_server <- function(id, df) {
 
     # * Calc thresholds ----
     thresh <- reactive({
-      thresh_min = df()$Min[1]
-      thresh_max = df()$Max[1]
-      thresh_excellent = df()$Excellent[1]
-      thresh_best = df()$Best[1]
+      thresh_min <- df()$Min[1]
+      thresh_max <- df()$Max[1]
+      thresh_excellent <- df()$Excellent[1]
+      thresh_best <- df()$Best[1]
 
       chk <- is.na(thresh_min) & is.na(thresh_max) & is.na(thresh_excellent) &
         is.na(thresh_best)

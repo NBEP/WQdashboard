@@ -89,4 +89,4 @@ official_thresholds <- dplyr::bind_rows(df_state, df_epa)
 usethis::use_data(official_thresholds, overwrite = TRUE)
 
 # Clean up ----
-rm(list=ls())
+rm(list = ls())

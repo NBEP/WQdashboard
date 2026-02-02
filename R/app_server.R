@@ -14,9 +14,7 @@ app_server <- function(input, output, session) {
     selected_tab = reactive({
       input$tabset
     }),
-    selected_site = reactive({
-      df_sites$Site_ID[1]
-    })
+    selected_site = map_var$site
   )
 
   # Map module ----
@@ -55,10 +53,10 @@ app_server <- function(input, output, session) {
     "score_str"
   )
 
-  df_report_raw <- df_score[0,] |>
+  df_report_raw <- df_score[0, ] |>
     dplyr::select(dplyr::any_of(keep_col))
 
-  mod_report_card_server(
+  importwqd::mod_report_server(
     "report_card",
     in_var = sidebar_var,
     df_raw = df_report_raw,
@@ -67,8 +65,9 @@ app_server <- function(input, output, session) {
     })
   )
 
-  # mod_graphs_server("graphs_1", sidebar_var)
-  # mod_download_server("download_1", sidebar_var)
+  # Graphs, download modules ----
+  mod_graphs_server("graphs", sidebar_var)
+  # mod_download_server("download", sidebar_var)
 
   # Update tabs ----
   observe({
