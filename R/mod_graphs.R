@@ -7,26 +7,28 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_graphs_ui <- function(id) {
+mod_graphs_ui <- function(id, in_var) {
   ns <- NS(id)
   tagList(
     bslib::navset_card_tab(
-      id = "graphs_tabset",
+      id = ns("tabset"),
       full_screen = FALSE,
       # title = "Graphs",
       # Trends -----
       bslib::nav_panel(
         "Long Term Trends",
+        value = "trend",
         mod_graphs_trends_ui(ns("graph_trends"))
       ),
       # Depth ----
-      if (length(unique(df_data$Depth)) > 1) {
+      if (!is.null(in_var$depth)) {
         bslib::nav_panel(
           "Compare Depths",
-          select_dropdown(
+          value = "depth",
+          importwqd::dropdown(
             ns("extra_depth"),
             label = h2("Select Depths"),
-            choices = unique(df_data$Depth)
+            choices = in_var$depth
           ),
           mod_graphs_graph_ui(ns("graph_depth"))
         )
@@ -34,14 +36,17 @@ mod_graphs_ui <- function(id) {
       # Sites ----
       bslib::nav_panel(
         "Compare Sites",
-        select_dropdown(
+        value = "site",
+        importwqd::dropdown(
           ns("extra_sites"),
-          label = HTML(paste(
-            h2("Select Sites"),
-            "Select up to five sites"
-          )),
-          choices = df_sites$Site_ID,
-          choice_names = df_sites$Site_Name,
+          label = HTML(
+            paste(
+              h2("Select Sites"),
+              "Select up to five sites"
+            )
+          ),
+          choices = in_var$site_id,
+          choice_names = in_var$site_name,
           max_options = 5
         ),
         mod_graphs_graph_ui(ns("graph_sites"))
@@ -49,13 +54,16 @@ mod_graphs_ui <- function(id) {
       # Parameters ----
       bslib::nav_panel(
         "Compare Parameters",
-        select_dropdown(
+        value = "param",
+        importwqd::dropdown(
           ns("extra_param"),
-          label = HTML(paste(
-            h2("Select Indicators"),
-            "Select two indicators"
-          )),
-          choices = unique(df_data$Parameter),
+          label = HTML(
+            paste(
+              h2("Select Indicators"),
+              "Select two indicators"
+            )
+          ),
+          choices = in_var$param,
           max_options = 2
         ),
         mod_graphs_graph_ui(ns("graph_param"))
@@ -67,73 +75,78 @@ mod_graphs_ui <- function(id) {
 #' graphs Server Functions
 #'
 #' @noRd
-mod_graphs_server <- function(id, selected_var) {
+mod_graphs_server <- function(id, in_var) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    # Filter data ----
-    df_filter <- reactive({
-      req(selected_var$year_range())
-      req(selected_var$month_range())
-
-      selected_months <- importwqd:::sort_months(selected_var$month_range())
-
-      df <- df_data %>%
-        dplyr::filter(
-          Year >= selected_var$year_range()[1] &
-            Year <= selected_var$year_range()[2]
-        ) %>%
-        dplyr::filter(Month %in% selected_months) %>%
-        dplyr::select(!Month)
-
-      return(df)
-    })
-
-    # Graph: Trends ----
-    df_trends <- reactive({
-      req(selected_var$sites_n())
-      req(selected_var$param_n())
-
-      sites <- selected_var$sites_n()
-      param <- selected_var$param_n()
-      depth <- c(NA, selected_var$depth_n())
-
-      df <- df_filter() %>%
-        dplyr::filter(
-          Site_ID == sites &
-            Parameter == param &
-            Depth %in% depth
-        )
-
-      return(df)
-    })
-
-    mod_graphs_trends_server("graph_trends", df = reactive({
-      df_trends()
-    }))
-
-    # Graph: Compare Sites ----
-    # * Update picker input ----
+    # Update dropdowns ----
     observe({
       shinyWidgets::updatePickerInput(
         session = session,
         inputId = "extra_sites",
-        choices = selected_var$site_list(),
-        selected = selected_var$site_list()[1]
+        choices = in_var$site_list(),
+        selected = in_var$sites_n()
       )
-    }) %>%
-      bindEvent(selected_var$site_list())
+    }) |>
+      bindEvent(in_var$site_list(), in_var$sites_n())
+
+    observe({
+      shinyWidgets::updatePickerInput(
+        session = session,
+        inputId = "extra_param",
+        selected = in_var$param_n()
+      )
+    }) |>
+      bindEvent(in_var$param_n())
+
+    # Graph: Trends ----
+    df_trends <- reactive({
+      req(input$tabset == "trend")
+      req(in_var$sites_n())
+      req(in_var$param_n())
+
+      sites <- in_var$sites_n()
+      param <- in_var$param_n()
+
+      dat <- in_var$df_graph() |>
+        dplyr::filter(
+          .data$Site_ID == !!sites,
+          .data$Parameter == !!param
+        )
+
+      chk <- grepl("depth|height", param)
+      if ("Depth" %in% colnames(dat) & !chk) {
+        depth <- in_var$depth_n()
+        dat <- dplyr::filter(dat, .data$Depth == !!depth)
+      }
+
+      dat
+    }) |>
+      bindEvent(
+        input$tabset, in_var$df_graph(), in_var$sites_n(),
+        in_var$param_n(), in_var$depth_n()
+      )
+
+    mod_graphs_trends_server(
+      "graph_trends",
+      df = reactive({
+        df_trends()
+      })
+    )
+
+    # Graph: Compare Sites ----
+    # * Update picker input ----
 
 
     # * Create graph ----
     df_comp_sites <- reactive({
-      req(selected_var$param_n())
+      req(in_var$param_n())
 
       sites <- input$extra_sites
-      param <- selected_var$param_n()
-      depth <- c(NA, selected_var$depth_n())
+      param <- in_var$param_n()
+      depth <- c(NA, in_var$depth_n())
 
-      df <- df_filter() %>%
+      df <- in_var$df_graph() |>
         dplyr::filter(
           Site_ID %in% sites &
             Parameter == param &
@@ -149,14 +162,14 @@ mod_graphs_server <- function(id, selected_var) {
 
     # Graph: Compare Depths ----
     df_comp_depth <- reactive({
-      req(selected_var$sites_n())
-      req(selected_var$param_n())
+      req(in_var$sites_n())
+      req(in_var$param_n())
 
-      sites <- selected_var$sites_n()
-      param <- selected_var$param_n()
+      sites <- in_var$sites_n()
+      param <- in_var$param_n()
       depth <- c(NA, input$extra_depth)
 
-      df <- df_filter() %>%
+      df <- in_var$df_graph() |>
         dplyr::filter(
           Site_ID == sites &
             Parameter == param &
@@ -176,13 +189,13 @@ mod_graphs_server <- function(id, selected_var) {
 
     # Graph: Compare Parameters ----
     df_comp_par <- reactive({
-      req(selected_var$sites_n())
+      req(in_var$sites_n())
 
-      sites <- selected_var$sites_n()
+      sites <- in_var$sites_n()
       param <- input$extra_param
-      depth <- c(NA, selected_var$depth_n())
+      depth <- c(NA, in_var$depth_n())
 
-      df <- df_filter() %>%
+      df <- in_var$df_graph() |>
         dplyr::filter(
           Site_ID == sites &
             Parameter %in% param &

@@ -112,11 +112,11 @@ graph_table <- function(df, group) {
   if (length(var_list) == 1) {
     var_name <- df[[group]][1]
 
-    df_wide <- df %>%
-      dplyr::select(Date, Result) %>%
+    df_wide <- df |>
+      dplyr::select(Date, Result) |>
       dplyr::rename({{ var_name }} := Result)
   } else {
-    df_wide <- df %>%
+    df_wide <- df |>
       tidyr::pivot_wider(
         names_from = {{ group }},
         values_from = Result,
@@ -124,9 +124,9 @@ graph_table <- function(df, group) {
       )
 
     for (var in var_list) {
-      df_wide <- df_wide %>%
-        dplyr::rowwise() %>%
-        dplyr::mutate({{ var }} := paste(.data[[var]], collapse = ", ")) %>%
+      df_wide <- df_wide |>
+        dplyr::rowwise() |>
+        dplyr::mutate({{ var }} := paste(.data[[var]], collapse = ", ")) |>
         dplyr::ungroup()
     }
   }

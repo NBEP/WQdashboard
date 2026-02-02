@@ -9,7 +9,7 @@
 #' @noRd
 
 graph_style <- function(fig, fig_title, y_title, y_range) {
-  fig <- fig %>%
+  fig <- fig |>
     plotly::config(
       displaylogo = FALSE,
       modeBarButtonsToRemove = c(
@@ -26,7 +26,7 @@ graph_style <- function(fig, fig_title, y_title, y_range) {
         "hoverCompareCartesian"
       ),
       toImageButtonOptions = list(height = 400, width = 800)
-    ) %>%
+    ) |>
     plotly::layout(
       title = fig_title,
       yaxis = list(
@@ -88,10 +88,10 @@ add_line_breaks <- function(df) {
     )
   }
 
-  df_null <- df_null %>%
+  df_null <- df_null |>
     dplyr::mutate(Date = as.Date(paste0(Year, "-1-1")))
 
-  df <- dplyr::bind_rows(df, df_null) %>%
+  df <- dplyr::bind_rows(df, df_null) |>
     dplyr::arrange(Date)
 
   return(df)
@@ -125,7 +125,7 @@ add_thresholds <- function(thresh, visible = TRUE, date_range, y_range,
   fig <- plotly::plot_ly()
 
   if (!is.na(thresh_min) & min_val < thresh_min) {
-    fig <- fig %>%
+    fig <- fig |>
       plotly::add_polygons(
         x = c(min_date, max_date, max_date, min_date),
         y = c(thresh_min, thresh_min, min_val, min_val),
@@ -141,7 +141,7 @@ add_thresholds <- function(thresh, visible = TRUE, date_range, y_range,
   }
 
   if (!is.na(thresh_max) & max_val > thresh_max) {
-    fig <- fig %>%
+    fig <- fig |>
       plotly::add_polygons(
         x = c(min_date, max_date, max_date, min_date),
         y = c(thresh_max, thresh_max, max_val, max_val),
@@ -158,7 +158,7 @@ add_thresholds <- function(thresh, visible = TRUE, date_range, y_range,
 
   chk <- !is.na(thresh_excellent) & !is.na(thresh_best)
   if (chk & thresh_best == "low" & thresh_excellent > min_val) {
-    fig <- fig %>%
+    fig <- fig |>
       plotly::add_polygons(
         x = c(min_date, max_date, max_date, min_date),
         y = c(thresh_excellent, thresh_excellent, min_val, min_val),
@@ -172,7 +172,7 @@ add_thresholds <- function(thresh, visible = TRUE, date_range, y_range,
         legendrank = 1001
       )
   } else if (chk & thresh_best == "high" & thresh_excellent < max_val) {
-    fig <- fig %>%
+    fig <- fig |>
       plotly::add_polygons(
         x = c(min_date, max_date, max_date, min_date),
         y = c(thresh_excellent, thresh_excellent, max_val, max_val),
@@ -214,11 +214,11 @@ add_gam <- function(fig, df, visible = TRUE) {
     y = df_pred$fit,
     lb = as.numeric(df_pred$fit - (1.96 * df_pred$se.fit)),
     ub = as.numeric(df_pred$fit + (1.96 * df_pred$se.fit))
-  ) %>%
+  ) |>
     dplyr::mutate(x = lubridate::date_decimal(x))
   df_new <- df_new[order(df_new$x), ]
 
-  fig <- fig %>%
+  fig <- fig |>
     plotly::add_trace(
       data = df_new,
       x = ~x,
@@ -233,7 +233,7 @@ add_gam <- function(fig, df, visible = TRUE) {
       visible = visible,
       inherit = FALSE,
       name = "Trend Line (GAM)"
-    ) %>%
+    ) |>
     plotly::add_ribbons(
       data = df_new,
       x = ~x,

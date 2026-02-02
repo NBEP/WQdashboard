@@ -72,6 +72,6 @@ app_server <- function(input, output, session) {
   # Update tabs ----
   observe({
     updateTabsetPanel(inputId = "tabset", selected = "graphs")
-  }) %>%
+  }) |>
     bindEvent(map_var$graph_link())
 }

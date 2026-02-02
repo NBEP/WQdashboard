@@ -35,7 +35,7 @@ graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
   if (min_date == max_date) {
     date_diff <- lubridate::dmonths(1)
   } else {
-    date_diff <- lubridate::interval(min_date, max_date) %>%
+    date_diff <- lubridate::interval(min_date, max_date) |>
       lubridate::as.duration()
     date_diff <- date_diff * 0.06
   }
@@ -66,7 +66,7 @@ graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
       date_range = c(min_date, max_date),
       y_range = c(min_val, max_val),
       unit = df$Unit[1]
-    ) %>%
+    ) |>
       plotly::add_trace(
         data = df_new,
         x = ~Date,
@@ -92,7 +92,7 @@ graph_trends <- function(df, fig_title, thresholds = NULL, show_thresh = TRUE,
     fig_title = fig_title,
     y_title = pretty_unit(df$Parameter[1], df$Unit[1]),
     y_range = list(min_val, max_val)
-  ) %>%
+  ) |>
     plotly::layout(
       xaxis = list(range = c(min_date, max_date))
     )
@@ -215,7 +215,7 @@ graph_two_var <- function(df, fig_title) {
     unit2 <- unique(df2$Unit)
     unit2 <- unit2[!is.na(unit2)]
 
-    fig <- fig %>%
+    fig <- fig |>
       plotly::add_trace(
         data = df2,
         name = wrap_text(par2),
@@ -231,7 +231,7 @@ graph_two_var <- function(df, fig_title) {
         marker = list(size = 7),
         hoverinfo = "text",
         hovertext = ~Description
-      ) %>%
+      ) |>
       plotly::layout(
         yaxis2 = list(
           title = pretty_unit(par2, unit2),

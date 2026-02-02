@@ -75,7 +75,7 @@ mod_graphs_trends_server <- function(id, df) {
       } else {
         return("show")
       }
-    }) %>%
+    }) |>
       bindEvent(df())
 
     observe({
@@ -84,7 +84,7 @@ mod_graphs_trends_server <- function(id, df) {
       } else {
         updateTabsetPanel(inputId = "hide_show", selected = "hide_graph")
       }
-    }) %>%
+    }) |>
       bindEvent(hide_graph())
 
     # Graph options ----
@@ -102,7 +102,7 @@ mod_graphs_trends_server <- function(id, df) {
           session, "toggle_thresh",
           label = "Show Thresholds"
         )
-        plotly::plotlyProxy("plot", session) %>%
+        plotly::plotlyProxy("plot", session) |>
           plotly::plotlyProxyInvoke(
             "restyle",
             list(visible = FALSE),
@@ -118,7 +118,7 @@ mod_graphs_trends_server <- function(id, df) {
           session, "toggle_thresh",
           label = "Hide Thresholds"
         )
-        plotly::plotlyProxy("plot", session) %>%
+        plotly::plotlyProxy("plot", session) |>
           plotly::plotlyProxyInvoke(
             "restyle",
             list(visible = TRUE),
@@ -129,7 +129,7 @@ mod_graphs_trends_server <- function(id, df) {
             )
           )
       }
-    }) %>%
+    }) |>
       bindEvent(input$toggle_thresh)
 
     # * Calc thresholds ----
@@ -182,7 +182,7 @@ mod_graphs_trends_server <- function(id, df) {
         updateTabsetPanel(inputId = "tabset_trends", selected = "trend_error")
         shinyjs::disable("toggle_trends")
       }
-    }) %>%
+    }) |>
       bindEvent(show_fit())
 
     # * Toggle visibility ----
@@ -193,7 +193,7 @@ mod_graphs_trends_server <- function(id, df) {
           session, "toggle_trends",
           label = "Show Trendline"
         )
-        plotly::plotlyProxy("plot", session) %>%
+        plotly::plotlyProxy("plot", session) |>
           plotly::plotlyProxyInvoke(
             "restyle",
             list(visible = FALSE),
@@ -208,7 +208,7 @@ mod_graphs_trends_server <- function(id, df) {
           session, "toggle_trends",
           label = "Hide Trendline"
         )
-        plotly::plotlyProxy("plot", session) %>%
+        plotly::plotlyProxy("plot", session) |>
           plotly::plotlyProxyInvoke(
             "restyle",
             list(visible = TRUE),
@@ -218,7 +218,7 @@ mod_graphs_trends_server <- function(id, df) {
             )
           )
       }
-    }) %>%
+    }) |>
       bindEvent(input$toggle_trends)
 
     # Graph ----

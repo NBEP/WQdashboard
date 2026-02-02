@@ -64,8 +64,8 @@ mod_download_server <- function(id, selected_var) {
     sites <- reactive({
       req(selected_var$sites_all)
 
-      df <- df_sites_all %>%
-        replace(is.na(.), -999999) %>%
+      df <- df_sites_all |>
+        replace(is.na(.), -999999) |>
         dplyr::filter(Site_ID %in% selected_var$sites_all)
 
       field_subs <- site_col[intersect(colnames(df), names(site_col))]
@@ -92,11 +92,11 @@ mod_download_server <- function(id, selected_var) {
       req(selected_var$year_range())
       req(selected_var$param_all())
 
-      df <- df_data_all %>%
+      df <- df_data_all |>
         dplyr::filter(
           Year >= selected_var$year_range()[1] &
             Year <= selected_var$year_range()[2]
-        ) %>%
+        ) |>
         dplyr::filter(Parameter %in% selected_var$param_all)
 
       if ("Depth Category" %in% colnames(df_data_all)) {
@@ -104,7 +104,7 @@ mod_download_server <- function(id, selected_var) {
         df <- dplyr::filter(df, "Depth Category" %in% depth_list)
       }
 
-      df2 <- sites() %>%
+      df2 <- sites() |>
         dplyr::select("Site_ID", "Site_Name")
 
       # Merge data
@@ -125,11 +125,11 @@ mod_download_server <- function(id, selected_var) {
         return(NULL)
       }
 
-      df <- df_data_extra %>%
+      df <- df_data_extra |>
         dplyr::filter(
           Year >= selected_var$year_range()[1] &
             Year <= selected_var$year_range()[2]
-        ) %>%
+        ) |>
         dplyr::filter(Parameter %in% selected_var$param_all)
 
       if ("Depth Category" %in% colnames(df_data_all)) {
@@ -137,7 +137,7 @@ mod_download_server <- function(id, selected_var) {
         df <- dplyr::filter(df, "Depth Category" %in% depth_list)
       }
 
-      df2 <- sites() %>%
+      df2 <- sites() |>
         dplyr::select("Site_ID", "Site_Name")
 
       # Merge data

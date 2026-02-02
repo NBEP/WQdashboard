@@ -42,7 +42,7 @@ pretty_number <- function(x) {
 #'
 #' @noRd
 find_unit <- function(param) {
-  df <- df_score %>%
+  df <- df_score |>
     dplyr::filter(!Unit %in% c(NA, "None") & Parameter == param)
   unit <- ""
 

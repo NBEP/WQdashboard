@@ -55,7 +55,7 @@ mod_graphs_graph_server <- function(id, df, group = "Site_Name") {
       } else {
         return("show")
       }
-    }) %>%
+    }) |>
       bindEvent(df())
 
     observe({
@@ -64,7 +64,7 @@ mod_graphs_graph_server <- function(id, df, group = "Site_Name") {
       } else {
         updateTabsetPanel(inputId = "hide_show", selected = "hide_graph")
       }
-    }) %>%
+    }) |>
       bindEvent(hide_graph())
 
     # Figure Title ----
