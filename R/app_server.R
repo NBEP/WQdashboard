@@ -66,7 +66,7 @@ app_server <- function(input, output, session) {
   )
 
   # Graphs, download modules ----
-  mod_graphs_server("graphs", sidebar_var)
+  mod_graph_server("graphs", sidebar_var)
   # mod_download_server("download", sidebar_var)
 
   # Update tabs ----

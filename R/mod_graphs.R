@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_graphs_ui <- function(id, in_var) {
+mod_graph_ui <- function(id, in_var) {
   ns <- NS(id)
   tagList(
     bslib::navset_card_tab(
@@ -18,7 +18,7 @@ mod_graphs_ui <- function(id, in_var) {
       bslib::nav_panel(
         "Long Term Trends",
         value = "trend",
-        mod_graphs_trends_ui(ns("graph_trends"))
+        importwqd::mod_graph_trend_ui(ns("graph_trends"))
       ),
       # Depth ----
       if (!is.null(in_var$depth)) {
@@ -30,7 +30,7 @@ mod_graphs_ui <- function(id, in_var) {
             label = h2("Select Depths"),
             choices = in_var$depth
           ),
-          mod_graphs_graph_ui(ns("graph_depth"))
+          importwqd::mod_graph_compare_ui(ns("graph_depth"))
         )
       },
       # Sites ----
@@ -42,14 +42,14 @@ mod_graphs_ui <- function(id, in_var) {
           label = HTML(
             paste(
               h2("Select Sites"),
-              "Select up to five sites"
+              "Select up to three sites"
             )
           ),
           choices = in_var$site_id,
           choice_names = in_var$site_name,
-          max_options = 5
+          max_options = 3
         ),
-        mod_graphs_graph_ui(ns("graph_sites"))
+        importwqd::mod_graph_compare_ui(ns("graph_sites"))
       ),
       # Parameters ----
       bslib::nav_panel(
@@ -66,7 +66,34 @@ mod_graphs_ui <- function(id, in_var) {
           choices = in_var$param,
           max_options = 2
         ),
-        mod_graphs_graph_ui(ns("graph_param"))
+        importwqd::mod_graph_compare_ui(ns("graph_param"))
+      ),
+      bslib::nav_spacer(),
+      # Options ----
+      bslib::nav_menu(
+        title = "Options",
+        bslib::nav_item(
+          shinyWidgets::prettySwitch(
+            ns("chk_line"),
+            "Show lines between points",
+            slim = TRUE
+          ),
+          conditionalPanel(
+            condition = paste0('input["', ns("tabset"), '"] == "trend"'),
+            shinyWidgets::prettySwitch(
+              ns("chk_thresh"),
+              "Show thresholds",
+              value = TRUE,
+              slim = TRUE
+            ),
+            shinyWidgets::prettySwitch(
+              ns("chk_trend"),
+              "Show trendline",
+              value = TRUE,
+              slim = TRUE
+            )
+          )
+        )
       )
     )
   )
@@ -75,7 +102,7 @@ mod_graphs_ui <- function(id, in_var) {
 #' graphs Server Functions
 #'
 #' @noRd
-mod_graphs_server <- function(id, in_var) {
+mod_graph_server <- function(id, in_var) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -121,101 +148,153 @@ mod_graphs_server <- function(id, in_var) {
       }
 
       dat
-    }) |>
-      bindEvent(
-        input$tabset, in_var$df_graph(), in_var$sites_n(),
-        in_var$param_n(), in_var$depth_n()
-      )
+    })
 
-    mod_graphs_trends_server(
+    trend_style <- reactive({
+      req(input$tabset == "trend")
+
+      list(
+        lines = input$chk_line,
+        trend = input$chk_trend,
+        thresh = input$chk_thresh
+      )
+    }) |>
+      bindEvent(input$chk_line, input$chk_trend, input$chk_thresh, input$tabset)
+
+    importwqd::mod_graph_trend_server(
       "graph_trends",
       df = reactive({
         df_trends()
+      }),
+      in_var = reactive({
+        trend_style()
       })
     )
 
     # Graph: Compare Sites ----
-    # * Update picker input ----
-
-
-    # * Create graph ----
     df_comp_sites <- reactive({
+      req(input$tabset == "site")
+      req(input$extra_sites)
       req(in_var$param_n())
 
       sites <- input$extra_sites
       param <- in_var$param_n()
-      depth <- c(NA, in_var$depth_n())
 
-      df <- in_var$df_graph() |>
+      dat <- in_var$df_graph() |>
         dplyr::filter(
-          Site_ID %in% sites &
-            Parameter == param &
-            Depth %in% depth
+          .data$Site_ID %in% !!sites,
+          .data$Parameter == !!param
         )
 
-      return(df)
+      chk <- grepl("depth|height", param)
+      if ("Depth" %in% colnames(dat) & !chk) {
+        depth <- in_var$depth_n()
+        dat <- dplyr::filter(dat, .data$Depth == !!depth)
+      }
+
+      dat
     })
 
-    mod_graphs_graph_server("graph_sites", df = reactive({
-      df_comp_sites()
-    }))
+    site_style <- reactive({
+      req(input$tabset == "site")
+
+      input$chk_line
+    }) |>
+      bindEvent(input$chk_line, input$tabset)
+
+    importwqd::mod_graph_compare_server(
+      "graph_sites",
+      df = reactive({
+        df_comp_sites()
+      }),
+      add_lines = reactive({
+        site_style()
+      })
+    )
 
     # Graph: Compare Depths ----
     df_comp_depth <- reactive({
+      req(input$tabset == "depth")
       req(in_var$sites_n())
       req(in_var$param_n())
+      req(input$extra_depth)
 
       sites <- in_var$sites_n()
       param <- in_var$param_n()
-      depth <- c(NA, input$extra_depth)
+      depth <- input$extra_depth
 
-      df <- in_var$df_graph() |>
+      dat <- in_var$df_graph() |>
         dplyr::filter(
-          Site_ID == sites &
-            Parameter == param &
-            !is.na(Depth) &
-            Depth %in% depth
+          .data$Site_ID == !!sites,
+          .data$Parameter == !!param,
+
         )
 
-      return(df)
+      if (!grepl("depth|height", param)) {
+        dat <- dplyr::filter(dat, .data$Depth %in% !!depth)
+      }
+
+      dat
     })
 
-    mod_graphs_graph_server("graph_depth",
+    depth_style <- reactive({
+      req(input$tabset == "depth")
+
+      input$chk_line
+    }) |>
+      bindEvent(input$chk_line, input$tabset)
+
+    importwqd::mod_graph_compare_server("graph_depth",
       df = reactive({
         df_comp_depth()
       }),
-      group = "Depth"
+      group = "Depth",
+      add_lines = reactive({
+        depth_style()
+      })
     )
 
     # Graph: Compare Parameters ----
     df_comp_par <- reactive({
+      req(input$tabset == "param")
       req(in_var$sites_n())
+      req(input$extra_param)
 
       sites <- in_var$sites_n()
       param <- input$extra_param
-      depth <- c(NA, in_var$depth_n())
 
-      df <- in_var$df_graph() |>
+      dat <- in_var$df_graph() |>
         dplyr::filter(
-          Site_ID == sites &
-            Parameter %in% param &
-            Depth %in% depth
+          .data$Site_ID == !!sites,
+          .data$Parameter %in% !!param
         )
 
-      return(df)
+      if ("Depth" %in% colnames(dat)) {
+        depth <- in_var$depth_n()
+        dat <- dat |>
+          dplyr::filter(
+            grepl("depth|height", .data$Parameter) | .data$Depth == !!depth
+          )
+      }
+
+      dat
     })
 
-    mod_graphs_graph_server("graph_param",
+    param_style <- reactive({
+      req(input$tabset == "param")
+
+      input$chk_line
+    }) |>
+      bindEvent(input$chk_line, input$tabset)
+
+    importwqd::mod_graph_compare_server("graph_param",
       df = reactive({
         df_comp_par()
       }),
-      group = "Parameter"
+      group = "Parameter",
+      add_lines = reactive({
+        param_style()
+      })
     )
   })
 }
-
-## To be copied in the UI
-# mod_graphs_ui("graphs_1")
-
-## To be copied in the server
-# mod_graphs_server("graphs_1")

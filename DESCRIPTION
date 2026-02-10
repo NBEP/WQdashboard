@@ -15,22 +15,12 @@ Imports:
     data.table,
     dplyr,
     golem (>= 0.4.1),
-    htmlwidgets,
     importwqd,
-    lubridate,
-    magrittr,
-    mgcv,
-    plotly,
-    quarto,
-    reactable,
     rlang,
-    rmarkdown,
     shiny,
-    shinyjs,
     shinyWidgets,
     stats,
-    stringr,
-    tidyr
+    stringr
 Suggests: 
     knitr,
     readr,
