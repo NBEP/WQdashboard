@@ -16,12 +16,13 @@ Imports:
     dplyr,
     golem (>= 0.4.1),
     importwqd,
+    readr,
     rlang,
     shiny,
-    stats
+    stats,
+    writexl
 Suggests: 
     knitr,
-    readr,
     sf,
     spelling,
     testthat (>= 3.0.0),
