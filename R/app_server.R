@@ -65,9 +65,27 @@ app_server <- function(input, output, session) {
     })
   )
 
-  # Graphs, download modules ----
-  mod_graph_server("graphs", sidebar_var)
-  # mod_download_server("download", sidebar_var)
+  # Graph module ----
+  importwqd::mod_graph_server("graphs", sidebar_var)
+
+  # Download module -----
+  dat_all <- df_data_all
+  if (exists("df_data_extra")) {
+    dat_all <- data.table::rbindlist(
+      list(df_data_all, df_data_extra),
+      use.names = TRUE,
+      fill = TRUE,
+      ignore.attr = TRUE
+    )
+  }
+
+  mod_download_server(
+    "download",
+    sites = df_sites_all,
+    results = dat_all,
+    txt_citation = org_info$citation,
+    selected_var = sidebar_var
+  )
 
   # Update tabs ----
   observe({

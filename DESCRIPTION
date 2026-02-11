@@ -18,9 +18,7 @@ Imports:
     importwqd,
     rlang,
     shiny,
-    shinyWidgets,
-    stats,
-    stringr
+    stats
 Suggests: 
     knitr,
     readr,
