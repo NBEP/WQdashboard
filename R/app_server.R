@@ -17,6 +17,19 @@ app_server <- function(input, output, session) {
     selected_site = map_var$site
   )
 
+  observe({
+    if (input$tabset == "about") {
+      bslib::toggle_sidebar("sbar", open = FALSE)
+      golem::invoke_js("hideclass", "sidebar")
+      golem::invoke_js("hideclass", "collapse-toggle")
+    } else {
+      bslib::toggle_sidebar("sbar", open = TRUE)
+      golem::invoke_js("showclass", "sidebar")
+      golem::invoke_js("showclass", "collapse-toggle")
+    }
+  }) |>
+    bindEvent(input$tabset)
+
   # Map module ----
   map_bounds <- list(
     lat1 = min(df_sites$Latitude),
@@ -48,6 +61,7 @@ app_server <- function(input, output, session) {
   )
 
   # Report card module ----
+  brand <- brand.yml::read_brand_yml(app_sys("brand/_brand.yml"))
   keep_col <- c(
     "Site_Name", "State", "Town", "Watershed", "Group", "Depth", "Parameter",
     "score_str"
@@ -60,9 +74,7 @@ app_server <- function(input, output, session) {
     "report_card",
     in_var = sidebar_var,
     df_raw = df_report_raw,
-    selected_tab = reactive({
-      input$tabset
-    })
+    org_name = brand$meta$name$full
   )
 
   # Graph module ----
@@ -79,12 +91,12 @@ app_server <- function(input, output, session) {
     )
   }
 
-  mod_download_server(
+  importwqd::mod_download_server(
     "download",
     sites = df_sites_all,
     results = dat_all,
     txt_citation = org_info$citation,
-    selected_var = sidebar_var
+    in_var = sidebar_var
   )
 
   # Update tabs ----

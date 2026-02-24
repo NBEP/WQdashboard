@@ -5,16 +5,29 @@
 #' @import shiny
 #' @noRd
 app_ui <- function(request) {
+  brand <- brand.yml::read_brand_yml(app_sys("brand/_brand.yml"))
+
   tagList(
     # Leave this function for adding external resources
     golem_add_external_resources(),
     # Your application UI logic
     bslib::page_navbar(
-      theme = bslib::bs_theme(version = 5),
+      theme = bslib::bs_theme(brand = brand),
       useBusyIndicators(),
-      title = h1(paste(org_info$name, "Water Quality Data")),
+      title = h1(brand$meta$title),
       id = "tabset",
-      sidebar = importwqd::mod_sidebar_ui("sidebar", varlist),
+      sidebar = bslib::sidebar(
+        id = "sbar",
+        importwqd::mod_sidebar_ui("sidebar", varlist)
+      ),
+      bslib::nav_panel(
+        "About",
+        value = "about",
+        class = "bslib-page-dashboard",
+        bslib::card(
+          "This page is under construction. Check other tabs to see data."
+        )
+      ),
       bslib::nav_panel("Map",
         value = "map",
         class = "bslib-page-dashboard",
@@ -33,7 +46,7 @@ app_ui <- function(request) {
       bslib::nav_panel("Download Data",
         value = "download",
         class = "bslib-page-dashboard",
-        mod_download_ui("download")
+        importwqd::mod_download_ui("download")
       )
     )
   )
@@ -57,7 +70,7 @@ golem_add_external_resources <- function() {
     favicon(),
     bundle_resources(
       path = app_sys("app/www"),
-      app_title = "WQdashboard"
+      app_title = "wqdashboard"
     )
     # Add here other external resources
     # for example, you can add shinyalert::useShinyalert()

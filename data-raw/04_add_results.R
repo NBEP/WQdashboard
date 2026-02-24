@@ -131,11 +131,6 @@ df_temp <- importwqd::format_results(df_data_all, df_sites_all, df_thresh)
 df_data <- df_temp %>%
   dplyr::select(!c("Calculation", "Good", "Fair"))
 
-chk <- unique(df_data$Depth)
-if (length(chk) < 2) {
-  df_data$Depth <- NULL
-}
-
 usethis::use_data(df_data, overwrite = TRUE)
 message("Saved df_data")
 
@@ -163,7 +158,6 @@ if (file.exists("data/df_data_extra.rda")) {
 } else {
   df_data_extra <- NULL
 }
-
 
 varlist <- importwqd::sidebar_var(df_sites, df_data, df_score, df_data_extra)
 

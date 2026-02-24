@@ -18,41 +18,20 @@
 # install.packages('attachment') if needed.
 attachment::att_amend_desc()
 
-usethis::use_import_from("magrittr", "%>%")
 usethis::use_import_from("data.table", ":=")
 usethis::use_import_from("rlang", ".data")
-usethis::use_import_from("stats", "setNames")
 
 usethis::use_package("sf", "Suggests")
 
 # Add modules ----
 # Create a module infrastructure in R/
-golem::add_module(name = "sidebar", with_test = TRUE)
-golem::add_module(name = "select_location", with_test = TRUE)
-golem::add_module(name = "map", with_test = TRUE)
-golem::add_module(name = "report_card", with_test = TRUE)
-golem::add_module(name = "graphs", with_test = TRUE)
-golem::add_module(name = "graphs_trend_graph", with_test = TRUE)
-golem::add_module(name = "graphs_graph", with_test = TRUE)
-golem::add_module(name = "download", with_test = TRUE)
+# golem::add_module(name = "download", with_test = TRUE)
 
 # Add helper functions ----
 # Creates fct_* and utils_*
-golem::add_fct("calculate_score", with_test = TRUE)
-golem::add_fct("graph", with_test = TRUE)
-golem::add_fct("import_results", with_test = TRUE)
-golem::add_fct("import_sites", with_test = TRUE)
-golem::add_fct("import_thresholds", with_test = TRUE)
-golem::add_fct("select_dropdown", with_test = TRUE)
-golem::add_fct("table", with_test = TRUE)
+# golem::add_fct("fct", with_test = TRUE)
 
-golem::add_utils("add_popup_text", with_test = TRUE)
-golem::add_utils("graphs", with_test = TRUE)
-golem::add_utils("import_data", with_test = TRUE)
-golem::add_utils("sidebar", with_test = TRUE)
-golem::add_utils("table", with_test = TRUE)
-golem::add_utils("thresholds", with_test = TRUE)
-
+# golem::add_utils("utils", with_test = TRUE)
 
 # External resources
 # Creates .js and .css files at inst/app/www
