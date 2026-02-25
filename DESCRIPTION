@@ -17,6 +17,7 @@ Imports:
     dplyr,
     golem (>= 0.4.1),
     importwqd,
+    quarto,
     rlang,
     shiny,
     stats

@@ -1,6 +1,6 @@
 meta:
   name:
-    full: Narragansett Bay Estuary Program
+    full: Watershed Watch
     short: NBEP
   links:
     home: https://www.nbep.org/
@@ -10,10 +10,10 @@ meta:
 logo:
   images:
     icon:
-      path: logo/NBEP_logo_square.png
+      path: images/NBEP_logo_square.png
       alt: NBEP
     wide:
-      path: logo/NBEP_logo_wide.png
+      path: images/NBEP_logo_wide.png
       alt: Narragansett Bay Estuary Program
   small: icon
   medium: wide

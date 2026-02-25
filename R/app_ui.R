@@ -5,7 +5,7 @@
 #' @import shiny
 #' @noRd
 app_ui <- function(request) {
-  brand <- brand.yml::read_brand_yml(app_sys("brand/_brand.yml"))
+  brand <- brand.yml::read_brand_yml(app_sys("app/www/_brand.yml"))
 
   tagList(
     # Leave this function for adding external resources
@@ -18,6 +18,7 @@ app_ui <- function(request) {
       id = "tabset",
       sidebar = bslib::sidebar(
         id = "sbar",
+        open = FALSE,
         importwqd::mod_sidebar_ui("sidebar", varlist)
       ),
       bslib::nav_panel(
@@ -25,7 +26,7 @@ app_ui <- function(request) {
         value = "about",
         class = "bslib-page-dashboard",
         bslib::card(
-          "This page is under construction. Check other tabs to see data."
+          uiOutput("qmd_about")
         )
       ),
       bslib::nav_panel("Map",

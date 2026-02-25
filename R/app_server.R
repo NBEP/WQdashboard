@@ -5,6 +5,16 @@
 #' @import shiny
 #' @noRd
 app_server <- function(input, output, session) {
+  # About tab ----
+  # quarto::quarto_render(app_sys("app/www/About.qmd"))
+  output$qmd_about <- renderUI({
+    tags$iframe(
+      src="www/About.html",
+      style="width: 100%; height: 100%; border: none; box-sizing: border-box;",
+      seamless = "seamless"
+    )
+  })
+
   # Sidebar module ----
   sidebar_var <- importwqd::mod_sidebar_server(
     "sidebar",
@@ -61,7 +71,7 @@ app_server <- function(input, output, session) {
   )
 
   # Report card module ----
-  brand <- brand.yml::read_brand_yml(app_sys("brand/_brand.yml"))
+  brand <- brand.yml::read_brand_yml(app_sys("app/www/_brand.yml"))
   keep_col <- c(
     "Site_Name", "State", "Town", "Watershed", "Group", "Depth", "Parameter",
     "score_str"
