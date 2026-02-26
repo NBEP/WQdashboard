@@ -2,9 +2,9 @@
 format: 
   html:
     output-file: Download.html
-    link-external-icon: true
-    link-external-newwindow: true
+    minimal: true
 engine: knitr
+brand: false
 params:
   name: NA
   title: "Water Quality Dashboard"
@@ -14,4 +14,4 @@ params:
 
 # Suggested Citation
 
-`r params$name`. `r params$title`, `r params$year`. Web. `r params$date`.
+`r params$name`. (`r params$year`). `r params$title`. Web. Accessed `r params$date`.

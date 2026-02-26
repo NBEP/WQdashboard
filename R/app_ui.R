@@ -47,7 +47,10 @@ app_ui <- function(request) {
       bslib::nav_panel("Download Data",
         value = "download",
         class = "bslib-page-dashboard",
-        importwqd::mod_download_ui("download")
+        bslib::card(
+          uiOutput("qmd_download"),
+          importwqd::mod_download_ui("download")
+        )
       )
     )
   )

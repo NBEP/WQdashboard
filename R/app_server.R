@@ -8,11 +8,7 @@ app_server <- function(input, output, session) {
   # About tab ----
   # quarto::quarto_render(app_sys("app/www/About.qmd"))
   output$qmd_about <- renderUI({
-    tags$iframe(
-      src="www/About.html",
-      style="width: 100%; height: 100%; border: none; box-sizing: border-box;",
-      seamless = "seamless"
-    )
+    importwqd::embed_quarto(app_sys("app/www/About.html"))
   })
 
   # Sidebar module ----
@@ -91,6 +87,20 @@ app_server <- function(input, output, session) {
   importwqd::mod_graph_server("graphs", sidebar_var)
 
   # Download module -----
+  quarto::quarto_render(
+    app_sys("app/www/Download.qmd"),
+    execute_params = list(
+      name = brand$meta$name$full,
+      title = brand$meta$title,
+      year = format(Sys.time(), "%Y"),
+      date = format(Sys.time(), "%B %d, %Y")
+    )
+  )
+  output$qmd_download <- renderUI({
+    importwqd::embed_quarto(app_sys("app/www/Download.html"))
+  })
+
+
   dat_all <- df_data_all
   if (exists("df_data_extra")) {
     dat_all <- data.table::rbindlist(
@@ -105,7 +115,6 @@ app_server <- function(input, output, session) {
     "download",
     sites = df_sites_all,
     results = dat_all,
-    txt_citation = org_info$citation,
     in_var = sidebar_var
   )
 

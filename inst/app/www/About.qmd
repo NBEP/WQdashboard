@@ -3,11 +3,10 @@ format:
   html:
     output-file: About.html
     minimal: true
-    link-external-icon: true
-    link-external-newwindow: true
 engine: knitr
+brand: false
 ---
 
-# test header
+# Test Header
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam quis arcu eget lorem luctus viverra vitae quis massa. Sed eu leo porttitor dolor iaculis bibendum. Praesent id vestibulum sapien. Donec ullamcorper tortor eu diam pharetra rutrum. Cras pulvinar elementum sapien. Nulla porta, quam a laoreet fermentum, quam enim efficitur sem, nec viverra ligula arcu vitae dui. Suspendisse sollicitudin lacus eget pretium luctus. Phasellus vel nisi sem. Quisque interdum risus dolor, eget suscipit nibh aliquet in. Nunc placerat sapien venenatis leo elementum maximus. Suspendisse tristique rhoncus porttitor.
