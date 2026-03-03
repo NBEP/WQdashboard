@@ -4,16 +4,13 @@
 .httr-oauth
 .DS_Store
 data-raw/test_*
+data-raw/shp/test_*
 data/shp_*
 data/df_*
 data/custom_thresholds.rda
 inst/doc
 /rsconnect
 TinyTeX.zip
-data-raw/state_thresholds.csv
-data-raw/epa_thresholds.csv
-data/official_thresholds.rda
-data/org_info.rda
 *.pdf
 inst/extdata/custom_thresholds.csv
 dev/config_attachment.yaml

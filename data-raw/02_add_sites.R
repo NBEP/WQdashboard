@@ -4,17 +4,25 @@
 #' saved as a csv in the `data-raw` folder.
 #'
 #' @param sites_csv Path to csv file containing site metadata.
-#' @param in_format Input format. Accepted formats include wqdashboard,
-#' WQX, MassWateR,  RI_WW (RI Watershed Watch), MA_BRC (Blackstone River
-#' Coalition), and ME_FOCB (Friends of Casco Bay). To use a custom format, set
-#' `in_format` to "custom" and update `data-raw/colnames_sites.csv`
+#'
+#' @param in_format Input format. Accepted formats:
+#'
+#' * wqdashboard
+#' * WQX
+#' * MassWateR
+#' * RI_WW (RI Watershed Watch)
+#' * MA_BRC (Blackstone River Coalition)
+#' * ME_FOCB (Friends of Casco Bay)
+#'
+#' To use a custom format, set `in_format` to "custom" and update
+#' `data-raw/custom_format/colnames_sites.csv`
+#'
 #' @param default_state State name or abbreviation. Blank rows in column "State"
 #' will be set to `default_state`. Set to `NA` to leave blank rows as-is.
 #' as-is.
 #'
 #' @noRd
 
-# Site data:
 sites_csv <- "data-raw/test_sites_ww_saltponds.csv"
 in_format <- "RI_WW"
 default_state <- "Rhode Island"
@@ -33,7 +41,7 @@ df_raw <- readr::read_csv(sites_csv, show_col_types = FALSE)
 if (tolower(in_format) == "custom") {
   message("Reformatting data...")
   df_colnames <- readr::read_csv(
-    "data-raw/colnames_sites.csv",
+    "data-raw/custom_format/colnames_sites.csv",
     show_col_types = FALSE
   )
 

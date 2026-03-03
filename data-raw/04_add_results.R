@@ -1,21 +1,53 @@
-# Update Data
-#
-# README: Run this script to add or update water quality data.
-#
-# Date abbreviations:
-#  b Abbreviated month name (eg Feb)
-#  B Full month name (eg February)
-#  d Day of the month
-#  y Year without century (eg 24)
-#  Y Year with century (eg 2024)
-#  H Hour
-#  m Month
-#  M Minute
-#  p AM/PM
-#  S Second
-#  z Timezone
+#' Add/Update Result Data
+#'
+#' @description Run this script to add or update result data. Only include
+#' numeric results.
+#'
+#' @param results_csv Path to csv file containing result data.
+#'
+#' @param in_format Input format. Accepted formats:
+#'
+#' * wqdashboard
+#' * WQX
+#' * MassWateR
+#' * RI_DEM (Rhode Island DEM)
+#' * RI_WW (RI Watershed Watch)
+#' * MA_BRC (Blackstone River Coalition)
+#' * ME_DEP (Maine DEP)
+#' * ME_FOCB (Friends of Casco Bay)
+#'
+#' To use a custom format, set `in_format` to "custom" and update the following
+#' files:
+#' * `data-raw/custom_format/colnames_results.csv`
+#' * `data-raw/custom_format/varnames_activity.csv`
+#' * `data-raw/custom_format/varnames_parameters.csv`
+#' * `data-raw/custom_format/varnames_qualifiers.csv`
+#' * `data-raw/custom_format/varnames_units.csv`
+#'
+#' @param date_format Format used for Date column. List of abbreviations:
+#'
+#' * B - Full month name (August)
+#' * b - Abbreviated month name (Aug)
+#' * m - Month, numeric (8)
+#' * d - Day of the month
+#' * y - Year without century (26)
+#' * Y - Year with century (2026)
+#'
+#' * H - Hour
+#' * m - Minute
+#' * S - Second
+#' * p - AM/PM
+#' * z - Timezone
+#'
+#' @param timezone Timezone.
+#'
+#' @param overwrite_existing If `TRUE`, replaces old result data with new data.
+#' If `FALSE`, combines old and new result data.
+#' @param recalculate_score If `TRUE`, recalculates all parameter scores,
+#' including for old data. If `FALSE`, does not recalculate old scores.
+#'
+#' @noRd
 
-# parameter data:
 results_csv <- "test_data_ww_clean.csv"
 in_format <- "RI_WW"
 date_format <- "m/d/Y"
@@ -121,9 +153,9 @@ usethis::use_data(df_data_all, overwrite = TRUE)
 message("Saved df_data_all")
 
 # Format data ----
-df_thresh <- official_thresholds
+df_thresh <- NULL
 if (exists("custom_thresholds")) {
-  df_thresh <- dplyr::bind_rows(custom_thresholds, official_thresholds)
+  df_thresh <- custom_thresholds
 }
 
 df_temp <- importwqd::format_results(df_data_all, df_sites_all, df_thresh)

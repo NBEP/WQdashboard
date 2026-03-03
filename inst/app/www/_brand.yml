@@ -1,7 +1,5 @@
 meta:
-  name:
-    full: Narragansett Bay Estuary Program
-    short: NBEP
+  name: Narragansett Bay Estuary Program
   links:
     home: https://www.nbep.org/
     github: https://github.com/NBEP/

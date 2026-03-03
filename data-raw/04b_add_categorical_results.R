@@ -1,27 +1,56 @@
-# Add Categorical Results
-#
-# README: Run this script to add or update categorical water quality data. This
-#  data will be available to download but will NOT be included on any maps,
-#  report cards, or graphs.
-#
-# Date abbreviations:
-#  b Abbreviated month name
-#  B Full month name
-#  d Day of the month
-#  H Hour
-#  m Month
-#  M Minute
-#  p AM/PM
-#  S Second
-#  z Timezone
+#' Add/Update Categorical Results - OPTIONAL
+#'
+#' @description Upload categorical data. This data will ONLY be available for
+#' download, and will not display on the maps, report card, or graph tabs.
+#'
+#' @param results_csv Path to csv file containing result data.
+#'
+#' @param in_format Input format. Accepted formats:
+#'
+#' * wqdashboard
+#' * WQX
+#' * MassWateR
+#' * RI_DEM (Rhode Island DEM)
+#' * RI_WW (RI Watershed Watch)
+#' * MA_BRC (Blackstone River Coalition)
+#' * ME_DEP (Maine DEP)
+#' * ME_FOCB (Friends of Casco Bay)
+#'
+#' To use a custom format, set `in_format` to "custom" and update the following
+#' files:
+#' * `data-raw/custom_format/colnames_results.csv`
+#' * `data-raw/custom_format/varnames_activity.csv`
+#' * `data-raw/custom_format/varnames_parameters.csv`
+#' * `data-raw/custom_format/varnames_qualifiers.csv`
+#' * `data-raw/custom_format/varnames_units.csv`
+#'
+#' @param date_format Format used for Date column. List of abbreviations:
+#'
+#' * B - Full month name (August)
+#' * b - Abbreviated month name (Aug)
+#' * m - Month, numeric (8)
+#' * d - Day of the month
+#' * y - Year without century (26)
+#' * Y - Year with century (2026)
+#'
+#' * H - Hour
+#' * m - Minute
+#' * S - Second
+#' * p - AM/PM
+#' * z - Timezone
+#'
+#' @param timezone Timezone.
+#'
+#' @param overwrite_existing If `TRUE`, replaces old result data with new data.
+#' If `FALSE`, combines old and new result data.
+#'
+#' @noRd
 
-# parameter data:
 results_csv <- "test_cat_data_brc.csv"
 in_format <- "Blackstone_River_Coalition"
+
 date_format <- "Y-m-d H:M"
 timezone <- Sys.timezone()
-
-categorical <- TRUE
 
 overwrite_existing <- TRUE
 
@@ -35,6 +64,8 @@ remotes::install_github("nbep/importwqd")
 source("R/utils_import_data.R")
 load("data/df_sites_all.rda")
 load("data/df_sites.rda")
+load("data/df_data.rda")
+load("data/df_score.rda")
 
 if (!overwrite_existing) {
   load("data/df_data_extra.rda")
@@ -74,10 +105,10 @@ if (in_format == "custom") {
     importwqd::prep_results(
       df_colnames, df_param, df_unit, df_qual, df_activity
     ) %>%
-    wqformat::format_wqd_results(date_format, categorical)
+    wqformat::format_wqd_results(date_format, TRUE)
 } else if (in_format == "wqdashboard") {
   df_raw <- df_raw %>%
-    wqformat::format_wqd_results(date_format, categorical)
+    wqformat::format_wqd_results(date_format, TRUE)
 } else {
   df_raw <- df_raw %>%
     wqformat::format_results(
@@ -93,23 +124,6 @@ df_qaqc <- importwqd::qaqc_cat_results(df_raw, df_sites_all)
 if (!overwrite_existing) {
   df_qaqc <- dplyr::bind_rows(df_data_extra, df_qaqc) %>%
     unique()
-
-  if (!categorical) {
-    df_qaqc <- df_qaqc %>%
-      wqformat::standardize_units(
-        "Parameter",
-        "Result",
-        "Result_Unit",
-        warn_only = FALSE
-      ) %>%
-      wqformat::standardize_units_across(
-        "Result_Unit",
-        "Detection_Limit_Unit",
-        c("Lower_Detection_Limit", "Upper_Detection_Limit"),
-        warn_only = FALSE
-      ) %>%
-      unique()
-  }
 }
 
 # Upload df_data_extra
