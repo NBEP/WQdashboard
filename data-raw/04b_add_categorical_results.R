@@ -81,36 +81,36 @@ df_raw <- readr::read_csv(
 
 if (in_format == "custom") {
   df_colnames <- readr::read_csv(
-    "data-raw/colnames_results.csv",
+    "data-raw/custom_format/colnames_results.csv",
     show_col_types = FALSE
   )
   df_param <- readr::read_csv(
-    "data-raw/varnames_parameters.csv",
+    "data-raw/custom_format/varnames_parameters.csv",
     show_col_types = FALSE
   )
   df_unit <- readr::read_csv(
-    "data-raw/varnames_units.csv",
+    "data-raw/custom_format/varnames_units.csv",
     show_col_types = FALSE
   )
   df_qual <- readr::read_csv(
-    "data-raw/varnames_qualifiers.csv",
+    "data-raw/custom_format/varnames_qualifiers.csv",
     show_col_types = FALSE
   )
   df_activity <- readr::read_csv(
-    "data-raw/varnames_activity.csv",
+    "data-raw/custom_format/varnames_activity.csv",
     show_col_types = FALSE
   )
 
-  df_raw <- df_raw %>%
+  df_raw <- df_raw |>
     importwqd::prep_results(
       df_colnames, df_param, df_unit, df_qual, df_activity
-    ) %>%
+    ) |>
     wqformat::format_wqd_results(date_format, TRUE)
 } else if (in_format == "wqdashboard") {
-  df_raw <- df_raw %>%
+  df_raw <- df_raw |>
     wqformat::format_wqd_results(date_format, TRUE)
 } else {
-  df_raw <- df_raw %>%
+  df_raw <- df_raw |>
     wqformat::format_results(
       in_format, "wqdashboard", date_format, timezone,
       drop_extra_col = FALSE
@@ -122,7 +122,7 @@ df_qaqc <- importwqd::qaqc_cat_results(df_raw, df_sites_all)
 
 # Combine datasets (if overwrite_existing is FALSE)
 if (!overwrite_existing) {
-  df_qaqc <- dplyr::bind_rows(df_data_extra, df_qaqc) %>%
+  df_qaqc <- dplyr::bind_rows(df_data_extra, df_qaqc) |>
     unique()
 }
 

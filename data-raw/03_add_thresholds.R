@@ -62,8 +62,8 @@ message("Exporting thresholds to inst/extdata/custom_thresholds.csv")
 readr::write_csv(custom_thresholds, "inst/extdata/custom_thresholds.csv")
 
 # Format data, save to data
-custom_thresholds <- importwqd::format_thresholds(custom_thresholds)
-usethis::use_data(custom_thresholds, overwrite = TRUE)
+df_thresholds <- importwqd::format_thresholds(custom_thresholds)
+usethis::use_data(df_thresholds, overwrite = TRUE)
 message("Done")
 
 rm(list = ls())

@@ -20,7 +20,7 @@ watershed_name_col <- "HUC12_Name"
 
 # SHAPEFILE - Rivers
 river_shp <- "test_rivers_brc"
-river_name_col <- "gnis_name"
+river_name_col <- "Label"
 
 # CODE ------------------------------------------------------------------------
 library(sf)
@@ -31,7 +31,7 @@ library(shiny, include.only="isTruthy")
 # Import shapefiles ----
 if (shiny::isTruthy(watershed_shp)) {
   shp_watershed <- sf::read_sf(dsn = "data-raw/shp", layer = watershed_shp) |>
-    dplyr::select(dplyr::all_of(watershed_name_col))
+    dplyr::select(!!watershed_name_col)
   colnames(shp_watershed)[1] <- "Label"
 
   usethis::use_data(shp_watershed, overwrite = TRUE)
@@ -39,8 +39,8 @@ if (shiny::isTruthy(watershed_shp)) {
 
 if (shiny::isTruthy(river_shp)) {
   shp_river <- sf::read_sf(dsn = "data-raw/shp", layer = river_shp) |>
-    dplyr::select(dplyr::all_of(river_name_col))
-  colnames(shp_watershed)[1] <- "Label"
+    dplyr::select(!!river_name_col)
+  colnames(shp_river)[1] <- "Label"
 
   usethis::use_data(shp_river, overwrite = TRUE)
 }
