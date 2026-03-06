@@ -154,3 +154,17 @@
 #'    \item{Geometry}{Shapefile geometry}
 #'  }
 "shp_watershed"
+
+#' "About" tab text
+#'
+#' HTML code for "About" tab.
+#'
+#' @format HTML text
+"qmd_about"
+
+#' "Download" tab text
+#'
+#' HTML code for "Download" tab.
+#'
+#' @format HTML text
+"qmd_download"

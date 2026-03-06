@@ -194,6 +194,8 @@ if (update_citation) {
       year_updated = format(Sys.time(), "%Y")
     )
   )
+  qmd_download <- importwqd::embed_quarto("inst/app/www/Download.html")
+  usethis::use_data(qmd_download, overwrite = TRUE)
 }
 
 # Set sidebar variables ----

@@ -26,6 +26,8 @@ library(quarto)
 
 # Render About page
 quarto::quarto_render("inst/app/www/About.qmd")
+qmd_about <- importwqd::embed_quarto("inst/app/www/About.html")
+usethis::use_data(qmd_about, overwrite = TRUE)
 
 # Render Download page
 quarto::quarto_render(
@@ -35,3 +37,5 @@ quarto::quarto_render(
     year_updated = format(Sys.time(), "%Y")
   )
 )
+qmd_download <- importwqd::embed_quarto("inst/app/www/Download.html")
+usethis::use_data(qmd_download, overwrite = TRUE)
