@@ -14,4 +14,3 @@ TinyTeX.zip
 *.pdf
 inst/extdata/custom_thresholds.csv
 dev/config_attachment.yaml
-inst/app/www/Download.html

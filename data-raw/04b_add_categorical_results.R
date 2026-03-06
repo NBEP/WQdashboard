@@ -43,6 +43,8 @@
 #'
 #' @param overwrite_existing If `TRUE`, replaces old result data with new data.
 #' If `FALSE`, combines old and new result data.
+#' @param update_citation If `TRUE`, will update the "year_updated" variable
+#' for `Download.qmd`
 #'
 #' @noRd
 
@@ -53,6 +55,7 @@ date_format <- "Y-m-d H:M"
 timezone <- Sys.timezone()
 
 overwrite_existing <- TRUE
+update_citation <- TRUE
 
 # CODE ------------------------------------------------------------------------
 library("readr")
@@ -126,10 +129,21 @@ if (!overwrite_existing) {
     unique()
 }
 
-# Upload df_data_extra
+# Upload df_data_extra ----
 df_data_extra <- df_qaqc
 usethis::use_data(df_data_extra, overwrite = TRUE)
 message("Saved df_data_extra")
+
+# Update download tab ----
+if (update_citation) {
+  quarto::quarto_render(
+    "inst/app/www/Download.qmd",
+    execute_params = list(
+      org_name = brand$meta$name$full,
+      year_updated = format(Sys.time(), "%Y")
+    )
+  )
+}
 
 # Set sidebar variables ----
 message("Setting sidebar dropdown lists")

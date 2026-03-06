@@ -26,10 +26,9 @@ river_name_col <- "Label"
 library(sf)
 library(dplyr)
 library(tidyr)
-library(shiny, include.only="isTruthy")
 
 # Import shapefiles ----
-if (shiny::isTruthy(watershed_shp)) {
+if (!is.null(watershed_shp) && !is.na(watershed_shp)) {
   shp_watershed <- sf::read_sf(dsn = "data-raw/shp", layer = watershed_shp) |>
     dplyr::select(!!watershed_name_col)
   colnames(shp_watershed)[1] <- "Label"
@@ -37,7 +36,7 @@ if (shiny::isTruthy(watershed_shp)) {
   usethis::use_data(shp_watershed, overwrite = TRUE)
 }
 
-if (shiny::isTruthy(river_shp)) {
+if (!is.null(river_shp) && !is.na(river_shp)) {
   shp_river <- sf::read_sf(dsn = "data-raw/shp", layer = river_shp) |>
     dplyr::select(!!river_name_col)
   colnames(shp_river)[1] <- "Label"

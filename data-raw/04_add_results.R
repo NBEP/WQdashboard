@@ -45,6 +45,8 @@
 #' If `FALSE`, combines old and new result data.
 #' @param recalculate_score If `TRUE`, recalculates all parameter scores,
 #' including for old data. If `FALSE`, does not recalculate old scores.
+#' @param update_citation If `TRUE`, will update the "year_updated" variable
+#' for `Download.qmd`
 #'
 #' @noRd
 
@@ -55,6 +57,7 @@ timezone <- Sys.timezone()
 
 overwrite_existing <- TRUE
 recalculate_score <- FALSE
+update_citation <- TRUE
 
 # CODE ------------------------------------------------------------------------
 library("readr")
@@ -181,6 +184,17 @@ if (chk) {
 
 usethis::use_data(df_score, overwrite = TRUE)
 message("Saved df_score")
+
+# Update download tab ----
+if (update_citation) {
+  quarto::quarto_render(
+    "inst/app/www/Download.qmd",
+    execute_params = list(
+      org_name = brand$meta$name$full,
+      year_updated = format(Sys.time(), "%Y")
+    )
+  )
+}
 
 # Set sidebar variables ----
 message("Setting sidebar dropdown lists")

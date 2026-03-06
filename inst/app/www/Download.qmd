@@ -6,12 +6,10 @@ format:
 engine: knitr
 brand: false
 params:
-  name: NA
-  title: "Water Quality Dashboard"
-  year: NA
-  date: NA
+  org_name: NA
+  year_updated: NA
 ---
 
 # Suggested Citation
 
-`r params$name`. (`r params$year`). `r params$title`. Web. Accessed `r params$date`.
+`r params$org_name`. (`r params$year_updated`). Water Quality Dashboard. Web.

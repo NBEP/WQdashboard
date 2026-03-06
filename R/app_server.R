@@ -6,10 +6,12 @@
 #' @noRd
 app_server <- function(input, output, session) {
   # About tab ----
-  # quarto::quarto_render(app_sys("app/www/About.qmd"))
+  raw_about <- app_sys("app/www/About.html")
+
   output$qmd_about <- renderUI({
-    importwqd::embed_quarto(app_sys("app/www/About.html"))
-  })
+    importwqd::embed_quarto(raw_about)
+  }) |>
+    bindCache(raw_about)
 
   # Sidebar module ----
   sidebar_var <- importwqd::mod_sidebar_server(
@@ -87,19 +89,12 @@ app_server <- function(input, output, session) {
   importwqd::mod_graph_server("graphs", sidebar_var)
 
   # Download module -----
-  quarto::quarto_render(
-    app_sys("app/www/Download.qmd"),
-    execute_params = list(
-      name = brand$meta$name$full,
-      title = brand$meta$title,
-      year = format(Sys.time(), "%Y"),
-      date = format(Sys.time(), "%B %d, %Y")
-    )
-  )
-  output$qmd_download <- renderUI({
-    importwqd::embed_quarto(app_sys("app/www/Download.html"))
-  })
+  raw_download <- app_sys("app/www/Download.html")
 
+  output$qmd_download <- renderUI({
+    importwqd::embed_quarto(raw_download)
+  }) |>
+    bindCache(raw_download)
 
   dat_all <- df_data_all
   if (exists("df_data_extra")) {
