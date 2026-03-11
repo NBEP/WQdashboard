@@ -24,18 +24,18 @@
 #'
 #' @noRd
 
-threshold_csv <- "data-raw/test_threshold_BRC.csv"
-in_format <- "MA_BRC"
+threshold_csv <- "thresholds.csv"
+in_format <- "wqdashboard"
 
 # CODE ------------------------------------------------------------------------
+devtools::load_all()
 library("readr")
-library("dplyr")
-library("remotes")
-remotes::install_github("massbays-tech/wqformat")
-remotes::install_github("nbep/importwqd")
 
 message("Uploading thresholds")
-df_raw <- readr::read_csv(threshold_csv, show_col_types = FALSE)
+df_raw <- readr::read_csv(
+  paste0("data-raw/", threshold_csv),
+  show_col_types = FALSE
+)
 
 if (nrow(df_raw) == 0) {
   stop("Empty dataframe, no thresholds found")
@@ -66,4 +66,4 @@ df_thresholds <- importwqd::format_thresholds(custom_thresholds)
 usethis::use_data(df_thresholds, overwrite = TRUE)
 message("Done")
 
-rm(list = ls())
+rm(list = ls(all.names = TRUE))

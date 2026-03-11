@@ -1,41 +1,14 @@
 meta:
   name: Narragansett Bay Estuary Program
-  links:
-    home: https://www.nbep.org/
-    github: https://github.com/NBEP/
   title: Water Quality Dashboard
-
-logo:
-  images:
-    icon:
-      path: images/NBEP_logo_square.png
-      alt: NBEP
-    wide:
-      path: images/NBEP_logo_wide.png
-      alt: Narragansett Bay Estuary Program
-  small: icon
-  medium: wide
 
 color:
   palette:
     aqua: "#0D7CA9"
     dark-aqua: "#0d5d82"
-    blue: "#054469"
-    olive: "#9FB566"
-    sand: "#E3D78B"
-    clay: "#DA7738"
     black: "#1A1A1A"
-    # white: "#F8F8F8"
-  foreground: black
-  background: white
   primary: aqua
-  # secondary: "#9d9d9d"
-  success: olive
-  info: blue
-  warning: sand
-  danger: clay
-  light: white
-  dark: black
+  # secondary:
 
 typography:
   fonts:

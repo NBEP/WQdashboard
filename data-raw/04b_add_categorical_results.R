@@ -48,32 +48,18 @@
 #'
 #' @noRd
 
-results_csv <- "test_cat_data_brc.csv"
-in_format <- "Blackstone_River_Coalition"
+results_csv <- "categorical_results.csv"
+in_format <- "wqdashboard"
 
-date_format <- "Y-m-d H:M"
+date_format <- "m/d/Y"
 timezone <- Sys.timezone()
 
-overwrite_existing <- TRUE
+overwrite_existing <- FALSE
 update_citation <- TRUE
 
 # CODE ------------------------------------------------------------------------
+devtools::load_all()
 library("readr")
-library("dplyr")
-library("remotes")
-remotes::install_github("massbays-tech/wqformat")
-remotes::install_github("nbep/importwqd")
-
-source("R/utils_import_data.R")
-load("data/df_sites_all.rda")
-load("data/df_sites.rda")
-load("data/df_data.rda")
-load("data/df_score.rda")
-
-if (!overwrite_existing) {
-  load("data/df_data_extra.rda")
-}
-
 
 # Import, format data ----
 df_raw <- readr::read_csv(
@@ -124,7 +110,7 @@ if (in_format == "custom") {
 df_qaqc <- importwqd::qaqc_cat_results(df_raw, df_sites_all)
 
 # Combine datasets (if overwrite_existing is FALSE)
-if (!overwrite_existing) {
+if (!overwrite_existing && exists("df_data_extra")) {
   df_qaqc <- dplyr::bind_rows(df_data_extra, df_qaqc) |>
     unique()
 }
@@ -136,6 +122,8 @@ message("Saved df_data_extra")
 
 # Update download tab ----
 if (update_citation) {
+  brand <- brand.yml::read_brand_yml("inst/app/www/_brand.yml")
+
   quarto::quarto_render(
     "inst/app/www/Download.qmd",
     execute_params = list(
@@ -154,4 +142,4 @@ varlist <- importwqd::sidebar_var(df_sites, df_data, df_score, df_data_extra)
 usethis::use_data(varlist, internal = TRUE, overwrite = TRUE)
 message("Done")
 
-rm(list = ls())
+rm(list = ls(all.names = TRUE))

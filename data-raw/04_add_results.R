@@ -50,31 +50,18 @@
 #'
 #' @noRd
 
-results_csv <- "test_data_ww_clean.csv"
-in_format <- "RI_WW"
+results_csv <- "results.csv"
+in_format <- "wqdashboard"
 date_format <- "m/d/Y"
 timezone <- Sys.timezone()
 
-overwrite_existing <- TRUE
+overwrite_existing <- FALSE
 recalculate_score <- FALSE
 update_citation <- TRUE
 
 # CODE ------------------------------------------------------------------------
+devtools::load_all()
 library("readr")
-library("dplyr")
-library("remotes")
-remotes::install_github("massbays-tech/wqformat")
-remotes::install_github("nbep/importwqd")
-
-load("data/df_sites_all.rda")
-load("data/df_sites.rda")
-load("data/official_thresholds.rda")
-load("data/df_thresholds.rda")
-
-if (!overwrite_existing) {
-  load("data/df_data_all.rda")
-  load("data/df_score.rda")
-}
 
 # Import, format data ----
 df_raw <- readr::read_csv(
@@ -125,7 +112,7 @@ df_qaqc <- importwqd::qaqc_results(df_raw, df_sites_all)
 chk_years <- unique(df_qaqc$Year)
 
 # Combine datasets (if overwrite_existing is FALSE)
-if (!overwrite_existing) {
+if (!overwrite_existing && exists("df_data_all")) {
   df_qaqc <- dplyr::bind_rows(df_data_all, df_qaqc) |>
     unique() |>
     wqformat::standardize_units(
@@ -187,6 +174,8 @@ message("Saved df_score")
 
 # Update download tab ----
 if (update_citation) {
+  brand <- brand.yml::read_brand_yml("inst/app/www/_brand.yml")
+
   quarto::quarto_render(
     "inst/app/www/Download.qmd",
     execute_params = list(
@@ -212,4 +201,4 @@ varlist <- importwqd::sidebar_var(df_sites, df_data, df_score, df_data_extra)
 usethis::use_data(varlist, internal = TRUE, overwrite = TRUE)
 message("Done")
 
-rm(list = ls())
+rm(list = ls(all.names = TRUE))

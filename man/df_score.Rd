@@ -24,7 +24,7 @@ A dataframe with 15-17 columns:
    \item{Longitude}{Longitude}
    \item{Latitude}{Latitude}
    \item{popup_loc}{Popup text for map. Describes site.}
-   \item{popup_score}{Popup text for map. Describes paramater and score.}
+   \item{popup_score}{Popup text for map. Describes parameter and score.}
    \item{alt}{Alt text for map}
  }
 }

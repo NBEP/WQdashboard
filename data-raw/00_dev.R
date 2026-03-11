@@ -7,13 +7,9 @@
 #'
 #' @noRd
 
-# CODE -----
-
+# CODE -------------------------------------------------------------------------
+devtools::load_all()
 library("readr")
-library("dplyr")
-library("remotes")
-remotes::install_github("massbays-tech/wqformat")
-remotes::install_github("nbep/importwqd")
 
 # Set temp wd ----
 wd <- getwd()

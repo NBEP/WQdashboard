@@ -67,10 +67,34 @@
 #'    \item{Longitude}{Longitude}
 #'    \item{Latitude}{Latitude}
 #'    \item{popup_loc}{Popup text for map. Describes site.}
-#'    \item{popup_score}{Popup text for map. Describes paramater and score.}
+#'    \item{popup_score}{Popup text for map. Describes parameter and score.}
 #'    \item{alt}{Alt text for map}
 #'  }
 "df_score"
+
+# #' Categorical result data (dataframe)
+# #'
+# #' Dataframe containing categorical result data, available for download only.
+# #'
+# #' @format A dataframe with 15 columns:
+# #'  \describe{
+# #'    \item{Site_ID}{Site ID}
+# #'    \item{Site_Name}{Site name}
+# #'    \item{Watereshed}{Watershed}
+# #'    \item{Date}{Date}
+# #'    \item{Year}{Year}
+# #'    \item{Parameter}{Parameter}
+# #'    \item{Result}{Result value}
+# #'    \item{Unit}{Result unit}
+# #'    \item{Depth}{Depth category}
+# #'    \item{Min}{Minimum acceptable value}
+# #'    \item{Max}{Maximum acceptable value}
+# #'    \item{Excellent}{Threshold between excellent and good data}
+# #'    \item{Best}{Whether excellent data is higher or lower than fair data}
+# #'    \item{Month}{Month}
+# #'    \item{Description}{Popup text for interactive graph}
+# #'  }
+# "df_data_extra"
 
 #' Site metadata (dataframe)
 #'
@@ -110,50 +134,50 @@
 #'  }
 "df_sites"
 
-#' Custom thresholds (dataframe)
-#'
-#' Dataframe containing custom threshold values.
-#'
-#' @format A dataframe with 13 columns:
-#'  \describe{
-#'    \item{State}{State}
-#'    \item{Group}{Group}
-#'    \item{Site}{Site ID}
-#'    \item{Depth}{Depth category}
-#'    \item{Parameter}{Parameter}
-#'    \item{Unit}{Parameter unit}
-#'    \item{Calculation}{How to calculate annual score. Values: min, max, mean,
-#'    median}
-#'    \item{Min}{Minimum acceptable value}
-#'    \item{Max}{Maximum acceptable value}
-#'    \item{Excellent}{Threshold between excellent and good data}
-#'    \item{Good}{Threshold between good and fair data}
-#'    \item{Fair}{Threshold between fair and poor data}
-#'    \item{Best}{Whether excellent data is higher or lower than fair data}
-#'  }
-"df_thresholds"
+# #' Custom thresholds (dataframe)
+# #'
+# #' Dataframe containing custom threshold values.
+# #'
+# #' @format A dataframe with 13 columns:
+# #'  \describe{
+# #'    \item{State}{State}
+# #'    \item{Group}{Group}
+# #'    \item{Site}{Site ID}
+# #'    \item{Depth}{Depth category}
+# #'    \item{Parameter}{Parameter}
+# #'    \item{Unit}{Parameter unit}
+# #'    \item{Calculation}{How to calculate annual score. Values: min, max, mean,
+# #'    median}
+# #'    \item{Min}{Minimum acceptable value}
+# #'    \item{Max}{Maximum acceptable value}
+# #'    \item{Excellent}{Threshold between excellent and good data}
+# #'    \item{Good}{Threshold between good and fair data}
+# #'    \item{Fair}{Threshold between fair and poor data}
+# #'    \item{Best}{Whether excellent data is higher or lower than fair data}
+# #'  }
+# "df_thresholds"
 
-#' River polylines (shapefile)
-#'
-#' Polyline shapefile showing local rivers.
-#'
-#' @format A dataframe with 2 columns:
-#'  \describe{
-#'    \item{Label}{Label}
-#'    \item{Geometry}{Shapefile geometry}
-#'  }
-"shp_river"
+# #' River polylines (shapefile)
+# #'
+# #' Polyline shapefile showing local rivers.
+# #'
+# #' @format A dataframe with 2 columns:
+# #'  \describe{
+# #'    \item{Label}{Label}
+# #'    \item{Geometry}{Shapefile geometry}
+# #'  }
+# "shp_river"
 
-#' Watershed polygons (shapefile)
-#'
-#' Polygon shapefile showing local watersheds.
-#'
-#' @format A dataframe with 2 columns:
-#'  \describe{
-#'    \item{Label}{Label}
-#'    \item{Geometry}{Shapefile geometry}
-#'  }
-"shp_watershed"
+# #' Watershed polygons (shapefile)
+# #'
+# #' Polygon shapefile showing local watersheds.
+# #'
+# #' @format A dataframe with 2 columns:
+# #'  \describe{
+# #'    \item{Label}{Label}
+# #'    \item{Geometry}{Shapefile geometry}
+# #'  }
+# "shp_watershed"
 
 #' "About" tab text
 #'

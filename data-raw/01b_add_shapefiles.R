@@ -15,12 +15,12 @@
 #' @noRd
 
 # SHAPEFILE - Watershed Boundaries
-watershed_shp <- "test_watershed_brc"
-watershed_name_col <- "HUC12_Name"
+watershed_shp <- NA
+watershed_name_col <- "Field"
 
 # SHAPEFILE - Rivers
-river_shp <- "test_rivers_brc"
-river_name_col <- "Label"
+river_shp <- NA
+river_name_col <- "Field"
 
 # CODE ------------------------------------------------------------------------
 library(sf)
@@ -44,4 +44,4 @@ if (!is.null(river_shp) && !is.na(river_shp)) {
   usethis::use_data(shp_river, overwrite = TRUE)
 }
 
-rm(list = ls())
+rm(list = ls(all.names = TRUE))

@@ -19,7 +19,7 @@
 #'
 #' @noRd
 
-org_name <- "Salt Ponds Coalition"
+org_name <- ""
 
 # CODE ------------------------------------------------------------------------
 library(quarto)
@@ -39,3 +39,5 @@ quarto::quarto_render(
 )
 qmd_download <- importwqd::embed_quarto("inst/app/www/Download.html")
 usethis::use_data(qmd_download, overwrite = TRUE)
+
+rm(list = ls(all.names = TRUE))
