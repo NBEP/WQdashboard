@@ -21,10 +21,10 @@ launch_to <- "shinyapps.io"
 create_docker_file <- FALSE
 
 # CODE ------------------------------------------------------------------------
-library('devtools')
-library('golem')
-library('rsconnect')
-library('desc')
+library("devtools")
+library("golem")
+library("rsconnect")
+library("desc")
 
 # Check code
 devtools::check()
