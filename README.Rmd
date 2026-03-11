@@ -22,10 +22,10 @@ knitr::opts_chunk$set(
 <!-- badges: end -->
 
 WQdashboard is an open source dashboard template that displays water quality
-data as maps, graphs, and report cards. 
+data as interactive maps, report cards, and graphs. 
 
-**UNDER HEAVY DEVELOPMENT.** Code has been made public in order to facilitate 
-collaboration. 
+<!-- ## Installation -->
+<!-- Info on how to use, installl... -->
 
 <!-- ## Accessibility -->
 <!-- List accessibility issues, planned fixes here... -->

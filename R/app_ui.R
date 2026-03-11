@@ -5,38 +5,52 @@
 #' @import shiny
 #' @noRd
 app_ui <- function(request) {
-  # Try to fix the dplyr problem....
-  library(magrittr)
+  brand <- brand.yml::read_brand_yml(app_sys("app/www/_brand.yml"))
 
   tagList(
     # Leave this function for adding external resources
     golem_add_external_resources(),
     # Your application UI logic
     bslib::page_navbar(
-      theme = bslib::bs_theme(version = 5),
+      theme = bslib::bs_theme(brand = brand),
       useBusyIndicators(),
-      title = h1(paste(org_info$name, "Water Quality Data")),
+      title = h1(brand$meta$title),
       id = "tabset",
-      sidebar = mod_sidebar_ui("sidebar_1"),
+      sidebar = bslib::sidebar(
+        id = "sbar",
+        open = FALSE,
+        importwqd::mod_sidebar_ui("sidebar", varlist)
+      ),
+      bslib::nav_panel(
+        "About",
+        value = "about",
+        class = "bslib-page-dashboard",
+        bslib::card(
+          uiOutput("qmd_about")
+        )
+      ),
       bslib::nav_panel("Map",
         value = "map",
         class = "bslib-page-dashboard",
-        mod_map_ui("map_1")
+        importwqd::mod_map_ui("map")
       ),
       bslib::nav_panel("Report Card",
         value = "report_card",
         class = "bslib-page-dashboard",
-        mod_report_card_ui("report_card_1")
+        importwqd::mod_report_ui("report_card")
       ),
       bslib::nav_panel("Graphs",
         value = "graphs",
         class = "bslib-page-dashboard",
-        mod_graphs_ui("graphs_1")
+        importwqd::mod_graph_ui("graphs", varlist)
       ),
       bslib::nav_panel("Download Data",
         value = "download",
         class = "bslib-page-dashboard",
-        mod_download_ui("download_1")
+        bslib::card(
+          uiOutput("qmd_download"),
+          importwqd::mod_download_ui("download")
+        )
       )
     )
   )
@@ -60,7 +74,7 @@ golem_add_external_resources <- function() {
     favicon(),
     bundle_resources(
       path = app_sys("app/www"),
-      app_title = "WQdashboard"
+      app_title = "wqdashboard"
     )
     # Add here other external resources
     # for example, you can add shinyalert::useShinyalert()

@@ -10,31 +10,18 @@ BugReports: https://github.com/NBEP/WQdashboard/issues
 Depends: 
     R (>= 3.5)
 Imports: 
+    brand.yml,
     bslib,
     config (>= 0.3.2),
     data.table,
     dplyr,
     golem (>= 0.4.1),
-    htmltools,
-    htmlwidgets,
-    leaflegend,
-    leaflet,
-    lubridate,
-    magrittr,
-    mgcv,
-    plotly,
-    reactable,
-    rlang,
-    rmarkdown,
-    shiny (>= 1.8.0),
-    shinyjs,
-    shinyWidgets,
-    stats,
-    stringr,
-    tidyr
-Suggests: 
     importwqd,
-    knitr,
+    rlang,
+    shiny,
+    stats
+Suggests: 
+    quarto,
     readr,
     sf,
     spelling,

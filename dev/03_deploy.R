@@ -27,7 +27,7 @@ devtools::build()
 
 ## RStudio ----
 ## If you want to deploy on RStudio related platforms
-# golem::add_rstudioconnect_file()
+# golem::add_positconnect_file()
 golem::add_shinyappsio_file()
 # golem::add_shinyserver_file()
 
@@ -42,8 +42,8 @@ golem::add_shinyappsio_file()
 # Deploy to Posit Connect or ShinyApps.io
 # In command line.
 rsconnect::deployApp(
-  appName = desc::desc_get_field("WQdashboard"),
-  appTitle = desc::desc_get_field("WQdashboard"),
+  appName = desc::desc_get_field("Package"),
+  appTitle = desc::desc_get_field("Title"),
   appFiles = c(
     # Add any additional files unique to your app here.
     "R/",
