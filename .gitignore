@@ -5,12 +5,8 @@
 .DS_Store
 data-raw/test_*
 data-raw/shp/test_*
-data/shp_*
-data/df_*
-data/custom_thresholds.rda
 inst/doc
 /rsconnect
 TinyTeX.zip
 *.pdf
-inst/extdata/custom_thresholds.csv
 dev/config_attachment.yaml
