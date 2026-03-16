@@ -50,12 +50,12 @@
 #'
 #' @noRd
 
-results_csv <- "results.csv"
-in_format <- "wqdashboard"
+results_csv <- "demo_ww_data.csv"
+in_format <- "ri_ww"
 date_format <- "m/d/Y"
 timezone <- Sys.timezone()
 
-overwrite_existing <- FALSE
+overwrite_existing <- TRUE
 recalculate_score <- FALSE
 update_citation <- TRUE
 

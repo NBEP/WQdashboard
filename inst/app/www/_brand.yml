@@ -1,5 +1,5 @@
 meta:
-  name: Narragansett Bay Estuary Program
+  name: Salt Ponds Coalition
   title: Water Quality Dashboard
 
 color:
@@ -8,7 +8,7 @@ color:
     dark-aqua: "#0d5d82"
     black: "#1A1A1A"
   primary: aqua
-  # secondary:
+  secondary: dark-aqua
 
 typography:
   fonts:

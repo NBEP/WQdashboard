@@ -19,7 +19,7 @@
 #'
 #' @noRd
 
-org_name <- ""
+org_name <- "Salt Ponds Coalition"
 
 # CODE ------------------------------------------------------------------------
 library(quarto)

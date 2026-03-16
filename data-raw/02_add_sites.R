@@ -23,9 +23,9 @@
 #'
 #' @noRd
 
-sites_csv <- "sites.csv"
-in_format <- "wqdashboard"
-default_state <- NA
+sites_csv <- "demo_ww_sites.csv"
+in_format <- "ri_ww"
+default_state <- "Rhode Island"
 
 # CODE ------------------------------------------------------------------------
 devtools::load_all()

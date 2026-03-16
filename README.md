@@ -12,12 +12,12 @@ coverage](https://codecov.io/gh/NBEP/WQdashboard/graph/badge.svg)](https://app.c
 [![R-CMD-check](https://github.com/NBEP/WQdashboard/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/NBEP/WQdashboard/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-WQdashboard is an open source dashboard template that displays water
+WQdashboard is a dashboard template that can be used to display water
 quality data as interactive maps, report cards, and graphs.
 
 <!-- ## Installation -->
 
-<!-- Info on how to use, installl... -->
+<!-- Info on how to use, install... -->
 
 <!-- ## Accessibility -->
 

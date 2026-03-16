@@ -19,3 +19,4 @@ golem::document_and_reload()
 
 # Run application
 run_app()
+
