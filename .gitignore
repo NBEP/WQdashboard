@@ -10,3 +10,6 @@ inst/doc
 TinyTeX.zip
 *.pdf
 dev/config_attachment.yaml
+/doc/
+/Meta/
+/dev

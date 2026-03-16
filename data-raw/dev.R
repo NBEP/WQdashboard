@@ -79,7 +79,7 @@ df_qual <- readr::read_csv(df_qual, show_col_types = FALSE) |>
 
 readr::write_csv(df_qual, "varnames_qualifiers.csv", na = "")
 
-# Add state, EPA thresholds to inst/extdata/
+# Add state, EPA thresholds to inst/extdata/ ----
 setwd(wd)
 thresholds <- importwqd:::dat_thresholds
 
