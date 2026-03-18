@@ -12,12 +12,20 @@ coverage](https://codecov.io/gh/NBEP/WQdashboard/graph/badge.svg)](https://app.c
 [![R-CMD-check](https://github.com/NBEP/WQdashboard/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/NBEP/WQdashboard/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-WQdashboard is a dashboard template that can be used to display water
-quality data as interactive maps, report cards, and graphs.
+WQdashboard is an open-source dashboard template that can be used to
+display water quality data using interactive maps, report cards, and
+graphs. No coding knowledge required! This tool accepts multiple
+different data formats, including those used by WQX, RI DEM, Watershed
+Watch, and the Blackstone River Coalition. WQdashboard is designed to
+help water quality organizations share their data as a standalone or
+embedded website.
 
-<!-- ## Installation -->
+## Installation
 
-<!-- Info on how to use, install... -->
+For those with a GitHub account, select “Use this template” to create a
+new repository. Else, select “Code” \> “Download ZIP” to download the
+code. Follow the instructions in the “data-raw” folder to upload data
+and customize WQdashboard to suit your needs.
 
 <!-- ## Accessibility -->
 

@@ -4,7 +4,11 @@
 # `tinytex`, which is used to generate PDF files.
 #
 # This script only needs to be run once, but MUST be run if you are unfamiliar
-# with R and don't know how to install packages manually.
+# with R and don't know how to install packages.
+#
+# To run this script and all following scripts, use CTRL + SHIFT + ENTER
+#
+# DO NOT EDIT ANYTHING BELOW "Code ------"
 
 # Code ------------------------------------------------------------------------
 # Install packages ----

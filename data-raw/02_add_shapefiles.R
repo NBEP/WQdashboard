@@ -1,18 +1,23 @@
 # Add Shapefiles - OPTIONAL
 #
-#' @description Run this script if you would like to add watershed or river
-#' shapefiles to the map. Shapefiles should be saved in the folder
-#' `data-raw/shp`
-#'
-#' @param watershed_shp Watershed shapefile. Must be polygons.
-#' @param watershed_name_col Watershed shapefile column name used to label each
-#' polygon.
-#'
-#' @param river_shp River shapefile. Must be polylines.
-#' @param river_name_col River shapefile column name used to label each
-#' polyline.
-#'
-#' @noRd
+# THIS STEP IS OPTIONAL. If you would like to add custom watershed or river
+# layers to the interactive map, use this script to upload shapefiles.
+#
+# Save shapefiles to folder "data-raw/shp" before running this script.
+#
+# VARIABLES
+# watershed_shp: Name of watershed shapefile. Shapefile must be a polygon layer.
+#
+# watershed_name_col: Field name for watershed shapefile. This field will be
+# used to label each polygon.
+#
+# river_shp: Name of river shapefile. Shapefile must be a polyline layer.
+#
+# river_name_col: Field name for river shapefile. This field will be
+# used to label each polyline.
+#
+# To run this script, update variables below and then use CTRL + SHIFT + ENTER
+
 
 # SHAPEFILE - Watershed Boundaries
 watershed_shp <- NA
