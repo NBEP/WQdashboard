@@ -1,33 +1,37 @@
 #' Upload site metadata
 #'
 #' @description Run this script to upload site metadata. Site metadata must be
-#' saved as a csv in the `data-raw` folder.
+#' saved as a csv file in the `data-raw` folder. The following formats are
+#' supported:
 #'
-#' @param sites_csv Path to csv file containing site metadata.
-#'
-#' @param in_format Input format. Accepted formats:
-#'
-#' * wqdashboard
+#' * WQdashboard
 #' * WQX
 #' * MassWateR
-#' * RI_WW (RI Watershed Watch)
-#' * MA_BRC (Blackstone River Coalition)
-#' * ME_FOCB (Friends of Casco Bay)
+#' * RI Watershed Watch (RI_WW)
+#' * Blackstone River Coaltiion (MA_BRC)
+#' * Friends of Casco Bay (ME_FOCB)
 #'
-#' To use a custom format, set `in_format` to "custom" and update
+#' To use a custom, unsupported format, set `in_format` to "custom" and update
+#' this file:
 #' `data-raw/custom_format/colnames_sites.csv`
 #'
-#' @param default_state State name or abbreviation. Blank rows in column "State"
-#' will be set to `default_state`. Set to `NA` to leave blank rows as-is.
-#' as-is.
+#' If you would like to use the official WQdashboard format, a template can be
+#' found here:
+#' `inst/extdata/template_sites.csv`
+#'
+#' @param sites_csv Name of csv file containing site metadata.
+#' @param in_format Input format. Options: WQdashboard, WQX, MassWateR, RI_WW,
+#' MA_BRC, ME_FOCB, Custom
+#' @param default_state State name or abbreviation. Blank values in column
+#' "State" will be updated to this value. Set to `NA` to leave blanks as-is.
 #'
 #' @noRd
 
-sites_csv <- "demo_ww_sites.csv"
-in_format <- "ri_ww"
-default_state <- "Rhode Island"
+sites_csv <- "sites.csv"
+in_format <- "WQdashboard"
+default_state <- NA
 
-# CODE ------------------------------------------------------------------------
+# CODE - DO NOT EDIT BELOW THIS LINE -------------------------------------------
 devtools::load_all()
 library("readr")
 
@@ -63,3 +67,6 @@ usethis::use_data(df_sites, overwrite = TRUE)
 message("Done")
 
 rm(list = ls(all.names = TRUE))
+
+# Go to next page
+rstudioapi::navigateToFile("data-raw/04_add_thresholds.R")

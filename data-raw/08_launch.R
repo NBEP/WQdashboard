@@ -1,14 +1,14 @@
 #' Launch Website
 #'
 #' @description Run this script to create or update WQdashboard as a website.
-#' If you wish to host your website on shinyapps.io or posit connect, you must
+#' If you wish to host your website on shinyapps.io or posit connect, you MUST
 #' create an account first.
 #'
-#' JNOTE: If you have added custom thresholds, shapefiles, or categorical data,
+#' NOTE: If you have added custom thresholds, shapefiles, or categorical data,
 #' you may receive a warning message about undocumented variables. This message
 #' can be safely ignored, but if you want to stop seeing it, go to `R/data.R`
 #' and uncomment the section describing the relevant file(s) by removing the
-#' `#` at the start of each line.
+#' first `#` at the start of each line.
 #'
 #' @param launch_to Where to upload your website. Options: "shinyapps.io",
 #' "posit connect", "shiny server"
@@ -20,10 +20,19 @@
 launch_to <- "shinyapps.io"
 create_docker_file <- FALSE
 
-# CODE ------------------------------------------------------------------------
-library("devtools")
+# CODE - DO NOT EDIT BELOW THIS LINE -------------------------------------------
 library("golem")
+if (!require(devtools)) {
+  install.packages("devtools")
+}
+library("devtools")
+if (!require(rsconnect)) {
+  install.packages("rsconnect")
+}
 library("rsconnect")
+if (!require(desc)) {
+  install.packages("desc")
+}
 library("desc")
 
 # Check code

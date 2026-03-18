@@ -5,11 +5,10 @@
 .DS_Store
 data-raw/test_*
 data-raw/shp/test_*
-inst/doc
+inst/app/www/*.html
 /rsconnect
 TinyTeX.zip
 *.pdf
-dev/config_attachment.yaml
 /doc/
 /Meta/
 /dev

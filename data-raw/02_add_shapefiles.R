@@ -1,23 +1,20 @@
-# Add Shapefiles - OPTIONAL
-#
-# THIS STEP IS OPTIONAL. If you would like to add custom watershed or river
-# layers to the interactive map, use this script to upload shapefiles.
-#
-# Save shapefiles to folder "data-raw/shp" before running this script.
-#
-# VARIABLES
-# watershed_shp: Name of watershed shapefile. Shapefile must be a polygon layer.
-#
-# watershed_name_col: Field name for watershed shapefile. This field will be
-# used to label each polygon.
-#
-# river_shp: Name of river shapefile. Shapefile must be a polyline layer.
-#
-# river_name_col: Field name for river shapefile. This field will be
-# used to label each polyline.
-#
-# To run this script, update variables below and then use CTRL + SHIFT + ENTER
-
+#' Add Shapefiles - OPTIONAL
+#'
+#' @description THIS STEP IS OPTIONAL. If you would like to add custom watershed
+#' or river layers to the interactive map, use this script to upload shapefiles.
+#'
+#' Save shapefiles to folder `data-raw/shp` before running this script. Use
+#' `CTRL` + `SHIFT` + `ENTER` to run the script.
+#'
+#' @param watershed_shp Name of the watershed shapefile. Shapefile must be a
+#' polygon layer.
+#' @param watershed_name_col Field name for watershed shapefile. This field will
+#' be used to label each polygon.
+#' @param river_shp Name of river shapefile. Shapefile must be a polyline layer.
+#' @param river_name_col Field name for river shapefile. This field will be
+#' used to label each polyline.
+#'
+#' @noRd
 
 # SHAPEFILE - Watershed Boundaries
 watershed_shp <- NA
@@ -27,7 +24,7 @@ watershed_name_col <- "Field"
 river_shp <- NA
 river_name_col <- "Field"
 
-# CODE ------------------------------------------------------------------------
+# CODE - DO NOT EDIT BELOW THIS LINE -------------------------------------------
 library(sf)
 library(dplyr)
 library(tidyr)
@@ -50,3 +47,6 @@ if (!is.null(river_shp) && !is.na(river_shp)) {
 }
 
 rm(list = ls(all.names = TRUE))
+
+# Go to next page
+rstudioapi::navigateToFile("data-raw/03_add_sites.R")

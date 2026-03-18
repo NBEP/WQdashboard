@@ -25,7 +25,8 @@ embedded website.
 For those with a GitHub account, select “Use this template” to create a
 new repository. Else, select “Code” \> “Download ZIP” to download the
 code. Follow the instructions in the “data-raw” folder to upload data
-and customize WQdashboard to suit your needs.
+and customize WQdashboard to suit your needs. Start with file
+“00_install.R”
 
 <!-- ## Accessibility -->
 

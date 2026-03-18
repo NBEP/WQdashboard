@@ -1,30 +1,35 @@
 #' Add/Update Result Data
 #'
-#' @description Run this script to add or update result data. Only include
-#' numeric results.
+#' @description Run this script to add or update result data. ONLY INCLUDE
+#' NUMERIC RESULTS. Result data must be saved as a csv file in the `data-raw`
+#' folder. The following formats are supported:
 #'
-#' @param results_csv Path to csv file containing result data.
-#'
-#' @param in_format Input format. Accepted formats:
-#'
-#' * wqdashboard
+#' * WQdashboard
 #' * WQX
 #' * MassWateR
-#' * RI_DEM (Rhode Island DEM)
-#' * RI_WW (RI Watershed Watch)
-#' * MA_BRC (Blackstone River Coalition)
-#' * ME_DEP (Maine DEP)
-#' * ME_FOCB (Friends of Casco Bay)
+#' * Maine DEP (ME_DEP)
+#' * RI DEM (RI_DEM)
+#' * RI Watershed Watch (RI_WW)
+#' * Blackstone River Coalition (MA_BRC)
+#' * Friends of Casco Bay (ME_FOCB)
 #'
-#' To use a custom format, set `in_format` to "custom" and update the following
-#' files:
+#' To use a custom, unsupported format, set `in_format` to "custom" and update
+#' the following files:
 #' * `data-raw/custom_format/colnames_results.csv`
 #' * `data-raw/custom_format/varnames_activity.csv`
 #' * `data-raw/custom_format/varnames_parameters.csv`
 #' * `data-raw/custom_format/varnames_qualifiers.csv`
 #' * `data-raw/custom_format/varnames_units.csv`
 #'
-#' @param date_format Format used for Date column. List of abbreviations:
+#' If you would like to use the official WQdashboard format, a template can be
+#' found here:
+#' `inst/extdata/template_results.csv`
+#'
+#' @param results_csv Name of CSV file containing result data.
+#' @param in_format Input format. Accepted formats: WQdashboard, WQX, MassWateR,
+#' RI_DEM, RI_WW, MA_BRC, ME_DEP, ME_FOCB, Custom
+#'
+#' @param date_format Format used for "Date" column. List of abbreviations:
 #'
 #' * B - Full month name (August)
 #' * b - Abbreviated month name (Aug)
@@ -50,16 +55,16 @@
 #'
 #' @noRd
 
-results_csv <- "demo_ww_data.csv"
-in_format <- "ri_ww"
+results_csv <- "data.csv"
+in_format <- "WQdashboard"
 date_format <- "m/d/Y"
 timezone <- Sys.timezone()
 
-overwrite_existing <- TRUE
+overwrite_existing <- FALSE
 recalculate_score <- FALSE
 update_citation <- TRUE
 
-# CODE ------------------------------------------------------------------------
+# CODE - DO NOT EDIT BELOW THIS LINE -------------------------------------------
 devtools::load_all()
 library("readr")
 
@@ -202,3 +207,7 @@ usethis::use_data(varlist, internal = TRUE, overwrite = TRUE)
 message("Done")
 
 rm(list = ls(all.names = TRUE))
+
+# Go to next page
+rstudioapi::navigateToFile("data-raw/06_add_categorical_results.R")
+rstudioapi::navigateToFile("data-raw/07_preview.R")

@@ -5,7 +5,7 @@
 #'
 #' @noRd
 
-# CODE ------------------------------------------------------------------------
+# CODE - DO NOT EDIT BELOW THIS LINE -------------------------------------------
 # Set options
 options(golem.app.prod = FALSE)
 options(shiny.port = httpuv::randomPort())
@@ -19,4 +19,3 @@ golem::document_and_reload()
 
 # Run application
 run_app()
-
