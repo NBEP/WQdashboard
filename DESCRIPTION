@@ -21,10 +21,8 @@ Imports:
     shiny,
     stats
 Suggests: 
-    knitr,
     quarto,
     readr,
-    rmarkdown,
     sf,
     spelling,
     testthat (>= 3.0.0),
@@ -37,4 +35,3 @@ Encoding: UTF-8
 Language: en-US
 LazyData: true
 RoxygenNote: 7.3.3
-VignetteBuilder: knitr
