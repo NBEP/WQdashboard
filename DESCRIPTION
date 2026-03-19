@@ -1,6 +1,6 @@
 Package: WQdashboard
 Title: Water Quality Dashboard
-Version: 0.0.0.9000
+Version: 1.0.0
 Authors@R: 
     person("Mariel", "Sorlien", , "msorlien@nbep.org", role = c("cre", "aut"))
 Description: A water quality dashboard template.
