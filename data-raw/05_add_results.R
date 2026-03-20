@@ -117,7 +117,7 @@ df_qaqc <- importwqd::qaqc_results(df_raw, df_sites_all)
 chk_years <- unique(df_qaqc$Year)
 
 # Combine datasets (if overwrite_existing is FALSE)
-if (!overwrite_existing && exists("df_data_all")) {
+if (!overwrite_existing && exists("df_data_all") && nrow(df_data_all) > 0) {
   df_qaqc <- dplyr::bind_rows(df_data_all, df_qaqc) |>
     unique() |>
     wqformat::standardize_units(
@@ -162,7 +162,8 @@ usethis::use_data(df_data, overwrite = TRUE)
 message("Saved df_data")
 
 # Calculate scores ----
-chk <- !overwrite_existing & !recalculate_score & exists("df_score")
+chk <- !overwrite_existing & !recalculate_score & exists("df_score") &
+  nrow(df_score) > 0
 if (chk) {
   df_temp <- dplyr::filter(df_temp, .data$Year %in% chk_years)
   df_old <- dplyr::filter(df_score, !.data$Year %in% chk_years)
