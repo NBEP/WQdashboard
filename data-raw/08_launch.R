@@ -68,7 +68,6 @@ if (launch_to %in% c("shinyapps.io", "posit connect")) {
       "DESCRIPTION",
       "app.R"
     ),
-    appId = rsconnect::deployments(".")$appID,
     lint = FALSE,
     forceUpdate = TRUE
   )
