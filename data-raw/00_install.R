@@ -29,6 +29,7 @@ if (!tinytex::is_tinytex()) {
   tinytex::install_tinytex()
 }
 
+# Go to next page ----
 rstudioapi::navigateToFile("inst/app/www/About.qmd")
 rstudioapi::navigateToFile("inst/app/www/Download.qmd")
 rstudioapi::navigateToFile("inst/app/www/_brand.yml")
