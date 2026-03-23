@@ -21,7 +21,7 @@ renv::install(exclude = c("WQdashboard", "covrpage"))
 
 # Add tinytex ----
 if (!require(tinytex)) {
-  install.packages('tinytex')
+  install.packages("tinytex")
 }
 
 library(tinytex)

@@ -26,23 +26,25 @@ river_shp <- NA
 river_name_col <- "Field"
 
 # CODE - DO NOT EDIT BELOW THIS LINE -------------------------------------------
-library(sf)
-library(dplyr)
-library(tidyr)
+devtools::load_all()
 
 # Import shapefiles ----
 if (!is.null(watershed_shp) && !is.na(watershed_shp)) {
-  shp_watershed <- sf::read_sf(dsn = "data-raw", layer = watershed_shp) |>
-    dplyr::select(!!watershed_name_col)
-  colnames(shp_watershed)[1] <- "Label"
+  shp_watershed <- importwqd::qaqc_shp(
+    watershed_shp,
+    watershed_name_col,
+    path = "data-raw"
+  )
 
   usethis::use_data(shp_watershed, overwrite = TRUE)
 }
 
 if (!is.null(river_shp) && !is.na(river_shp)) {
-  shp_river <- sf::read_sf(dsn = "data-raw", layer = river_shp) |>
-    dplyr::select(!!river_name_col)
-  colnames(shp_river)[1] <- "Label"
+  shp_river <- importwqd::qaqc_shp(
+    river_shp,
+    river_name_col,
+    path = "data-raw"
+  )
 
   usethis::use_data(shp_river, overwrite = TRUE)
 }
