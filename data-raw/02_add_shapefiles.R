@@ -2,6 +2,7 @@
 #'
 #' @description THIS STEP IS OPTIONAL. If you would like to add custom watershed
 #' or river layers to the interactive map, use this script to upload shapefiles.
+#' Shapefiles must use the WGS 1984 projection.
 #'
 #' Save shapefiles to folder `data-raw` before running this script. Use
 #' `CTRL` + `SHIFT` + `ENTER` to run the script.
