@@ -24,7 +24,7 @@
 #' * `Parameter`, `Unit`: Parameter, unit.
 #'
 #' * `Calculation`: How the annual value should be calculated. Acceptable
-#' values: minimum, maximum, average, median
+#' values: minimum, maximum, average, median, geometric mean
 #'
 #' * `Threshold_Min`, `Threshold_Max`: The minimum and maximum acceptable
 #' values. Must enter value for at least one column.
