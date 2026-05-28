@@ -8,15 +8,20 @@ Watch, and the Blackstone River Coalition. WQdashboard is designed to
 help water quality organizations share their data as a standalone or
 embedded website.
 
-## Installation
+## Using WQdashboard
 
 For those with a GitHub account, select “Use this template” to create a
 new repository. Else, select “Code” \> “Download ZIP” to download the
 code.
 
-The “data-raw” folder includes detailed instructions on how to upload
-data and customize WQdashboard to suit your needs. Start with
-“00_install.R”
+Please read the following vignettes for instructions on using
+WQdashboard:
+
+- [General
+  Overview](https://nbep.github.io/WQdashboard/articles/wqdashboard.html)
+- [Introduction to
+  R](https://nbep.github.io/WQdashboard/articles/intro_to_R.html)
+- [Publishing](https://nbep.github.io/WQdashboard/articles/publishing.html)
 
 ## Disclaimer
 

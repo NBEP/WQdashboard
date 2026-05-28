@@ -8,6 +8,8 @@ Useful links:
 
 - <https://github.com/NBEP/WQdashboard>
 
+- <https://nbep.github.io/WQdashboard/>
+
 - Report bugs at <https://github.com/NBEP/WQdashboard/issues>
 
 ## Author
