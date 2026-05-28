@@ -1,6 +1,6 @@
 #' Add About Page
 #'
-#' @description WQdasbhoard includes several customizable pages, including the
+#' @description WQdashboard includes several customizable pages, including the
 #' "About" and "Download" pages. Before running this script, go to the folder
 #' `inst/app/www` and update the following files: `About.qmd`, `Download.qmd`,
 #' and `_brand.yml`

@@ -12,3 +12,7 @@ TinyTeX.zip
 /doc/
 /Meta/
 /dev
+/data-raw/shp
+renv.lock
+.Rprofile
+inst/doc

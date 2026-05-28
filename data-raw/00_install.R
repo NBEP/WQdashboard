@@ -7,6 +7,7 @@
 #' with R and don't know how to install packages.
 #'
 #' To run this script and all following scripts, use `CTRL` + `SHIFT` + `ENTER`
+#' on a windows or `CMD` + `SHIFT` + `ENTER` on a mac.
 #'
 #' @noRd
 
