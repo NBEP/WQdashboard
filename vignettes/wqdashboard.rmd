@@ -20,7 +20,7 @@ WQdashboard is an open-source dashboard template that can be used to display wat
 
 WQdashboard is written in [R Shiny](https://shiny.posit.co/r/getstarted/shiny-basics/lesson1/). No coding knowledge is required to set up or run WQdashboard, although advanced users can take advantage of the modular code to fully customize WQdashboard to meet their needs.
 
-If you are new to R, please read [Introduction to R](intro_to_r.html) for instructions on which programs to download and how to use them.
+If you are new to R, please read `vignette("intro_to_r")` for instructions on which programs to download and how to use them.
 
 ## Supported Data Formats
 
@@ -259,7 +259,7 @@ Run this script to create or update WQdashboard as a website. In order to host W
 
 NOTE: If you have added custom thresholds, shapefiles, or categorical data, you may receive a warning message about undocumented variables. This message can be safely ignored, but if you want to stop seeing it, go to `R/data.R` and uncomment the section describing the relevant file(s) by removing the first `#` at the start of each line. (You can also select the relevant section and use `CTRL` + `SHIFT` + `C`)
 
-For more information, see [Publishing](publishing.html).
+For more information, see `vignette("publishing")`.
 
 #### Variables
 

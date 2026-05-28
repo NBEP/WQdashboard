@@ -5,7 +5,7 @@ Authors@R:
     person("Mariel", "Sorlien", , "msorlien@nbep.org", role = c("cre", "aut"))
 Description: A water quality dashboard template.
 License: MIT + file LICENSE
-URL: https://github.com/NBEP/WQdashboard
+URL: https://github.com/NBEP/WQdashboard, https://nbep.github.io/WQdashboard/
 BugReports: https://github.com/NBEP/WQdashboard/issues
 Depends: 
     R (>= 3.5)
