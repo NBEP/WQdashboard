@@ -12,6 +12,7 @@ A water quality dashboard template.
 Useful links:
 \itemize{
   \item \url{https://github.com/NBEP/WQdashboard}
+  \item \url{https://nbep.github.io/WQdashboard/}
   \item Report bugs at \url{https://github.com/NBEP/WQdashboard/issues}
 }
 
