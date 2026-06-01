@@ -11,10 +11,18 @@ to use and the free tier includes 25 hours of active use per month.
 ## Uploading to Shinyapps.io
 
 1.  Make an account on [shinyapps.io](https://www.shinyapps.io/)
-2.  Run `data-raw/08_launch.R`
-3.  Shinyapps will host the dashboard as a standalone website. You can
+2.  In shinyapps, go to `Account` \> `Tokens`. Select `Show`,
+    `Show Secret` and copy the provided code. Return to RStudio/Posit
+    Connect and paste the code in the console window. Hit `ENTER` to run
+    the code.
+3.  Run `data-raw/08_launch.R`
+4.  Shinyapps will host the dashboard as a standalone website. You can
     find the link to the dashboard under “Recent Applications” on the
     main page, or under Applications \> All.
+
+![shinyapps token](images/shinyapps_token.png)
+
+shinyapps token
 
 ## Embedding
 

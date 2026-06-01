@@ -20,7 +20,7 @@ WQdashboard:
 - [General
   Overview](https://nbep.github.io/WQdashboard/articles/wqdashboard.html)
 - [Introduction to
-  R](https://nbep.github.io/WQdashboard/articles/intro_to_R.html)
+  R](https://nbep.github.io/WQdashboard/articles/intro_to_r.html)
 - [Publishing](https://nbep.github.io/WQdashboard/articles/publishing.html)
 
 ## Disclaimer

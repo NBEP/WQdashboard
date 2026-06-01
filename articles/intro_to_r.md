@@ -65,6 +65,9 @@ anything else.
 To run a script, use `CTRL` + `SHIFT` + `ENTER` on a Windows computer or
 `CMD` + `SHIFT` + `ENTER` on a Mac.
 
+**IMPORTANT** The “Run” button at the top of the source window will
+**only** run the current line or selected text, not the entire script.
+
 ### Packages
 
 Due to its open source nature, R’s capabilities can be greatly expanded
