@@ -20,7 +20,9 @@ knitr::opts_chunk$set(
 
 ## RStudio
 
-[RStudio](https://posit.co/download/rstudio-desktop/) is a free integrated development environment (IDE), which provides a user-friendly interface to create and maintain R projects. To run RStudio, you must also download [R](https://cran.rstudio.com/).
+[RStudio](https://posit.co/download/rstudio-desktop/) is a free integrated development environment (IDE), which provides a user-friendly interface to create and maintain R projects. RStudio is a free program that can be downloaded and installed on your computer. To run RStudio, you must also download [R](https://cran.rstudio.com/).
+
+[Posit Cloud](https://posit.cloud/) is a cloud based website that runs RStudio from the browser. The primary advantages of Posit Cloud are that nothing needs to be installed, projects can be shared between users, and it automatically uses the latest version of R. The downsides are that an account is required, it only allows 25 hours of free use per month, and an internet connection is required.
 
 ### Layout
 
@@ -39,9 +41,9 @@ Here is a brief overview of what each tab does:
 
 You can customize R Studio's appearance and behavior under Tools \> Global Options.
 
-### Folder Structure
+### Projects
 
-Every RStudio project must be placed in its own folder, and WQdashboard is no exception. When you [download WQdashboard from github](https://github.com/nbep/wqdashboard), you will receive a zipped folder. After you unzip the folder, **do not rename or move any of the files or folders unless you are experienced with R**. The following files and folders are especially important:
+Every RStudio project must be placed in its own folder, and WQdashboard is no exception. The data, code, and documents are all stored in specific places, so **do not rename or move any of the files or folders unless you are experienced with R**. The following files and folders are especially important:
 
 -   data
 -   data-raw
@@ -51,11 +53,29 @@ Every RStudio project must be placed in its own folder, and WQdashboard is no ex
 -   tests
 -   wqdashboard.Rproj
 
-To open WQdashboard in RStudio, open `wqdashboard.Rproj`. The WQdashboard folder will be shown in the "Files" tab. All of the files you need to add data or run WQdashboard can be found in the `data-raw` folder. The scripts in `data-raw` are numbered in the order they should be run and include detailed instructions at the top of each file. If it is your first time using WQdashboard, run `00_install.R` before doing anything else.
+#### Starting a Project
+ 
+##### RStudio 
+
+To run WQdashboard from RStudio, [download WQdashboard from github](https://github.com/nbep/wqdashboard). Unzip the folder and open `wqdashboard.Rproj`. 
+
+##### Posit Connect
+
+To run WQdashboard from Posit Connect, go to `Your Workspace` > `New Project` > `New Project from Git Repository`. 
+
+![Select New Project from Git Repository](images/posit_cloud_project.png){fig-alt="Blue button labeled New Project with four dropdown items. Last dropdown item is circled in red and reads New Project from Git Repository."}
+
+In the New Project pop up, enter the link to the WQdashboard github repository.
+
+![Add URL for WQdashboard](images/posit_cloud_repository.png){fig-alt="Popup labeled New Project from Git Repository. First item is a dropdown labeled Project type. Option RStudio Project is selected. Second item is a textbox labeled URL of your Git Repository. Textbox is filled out with https://github.com/NBEP/WQdashboard"}
+
+#### Running a Script
+
+Once you have uploaded WQdashboard to RStudio or Posit Cloud, find the `Files` window and open the `data-raw` folder. All of the scripts you need to add data or run WQdashboard can be found in this folder, and have been numbered in the order they should be fun. Each script contains detailed instructions at the top of the file. Make sure you start with `00_install.R`, especially if this is your first time using WQdashboard.
 
 To run a script, use `CTRL` + `SHIFT` + `ENTER` on a Windows computer or `CMD` + `SHIFT` + `ENTER` on a Mac. 
 
-**IMPORTANT** The "Run" button at the top of the source window will **only** run the current line or selected text, not the entire script. 
+**IMPORTANT** Do NOT use the "Run" button at the top of the source window - this button will only run the current line or any highlighted text, *not* the entire script.
 
 ### Packages
 
