@@ -20,6 +20,10 @@ if (!require(renv)) {
 library(renv)
 renv::install(exclude = c("WQdashboard", "covrpage"))
 
+if (!require(rsconnect)) {
+  install.packages("rsconnect")
+}
+
 # Add tinytex ----
 if (!require(tinytex)) {
   install.packages("tinytex")

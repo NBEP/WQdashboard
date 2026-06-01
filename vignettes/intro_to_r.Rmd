@@ -53,7 +53,9 @@ Every RStudio project must be placed in its own folder, and WQdashboard is no ex
 
 To open WQdashboard in RStudio, open `wqdashboard.Rproj`. The WQdashboard folder will be shown in the "Files" tab. All of the files you need to add data or run WQdashboard can be found in the `data-raw` folder. The scripts in `data-raw` are numbered in the order they should be run and include detailed instructions at the top of each file. If it is your first time using WQdashboard, run `00_install.R` before doing anything else.
 
-To run a script, use `CTRL` + `SHIFT` + `ENTER` on a Windows computer or `CMD` + `SHIFT` + `ENTER` on a Mac.
+To run a script, use `CTRL` + `SHIFT` + `ENTER` on a Windows computer or `CMD` + `SHIFT` + `ENTER` on a Mac. 
+
+**IMPORTANT** The "Run" button at the top of the source window will **only** run the current line or selected text, not the entire script. 
 
 ### Packages
 

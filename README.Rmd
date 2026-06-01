@@ -28,7 +28,7 @@ For those with a GitHub account, select "Use this template" to create a new repo
 Please read the following vignettes for instructions on using WQdashboard:
 
 - [General Overview](https://nbep.github.io/WQdashboard/articles/wqdashboard.html)
-- [Introduction to R](https://nbep.github.io/WQdashboard/articles/intro_to_R.html)
+- [Introduction to R](https://nbep.github.io/WQdashboard/articles/intro_to_r.html)
 - [Publishing](https://nbep.github.io/WQdashboard/articles/publishing.html)
 
 <!-- ## Accessibility -->
