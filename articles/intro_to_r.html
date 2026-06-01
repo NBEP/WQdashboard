@@ -80,8 +80,15 @@ Shiny</a>.</p>
 </h2>
 <p><a href="https://posit.co/download/rstudio-desktop/" class="external-link">RStudio</a> is a
 free integrated development environment (IDE), which provides a
-user-friendly interface to create and maintain R projects. To run
-RStudio, you must also download <a href="https://cran.rstudio.com/" class="external-link">R</a>.</p>
+user-friendly interface to create and maintain R projects. RStudio is a
+free program that can be downloaded and installed on your computer. To
+run RStudio, you must also download <a href="https://cran.rstudio.com/" class="external-link">R</a>.</p>
+<p><a href="https://posit.cloud/" class="external-link">Posit Cloud</a> is a cloud based
+website that runs RStudio from the browser. The primary advantages of
+Posit Cloud are that nothing needs to be installed, projects can be
+shared between users, and it automatically uses the latest version of R.
+The downsides are that an account is required, it only allows 25 hours
+of free use per month, and an internet connection is required.</p>
 <div class="section level3">
 <h3 id="layout">Layout<a class="anchor" aria-label="anchor" href="#layout"></a>
 </h3>
@@ -111,14 +118,13 @@ or delete files here.</li>
 Global Options.</p>
 </div>
 <div class="section level3">
-<h3 id="folder-structure">Folder Structure<a class="anchor" aria-label="anchor" href="#folder-structure"></a>
+<h3 id="projects">Projects<a class="anchor" aria-label="anchor" href="#projects"></a>
 </h3>
 <p>Every RStudio project must be placed in its own folder, and
-WQdashboard is no exception. When you <a href="https://github.com/nbep/wqdashboard" class="external-link">download WQdashboard from
-github</a>, you will receive a zipped folder. After you unzip the
-folder, <strong>do not rename or move any of the files or folders unless
-you are experienced with R</strong>. The following files and folders are
-especially important:</p>
+WQdashboard is no exception. The data, code, and documents are all
+stored in specific places, so <strong>do not rename or move any of the
+files or folders unless you are experienced with R</strong>. The
+following files and folders are especially important:</p>
 <ul>
 <li>data</li>
 <li>data-raw</li>
@@ -128,20 +134,49 @@ especially important:</p>
 <li>tests</li>
 <li>wqdashboard.Rproj</li>
 </ul>
-<p>To open WQdashboard in RStudio, open <code>wqdashboard.Rproj</code>.
-The WQdashboard folder will be shown in the “Files” tab. All of the
-files you need to add data or run WQdashboard can be found in the
-<code>data-raw</code> folder. The scripts in <code>data-raw</code> are
-numbered in the order they should be run and include detailed
-instructions at the top of each file. If it is your first time using
-WQdashboard, run <code>00_install.R</code> before doing anything
-else.</p>
+<div class="section level4">
+<h4 id="starting-a-project">Starting a Project<a class="anchor" aria-label="anchor" href="#starting-a-project"></a>
+</h4>
+<div class="section level5">
+<h5 id="rstudio-1">RStudio<a class="anchor" aria-label="anchor" href="#rstudio-1"></a>
+</h5>
+<p>To run WQdashboard from RStudio, <a href="https://github.com/nbep/wqdashboard" class="external-link">download WQdashboard from
+github</a>. Unzip the folder and open
+<code>wqdashboard.Rproj</code>.</p>
+</div>
+<div class="section level5">
+<h5 id="posit-connect">Posit Connect<a class="anchor" aria-label="anchor" href="#posit-connect"></a>
+</h5>
+<p>To run WQdashboard from Posit Connect, go to
+<code>Your Workspace</code> &gt; <code>New Project</code> &gt;
+<code>New Project from Git Repository</code>.</p>
+<div class="float">
+<img src="images/posit_cloud_project.png" fig-alt="Blue button labeled New Project with four dropdown items. Last dropdown item is circled in red and reads New Project from Git Repository." alt="Select New Project from Git Repository"><div class="figcaption">Select New Project from Git Repository</div>
+</div>
+<p>In the New Project pop up, enter the link to the WQdashboard github
+repository.</p>
+<div class="float">
+<img src="images/posit_cloud_repository.png" fig-alt="Popup labeled New Project from Git Repository. First item is a dropdown labeled Project type. Option RStudio Project is selected. Second item is a textbox labeled URL of your Git Repository. Textbox is filled out with https://github.com/NBEP/WQdashboard" alt="Add URL for WQdashboard"><div class="figcaption">Add URL for WQdashboard</div>
+</div>
+</div>
+</div>
+<div class="section level4">
+<h4 id="running-a-script">Running a Script<a class="anchor" aria-label="anchor" href="#running-a-script"></a>
+</h4>
+<p>Once you have uploaded WQdashboard to RStudio or Posit Cloud, find
+the <code>Files</code> window and open the <code>data-raw</code> folder.
+All of the scripts you need to add data or run WQdashboard can be found
+in this folder, and have been numbered in the order they should be fun.
+Each script contains detailed instructions at the top of the file. Make
+sure you start with <code>00_install.R</code>, especially if this is
+your first time using WQdashboard.</p>
 <p>To run a script, use <code>CTRL</code> + <code>SHIFT</code> +
 <code>ENTER</code> on a Windows computer or <code>CMD</code> +
 <code>SHIFT</code> + <code>ENTER</code> on a Mac.</p>
-<p><strong>IMPORTANT</strong> The “Run” button at the top of the source
-window will <strong>only</strong> run the current line or selected text,
-not the entire script.</p>
+<p><strong>IMPORTANT</strong> Do NOT use the “Run” button at the top of
+the source window - this button will only run the current line or any
+highlighted text, <em>not</em> the entire script.</p>
+</div>
 </div>
 <div class="section level3">
 <h3 id="packages">Packages<a class="anchor" aria-label="anchor" href="#packages"></a>
