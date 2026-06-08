@@ -15,7 +15,8 @@ to use and the free tier includes 25 hours of active use per month.
     `Show Secret` and copy the provided code. Return to RStudio/Posit
     Connect and paste the code in the console window. Hit `ENTER` to run
     the code.
-3.  Run `data-raw/08_launch.R`
+3.  Run `data-raw/08_launch.R`. If prompted with a message that
+    WQdashboard is not installed, select option `1`.
 4.  Shinyapps will host the dashboard as a standalone website. You can
     find the link to the dashboard under “Recent Applications” on the
     main page, or under Applications \> All.

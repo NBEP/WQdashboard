@@ -18,5 +18,3 @@
   : "Download" tab text
 - [`run_app()`](https://nbep.github.io/WQdashboard/reference/run_app.md)
   : Run the Shiny Application
-- [`varlist`](https://nbep.github.io/WQdashboard/reference/varlist.md) :
-  Default UI dropdown values
