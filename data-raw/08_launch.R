@@ -11,13 +11,13 @@
 #' first `#` at the start of each line.
 #'
 #' @param launch_to Where to upload your website. Options: "shinyapps.io",
-#' "posit connect", "shiny server"
+#' "posit connect cloud", "shiny server"
 #' @param create_docker_file Whether to generate a tar.gz file that can be used
 #' to install the app locally.
 #'
 #' @noRd
 
-launch_to <- "shinyapps.io"
+launch_to <- "posit connect cloud"
 create_docker_file <- FALSE
 
 # CODE - DO NOT EDIT BELOW THIS LINE -------------------------------------------
@@ -44,7 +44,7 @@ devtools::build()
 # RStudio ----
 if (launch_to == "shinyapps.io") {
   golem::add_shinyappsio_file()
-} else if (launch_to == "posit connect") {
+} else if (launch_to %in% c("posit connect", "posit connect cloud")) {
   golem::add_positconnect_file()
 } else if (launch_to == "shiny server") {
   golem::add_shinyserver_file()
@@ -55,8 +55,8 @@ if (create_docker_file) {
   golem::add_dockerfile_with_renv()
 }
 
-# Deploy to Posit Connect or ShinyApps.io ---
-if (launch_to %in% c("shinyapps.io", "posit connect")) {
+# Deploy to Posit Connect Cloud or ShinyApps.io ---
+if (launch_to %in% c("shinyapps.io", "posit connect", "posit connect cloud")) {
   rsconnect::deployApp(
     appName = desc::desc_get_field("Package"),
     appTitle = desc::desc_get_field("Title"),

@@ -16,16 +16,16 @@ knitr::opts_chunk$set(
 
 ## Overview
 
-There are several different ways to share to share your custom dashboard online, including shinyapps.io, posit connect, and shiny server. For smaller organizations, I recommend [shinyapps.io](https://www.shinyapps.io/) because it is straightforward to use and the free tier includes 25 hours of active use per month.
+There are several different ways to share to share your custom dashboard online, including posit connect cloud and shiny server. For smaller organizations, I recommend [posit connect cloud](https://connect.posit.cloud/) because it is straightforward to use and the free tier includes 20 hours of active use per month.
 
-## Uploading to Shinyapps.io
+## Uploading to Posit Connect Cloud
 
-1.  Make an account on [shinyapps.io](https://www.shinyapps.io/)
-2. In shinyapps, go to `Account` > `Tokens`. Select `Show`, `Show Secret` and copy the provided code. Return to RStudio/Posit Connect and paste the code in the console window. Hit `ENTER` to run the code. 
+1.  Log in or make an account on [posit connect cloud](https://connect.posit.cloud/). 
+
+2. Paste `rsconnect::connectCloudUser()` in the console window and hit `ENTER`. This will open posit connect cloud in a browser window; follow the prompts to authorize access. 
+
 3.  Run `data-raw/08_launch.R`. If prompted with a message that WQdashboard is not installed, select option `1`. 
-4.  Shinyapps will host the dashboard as a standalone website. You can find the link to the dashboard under "Recent Applications" on the main page, or under Applications \> All.
-
-![shinyapps token](images/shinyapps_token.png){fig-alt="rsconnect::setAccountInfo(name='nbep', token='censored', secret='censored')"}
+4.  Posit connect cloud will host the dashboard as a standalone website. The home page for posit connect cloud will provide a link to each active website. 
 
 ## Embedding
 
