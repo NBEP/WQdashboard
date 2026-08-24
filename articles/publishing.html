@@ -71,30 +71,26 @@
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
 <p>There are several different ways to share to share your custom
-dashboard online, including shinyapps.io, posit connect, and shiny
-server. For smaller organizations, I recommend <a href="https://www.shinyapps.io/" class="external-link">shinyapps.io</a> because it is
-straightforward to use and the free tier includes 25 hours of active use
-per month.</p>
+dashboard online, including posit connect cloud and shiny server. For
+smaller organizations, I recommend <a href="https://connect.posit.cloud/" class="external-link">posit connect cloud</a> because it
+is straightforward to use and the free tier includes 20 hours of active
+use per month.</p>
 </div>
 <div class="section level2">
-<h2 id="uploading-to-shinyapps-io">Uploading to Shinyapps.io<a class="anchor" aria-label="anchor" href="#uploading-to-shinyapps-io"></a>
+<h2 id="uploading-to-posit-connect-cloud">Uploading to Posit Connect Cloud<a class="anchor" aria-label="anchor" href="#uploading-to-posit-connect-cloud"></a>
 </h2>
 <ol style="list-style-type: decimal">
-<li>Make an account on <a href="https://www.shinyapps.io/" class="external-link">shinyapps.io</a>
-</li>
-<li>In shinyapps, go to <code>Account</code> &gt; <code>Tokens</code>.
-Select <code>Show</code>, <code>Show Secret</code> and copy the provided
-code. Return to RStudio/Posit Connect and paste the code in the console
-window. Hit <code>ENTER</code> to run the code.</li>
-<li>Run <code>data-raw/08_launch.R</code>. If prompted with a message
-that WQdashboard is not installed, select option <code>1</code>.</li>
-<li>Shinyapps will host the dashboard as a standalone website. You can
-find the link to the dashboard under “Recent Applications” on the main
-page, or under Applications &gt; All.</li>
+<li><p>Log in or make an account on <a href="https://connect.posit.cloud/" class="external-link">posit connect cloud</a>.</p></li>
+<li><p>Paste <code>rsconnect::connectCloudUser()</code> in the console
+window and hit <code>ENTER</code>. This will open posit connect cloud in
+a browser window; follow the prompts to authorize access.</p></li>
+<li><p>Run <code>data-raw/08_launch.R</code>. If prompted with a message
+that WQdashboard is not installed, select option
+<code>1</code>.</p></li>
+<li><p>Posit connect cloud will host the dashboard as a standalone
+website. The home page for posit connect cloud will provide a link to
+each active website.</p></li>
 </ol>
-<div class="float">
-<img src="images/shinyapps_token.png" fig-alt="rsconnect::setAccountInfo(name='nbep', token='censored', secret='censored')" alt="shinyapps token"><div class="figcaption">shinyapps token</div>
-</div>
 </div>
 <div class="section level2">
 <h2 id="embedding">Embedding<a class="anchor" aria-label="anchor" href="#embedding"></a>
@@ -118,7 +114,7 @@ WQdashboard on its own page instead of the homepage.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>
