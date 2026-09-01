@@ -6108,7 +6108,7 @@
       "checksum": "0230544a05e7d6175aee9d606efbda6a"
     },
     ".Rprofile": {
-      "checksum": "7efec3a71e26c06e6325b2a753f44c2b"
+      "checksum": "8dd6d9d189cbc13855db0fad9b99e86b"
     },
     "app.R": {
       "checksum": "637431bebdb7f89ba1b5a0d0f2ebdc11"
@@ -6340,6 +6340,9 @@
     },
     "README.Rmd": {
       "checksum": "beb707e61c18877cb0b55bade85bd505"
+    },
+    "renv.lock": {
+      "checksum": "a0ad692936f2b7ebdd0006032ba14828"
     },
     "tests/spelling.R": {
       "checksum": "dbd9bab057163c01c320d0b9d3bb9620"
