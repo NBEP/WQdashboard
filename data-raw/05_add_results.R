@@ -55,8 +55,8 @@
 #'
 #' @noRd
 
-results_csv <- "data.csv"
-in_format <- "WQdashboard"
+results_csv <- "demo_results.csv"
+in_format <- "ri_ww"
 date_format <- "m/d/Y"
 timezone <- Sys.timezone()
 

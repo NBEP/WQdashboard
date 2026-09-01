@@ -18,8 +18,8 @@
 #' @noRd
 
 # SHAPEFILE - Watershed Boundaries
-watershed_shp <- NA
-watershed_name_col <- "Field"
+watershed_shp <- "shp/HUC12.shp"
+watershed_name_col <- "HUC12_Name"
 
 # SHAPEFILE - Rivers
 river_shp <- NA

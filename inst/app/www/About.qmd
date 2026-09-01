@@ -9,7 +9,9 @@ brand: false
 
 # About this Site
 
-Water Quality Dashboard lets you explore the state of the watershed through interactive maps, report cards, and graphs. Check the water quality near where you live and see how it has changed over time.
+WQdashboard is an open-source dashboard template that can be used to display water quality data using interactive maps, report cards, and graphs. It is designed for water quality organizations who want to share their data with the public. This site is a **demo** containing ten years of data collected by the [Salt Ponds Coalition](https://saltpondscoalition.org/).
+
+If you would like to learn more about WQdashboard, please read the [documentation](https://nbep.github.io/WQdashboard/articles/wqdashboard.html) or download the code from [GitHub](https://github.com/NBEP/WQdashboard/).
 
 ## How are scores calculated?
 
