@@ -20,6 +20,11 @@ if (!require(renv)) {
 library(renv)
 renv::install(exclude = c("WQdashboard", "covrpage"))
 
+if (!require(remotes)) {
+  install.packages("remotes")
+}
+remotes::install_github("nbep/importwqd")
+
 if (!require(rsconnect)) {
   install.packages("rsconnect")
 }
